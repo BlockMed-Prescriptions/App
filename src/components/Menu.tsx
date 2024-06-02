@@ -11,8 +11,12 @@ import {
 } from '@ionic/react';
 
 import { useLocation } from 'react-router-dom';
-import { archiveOutline, archiveSharp, bookmarkOutline, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp } from 'ionicons/icons';
+import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp } from 'ionicons/icons';
 import './Menu.css';
+import RecetaBcData from '../service/RecetaBcData';
+import Profile from '../model/Profile';
+import { useState } from 'react';
+import NewProfileButton from './NewProfileButton';
 
 interface AppPage {
   url: string;
@@ -23,54 +27,76 @@ interface AppPage {
 
 const appPages: AppPage[] = [
   {
-    title: 'Inbox',
-    url: '/folder/Inbox',
-    iosIcon: mailOutline,
-    mdIcon: mailSharp
+    title: 'Ingresos',
+    url: '/folder/Inbox ',
+    iosIcon: cloudDownloadOutline,
+    mdIcon: cloudDownloadSharp
   },
   {
-    title: 'Outbox',
+    title: 'Envíos',
     url: '/folder/Outbox',
     iosIcon: paperPlaneOutline,
     mdIcon: paperPlaneSharp
   },
   {
-    title: 'Favorites',
+    title: 'Favoritos',
     url: '/folder/Favorites',
     iosIcon: heartOutline,
     mdIcon: heartSharp
   },
   {
-    title: 'Archived',
+    title: 'Archivados',
     url: '/folder/Archived',
     iosIcon: archiveOutline,
     mdIcon: archiveSharp
   },
   {
-    title: 'Trash',
+    title: 'Papelera',
     url: '/folder/Trash',
     iosIcon: trashOutline,
     mdIcon: trashSharp
-  },
-  {
-    title: 'Spam',
-    url: '/folder/Spam',
-    iosIcon: warningOutline,
-    mdIcon: warningSharp
   }
 ];
 
-const labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
+const labels = ['Familia', 'Amigos'];
 
 const Menu: React.FC = () => {
   const location = useLocation();
+  const data = RecetaBcData.getInstance();
+  let profiles:Profile[] = [];
+  data.getProfiles().then((p) => {
+      profiles = p;
+  });
+
+  const [currentProfile, setCurrentP] = useState<Profile | null>(null);
+  data.getCurrentProfile().subscribe((p) => {
+      if (currentProfile?.didId !== p?.didId) {
+        console.log('currentProfile', p);
+        setCurrentP(p);
+      }
+  });
+
+  if (!currentProfile) {
+    return (<IonMenu contentId="main" type="overlay">
+      <IonContent>
+        <IonList id="inbox-list">
+          <IonListHeader>Recetas</IonListHeader>
+          <IonNote style={{"marginRight": "20px"}}>
+            No hay un perfil actualmente definido, puede crear uno nuevo.
+            <NewProfileButton />
+          </IonNote>
+        </IonList>
+      </IonContent>
+    </IonMenu>)
+  }
 
   return (
     <IonMenu contentId="main" type="overlay">
       <IonContent>
         <IonList id="inbox-list">
-          <IonListHeader>Inbox</IonListHeader>
-          <IonNote>hi@ionicframework.com</IonNote>
+          <IonListHeader>Recetas</IonListHeader>
+          <IonNote>{currentProfile.name}</IonNote>
+          <NewProfileButton />
           {appPages.map((appPage, index) => {
             return (
               <IonMenuToggle key={index} autoHide={false}>
@@ -84,7 +110,7 @@ const Menu: React.FC = () => {
         </IonList>
 
         <IonList id="labels-list">
-          <IonListHeader>Labels</IonListHeader>
+          <IonListHeader>Etiquetas</IonListHeader>
           {labels.map((label, index) => (
             <IonItem lines="none" key={index}>
               <IonIcon aria-hidden="true" slot="start" icon={bookmarkOutline} />

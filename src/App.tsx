@@ -3,6 +3,7 @@ import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
 import Menu from './components/Menu';
 import Page from './pages/Page';
+import ProfileForm from './pages/ProfileForm';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -33,10 +34,17 @@ import '@ionic/react/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import RecetaBcData from './service/RecetaBcData';
 
 setupIonicReact();
 
 const App: React.FC = () => {
+  /** Fuerzo la lectura */
+  const data = RecetaBcData.getInstance();
+  data.getProfiles().then((p) => {
+    // do nothing
+  });
+
   return (
     <IonApp>
       <IonReactRouter>
@@ -48,6 +56,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/folder/:name" exact={true}>
               <Page />
+            </Route>
+            <Route path="/profile/new" exact={true}>
+              <ProfileForm />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>

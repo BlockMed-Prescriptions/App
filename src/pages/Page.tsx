@@ -2,10 +2,16 @@ import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, Io
 import { useParams } from 'react-router';
 import ExploreContainer from '../components/ExploreContainer';
 import './Page.css';
+import { useState } from 'react';
+import Profile from '../model/Profile';
+import RecetaBcData from '../service/RecetaBcData';
 
 const Page: React.FC = () => {
 
   const { name } = useParams<{ name: string; }>();
+  const data = RecetaBcData.getInstance();
+
+  const [currentProfile, setCurrentProfile] = useState<Profile | null>(data.getCurrentProfile());
 
   return (
     <IonPage>
