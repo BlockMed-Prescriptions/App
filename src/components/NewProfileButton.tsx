@@ -18,8 +18,9 @@ const NewProfileButton: React.FC = () => {
                     role: 'destructive',
                     icon: personOutline,
                     handler: () => {
-                        data.setCurrentProfile(profile);
-                        history.push('/folder/Inbox');
+                        data.setCurrentProfile(profile).then(() => {
+                            history.push('/profile');
+                        });
                     }
                 }
             })

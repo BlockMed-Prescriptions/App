@@ -4,6 +4,7 @@ import { Redirect, Route } from 'react-router-dom';
 import Menu from './components/Menu';
 import Page from './pages/Page';
 import ProfileForm from './pages/ProfileForm';
+import ProfilePage from './pages/ProfilePage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -59,6 +60,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/profile/new" exact={true}>
               <ProfileForm />
+            </Route>
+            <Route path="/profile" exact={true}>
+              <ProfilePage />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>
