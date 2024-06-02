@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-recetasbcpoc01-dev-3aff7-authRole",
+      "UnauthRoleArn": "arn:aws:iam::533267109058:role/amplify-recetasbcpoc01-dev-3aff7-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::533267109058:role/amplify-recetasbcpoc01-dev-3aff7-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-recetasbcpoc01-dev-3aff7-deployment",
+      "UnauthRoleName": "amplify-recetasbcpoc01-dev-3aff7-unauthRole",
+      "StackName": "amplify-recetasbcpoc01-dev-3aff7",
+      "StackId": "arn:aws:cloudformation:us-east-1:533267109058:stack/amplify-recetasbcpoc01-dev-3aff7/29a92e00-20d9-11ef-9a3c-0affd86ce737",
+      "AmplifyAppId": "d2uymtfafc7q5m"
+    },
+    "categories": {
+      "hosting": {
+        "S3AndCloudFront": {}
+      }
+    }
+  }
+}
