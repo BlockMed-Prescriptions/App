@@ -11,7 +11,14 @@ const Page: React.FC = () => {
   const { name } = useParams<{ name: string; }>();
   const data = RecetaBcData.getInstance();
 
-  const [currentProfile, setCurrentProfile] = useState<Profile | null>(data.getCurrentProfile());
+  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
+
+  data.getCurrentProfile().subscribe((p) => {
+      if (currentProfile?.didId !== p?.didId) {
+          console.log('currentProfile', p);
+          setCurrentProfile(p);
+      }
+  })
 
   return (
     <IonPage>
