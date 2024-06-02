@@ -71,7 +71,6 @@ const Menu: React.FC = () => {
   const [currentProfile, setCurrentP] = useState<Profile | null>(null);
   data.getCurrentProfile().subscribe((p) => {
       if (currentProfile?.didId !== p?.didId) {
-        console.log('currentProfile', p);
         setCurrentP(p);
       }
   });

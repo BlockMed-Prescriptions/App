@@ -15,7 +15,6 @@ const Page: React.FC = () => {
 
   data.getCurrentProfile().subscribe((p) => {
       if (currentProfile?.didId !== p?.didId) {
-          console.log('currentProfile', p);
           setCurrentProfile(p);
       }
   })
