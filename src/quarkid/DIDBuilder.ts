@@ -1,16 +1,21 @@
 
-import { ModenaUniversalRegistry } from "@quarkid/did-registry";
 import { IJWK, LANG, Suite } from "@quarkid/kms-core"
 import { AssertionMethodPurpose, KeyAgreementPurpose } from "@quarkid/did-core";
 
 
 import { config as quarkidConfig } from "./config";
 
+let ModenaUniversalRegistry: any;
+
 /**
  * Esta función crea un DID en la red de QuarkID y devuelve el id del DID Creado.
  */
 export const DIDBuilder = async (updateKey: IJWK, recoveryKey: IJWK, didComm: IJWK, bbsbls: IJWK) : Promise<string> => {
-    const registry = new ModenaUniversalRegistry();
+  if (!ModenaUniversalRegistry) {
+    ModenaUniversalRegistry = (await import("@quarkid/did-registry")).ModenaUniversalRegistry;
+  }
+  
+  const registry = new ModenaUniversalRegistry();
 
     const service = {
         id: 'dwn-default',
