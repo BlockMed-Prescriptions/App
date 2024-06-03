@@ -10,12 +10,14 @@ import {
   IonNote,
 } from '@ionic/react';
 
+import React from 'react';
+
 import { useLocation } from 'react-router-dom';
 import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp } from 'ionicons/icons';
 import './Menu.css';
 import RecetaBcData from '../service/RecetaBcData';
 import Profile from '../model/Profile';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import NewProfileButton from './NewProfileButton';
 
 interface AppPage {
@@ -58,22 +60,28 @@ const appPages: AppPage[] = [
   }
 ];
 
-const labels = ['Familia', 'Amigos'];
+const labels:string[] = ['Familia', 'Amigos']
 
 const Menu: React.FC = () => {
-  const location = useLocation();
-  const data = RecetaBcData.getInstance();
-  let profiles:Profile[] = [];
-  data.getProfiles().then((p) => {
-      profiles = p;
-  });
-
+  const location = useLocation()
+  const data = RecetaBcData.getInstance()
   const [currentProfile, setCurrentP] = useState<Profile | null>(null);
-  data.getCurrentProfile().subscribe((p) => {
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    data.getProfiles().then((p) => {
+      setProfiles(p);
+    });
+
+    const subscription = data.getCurrentProfile().subscribe((p) => {
       if (currentProfile?.didId !== p?.didId) {
         setCurrentP(p);
       }
-  });
+    });
+
+    // Limpiar la suscripción cuando el componente se desmonte
+    return () => subscription.unsubscribe();
+  }, [currentProfile]);
 
   if (!currentProfile) {
     return (<IonMenu contentId="main" type="overlay">

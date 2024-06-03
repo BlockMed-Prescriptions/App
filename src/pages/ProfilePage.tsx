@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import React from 'react';
 import { default as ProfileModel } from '../model/Profile';
 import RecetaBcData from '../service/RecetaBcData';
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert } from '@ionic/react';
@@ -15,7 +16,7 @@ const ProfilePage: React.FC = () => {
         DIDResolver(p.didId).then((doc) => {
             setDidDocument(doc);
         }).catch((e) => {
-            console.error(e);
+            setDidDocument(null);
         })
     }
 
@@ -42,15 +43,19 @@ const ProfilePage: React.FC = () => {
         })
     }
 
-    data.getCurrentProfile().subscribe((p) => {
-        if (currentProfile?.didId !== p?.didId) {
-            setCurrentProfile(p);
-            console.log(p);
-            if (p)
-                getDidDocument(p);
-        }
-    })
-
+    useEffect(() => {
+        const subscription = data.getCurrentProfile().subscribe((p) => {
+            if (currentProfile?.didId !== p?.didId) {
+                setCurrentProfile(p);
+                console.log(p);
+                if (p)
+                    getDidDocument(p);
+            }
+        });
+    
+        // Limpiar la suscripción cuando el componente se desmonte
+        return () => subscription.unsubscribe();
+    }, [currentProfile]);
     /**
      * Dibujo la pantalla con los datos en "Profile"
      */
