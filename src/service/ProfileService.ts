@@ -1,6 +1,6 @@
 import Profile from '../model/Profile';
 
-import { KMSClient } from "@quarkid/kms-client"
+
 import { IJWK, LANG, Suite } from "@quarkid/kms-core"
 import { ProfileKMSSecureStorage } from '../quarkid/ProfileKMSSecureStorage';
 import { DIDBuilder } from '../quarkid/DIDBuilder';
@@ -9,6 +9,7 @@ import { DIDResolver } from '../quarkid/DIDResolver';
 
 class ProfileService {
     private static instance: ProfileService;
+    private static KMSClient : any|null = null;
 
     public static getInstance(): ProfileService {
         if (!ProfileService.instance) {
@@ -25,7 +26,7 @@ class ProfileService {
             keyStorage: new Map<string, any>(),
             didId: ''
         };
-        const kms = this.getKms(profile);
+        const kms = await this.getKms(profile);
 
         const updateKey = await kms.create(Suite.ES256k);
         const recoveryKey = await kms.create(Suite.ES256k);
@@ -36,8 +37,11 @@ class ProfileService {
         return profile;
     }
 
-    private getKms(profile: Profile) : KMSClient {
-        return new KMSClient({
+    private async getKms(profile: Profile)  {
+        if (null === ProfileService.KMSClient) {
+            ProfileService.KMSClient = (await import('@extrimian/kms-client')).KMSClient;
+        }
+        return new ProfileService.KMSClient({
             lang: LANG.es,
             storage: new ProfileKMSSecureStorage(profile),
             didResolver: DIDResolver
