@@ -3,7 +3,7 @@ type Profile = {
     name: string;
     email: string;
     didId: string;
-    keyStorage: Map<string, any>;
+    keyStorage: {[key: string]: any};
     roles: string[];
 }
 

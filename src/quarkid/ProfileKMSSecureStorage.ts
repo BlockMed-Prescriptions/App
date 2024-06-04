@@ -10,20 +10,19 @@ export class ProfileKMSSecureStorage implements KMSStorage {
     }
   
     async add(key: string, data: any): Promise<void> {
-        const map = this.profile.keyStorage;
-        map.set(key, data);
+        this.profile.keyStorage[key] = data;
     }
   
     async get(key: string): Promise<any> {
-        return this.profile.keyStorage.get(key);
+        this.profile.keyStorage.get[key];
     }
   
     async getAll(): Promise<Map<string, any>> {
-        return this.profile.keyStorage;
+        return new Map(Object.entries(this.profile.keyStorage));
     }
   
     update(key: string, data: any) {
-        this.profile.keyStorage.set(key, data);
+        this.profile.keyStorage[key] = data;
     }
   
     remove(key: string) {

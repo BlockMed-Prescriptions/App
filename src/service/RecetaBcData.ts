@@ -31,12 +31,11 @@ export default class RecetaBcData {
         });
 
         // si no existe el array "profiles", lo creamos
-        localforage.getItem(RecetaBcData.PROFILES_KEY).then((profiles) => {
+        this.getProfiles().then(profiles => {
             if (!profiles) {
                 localforage.setItem(RecetaBcData.PROFILES_KEY, []);
             } else {
                 // seteo el perfil actual, a partir del DID almacenado
-                console.log('profiles', profiles);
                 localforage.getItem(RecetaBcData.CURRENT_PROFILE_DID).then((did) => {
                     if (did) {
                         let pp = profiles as Profile[];
@@ -66,7 +65,14 @@ export default class RecetaBcData {
     }
 
     public async getProfiles(): Promise<Profile[]> {
-        return await localforage.getItem(RecetaBcData.PROFILES_KEY) || [];
+        let p = await localforage.getItem(RecetaBcData.PROFILES_KEY);
+        if (!p) {
+            return [];
+        } else if (typeof p === 'string') {
+            return JSON.parse(p);
+        } else {
+            throw new Error('Profiles is not a string.');
+        }
     }
 
     public async getProfile(name: string): Promise<Profile> {
@@ -88,14 +94,12 @@ export default class RecetaBcData {
         }
 
         profiles.push(profile);
-        await localforage.setItem(RecetaBcData.PROFILES_KEY, profiles);
+        console.log(profile, profiles, JSON.stringify(profile), JSON.stringify(profiles));
+        await this.saveProfiles(profiles);
     }
 
-    private buildKey(key: string): string {
-        let profile = this.currentProfile.value;
-        if (!profile) {
-            throw new Error('Profile not set.');
-        }
-        return `${profile.didId}:${key}`;
+    private async saveProfiles(profiles: Profile[]) {
+        await localforage.setItem(RecetaBcData.PROFILES_KEY, JSON.stringify(profiles));
     }
 }
+
