@@ -94,7 +94,6 @@ export default class RecetaBcData {
         }
 
         profiles.push(profile);
-        console.log(profile, profiles, JSON.stringify(profile), JSON.stringify(profiles));
         await this.saveProfiles(profiles);
     }
 
