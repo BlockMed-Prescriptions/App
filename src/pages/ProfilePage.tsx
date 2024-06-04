@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import { default as ProfileModel } from '../model/Profile';
 import RecetaBcData from '../service/RecetaBcData';
-import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert, IonIcon, useIonToast } from '@ionic/react';
 import { DIDResolver } from '../quarkid/DIDResolver';
+import { copyOutline } from 'ionicons/icons';
 
 const ProfilePage: React.FC = () => {
     const data = RecetaBcData.getInstance();
     const [currentProfile, setCurrentProfile] = useState<ProfileModel | null>(null);
     const [didDocument, setDidDocument] = useState<any | null>(null);
     const [presentAlert] = useIonAlert();
+    const [presentToast] = useIonToast();
 
     const getDidDocument = (p: ProfileModel) => {
         console.log("llamando a DIDResolver.", p)
@@ -89,6 +91,20 @@ const ProfilePage: React.FC = () => {
                             <h2>DID</h2>
                             <p>{currentProfile?.didId}</p>
                         </IonLabel>
+                        {currentProfile?.didId ? (
+                            <IonButton size="small" color="light" slot="end" onClick={() => {
+                                navigator.clipboard.writeText(currentProfile?.didId);
+                                // acá abro un toast
+                                presentToast({
+                                    message: 'DID copiado al portapapeles.',
+                                    duration: 1000,
+                                    position: 'bottom'
+                                });
+                            }}>
+                                <IonIcon icon={copyOutline} slot="icon-only" />
+                            </IonButton>
+                        ) : ''}
+
                     </IonItem>
                     {didDocument ? (
                     <IonItem>
