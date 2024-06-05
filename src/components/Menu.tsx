@@ -74,6 +74,7 @@ const Menu: React.FC = () => {
     });
 
     const subscription = data.getCurrentProfile().subscribe((p) => {
+      console.log("Dentro de la suscripción de menú")
       if (currentProfile?.didId !== p?.didId) {
         setCurrentP(p);
       }
@@ -81,7 +82,7 @@ const Menu: React.FC = () => {
 
     // Limpiar la suscripción cuando el componente se desmonte
     return () => subscription.unsubscribe();
-  }, [currentProfile]);
+  }, []);
 
   if (!currentProfile) {
     return (<IonMenu contentId="main" type="overlay">
