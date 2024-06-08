@@ -65,6 +65,9 @@ export default class RecetaBcData {
         return this.currentProfile.asObservable();
     }
 
+    /**
+     * TODO: Mover esto a otra clase. Debe recibir un perfil.
+     */
     public async exportProfile(didId: string): Promise<void> {
         // busco el profile por el didId
         let profiles = await this.getProfiles();
@@ -90,6 +93,9 @@ export default class RecetaBcData {
         return;
     }
 
+    /**
+     * TODO: Mover esto a otra clase. Debe recibir un perfil.
+     */
     public async importProfile(file: File): Promise<void> {
         let reader = new FileReader();
         reader.readAsText(file);
