@@ -54,14 +54,60 @@ export default class RecetaBcData {
         });
     }
 
-    public async setCurrentProfile(profile: Profile) {
+    public async setCurrentProfile(profile: Profile|null) {
         console.log("setCurrentProfile", profile)
         this.currentProfile.next(profile);
-        localforage.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
+        if (profile)
+            localforage.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
     }
 
     public getCurrentProfile(): Observable<Profile | null> {
         return this.currentProfile.asObservable();
+    }
+
+    public async exportProfile(didId: string): Promise<void> {
+        // busco el profile por el didId
+        let profiles = await this.getProfiles();
+        let p = profiles.find(profile => profile.didId === didId);
+
+        if (!p) {
+            throw new Error('Profile not found');
+        }
+
+        // exporto el perfil
+        let data = JSON.stringify(p);
+        let blob = new Blob([data], { type: 'application/json' });
+        let url = URL.createObjectURL(blob);
+
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = 'profile'+ didId +'.json';
+
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        return;
+    }
+
+    public async importProfile(file: File): Promise<void> {
+        let reader = new FileReader();
+        reader.readAsText(file);
+
+        const promise = new Promise<void>((resolve, reject) => {
+            reader.onload = async () => {
+                let data = JSON.parse(reader.result as string);
+                let profile = data;
+                try {
+                    await this.addProfile(profile);
+                    resolve();
+                } catch (e: any) {
+                    reject(e.message);
+                }
+            }
+        })
+
+        return promise;
     }
 
     public async getProfiles(): Promise<Profile[]> {
@@ -94,6 +140,18 @@ export default class RecetaBcData {
         }
 
         profiles.push(profile);
+        await this.saveProfiles(profiles);
+    }
+
+    public async deleteProfile(didId: string) {
+        let profiles = await this.getProfiles();
+        let index = profiles.findIndex((profile: Profile) => profile.didId === didId);
+
+        if (index === -1) {
+            throw new Error('Profile not found');
+        }
+
+        profiles.splice(index, 1);
         await this.saveProfiles(profiles);
     }
 

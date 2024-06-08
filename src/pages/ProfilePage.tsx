@@ -5,6 +5,7 @@ import RecetaBcData from '../service/RecetaBcData';
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert, IonIcon, useIonToast } from '@ionic/react';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import { copyOutline } from 'ionicons/icons';
+import { useHistory } from 'react-router';
 
 const ProfilePage: React.FC = () => {
     const data = RecetaBcData.getInstance();
@@ -12,6 +13,7 @@ const ProfilePage: React.FC = () => {
     const [didDocument, setDidDocument] = useState<any | null>(null);
     const [presentAlert] = useIonAlert();
     const [presentToast] = useIonToast();
+    const history = useHistory();
 
     const getDidDocument = (p: ProfileModel) => {
         console.log("llamando a DIDResolver.", p)
@@ -32,13 +34,78 @@ const ProfilePage: React.FC = () => {
                     text: 'Exportar',
                     handler: () => {
                         console.log("Exportando perfil", p);
-                        /*
-                        data.exportProfile(currentProfile?.didId).then((p) => {
-                            console.log("Perfil exportado", p);
+                        data.exportProfile(p.didId).then((p) => {
+                            presentToast({
+                                message: 'Perfil exportado.',
+                                duration: 1000,
+                                position: 'bottom'
+                            });
                         }).catch((e) => {
-                            console.error("Error al exportar perfil", e);
+                            presentAlert({
+                                header: 'Error',
+                                message: 'No se pudo exportar el perfil.',
+                                buttons: ['OK']
+                            });
                         });
-                        */
+                    }
+                }
+            ]
+        })
+    }
+
+    const importPerfiles = () => {
+        // debe presentar un cuadro para importar un archivo local
+        // de la computadora. Una vez leído, se debe llamar a
+        // data.importProfile(p: ProfileModel)
+        let file = document.createElement('input');
+        file.type = 'file';
+        file.accept = 'application/json';
+        file.onchange = async (e) => {
+            let f = (e.target as HTMLInputElement).files![0];
+            data.importProfile(f).then(() => {
+                presentToast({
+                    message: 'Perfil importado.',
+                    duration: 1000,
+                    position: 'bottom'
+                });
+            }).catch((msg) => {
+                presentAlert({
+                    header: 'Error',
+                    message: 'No se pudo importar el perfil: ' + msg + '.',
+                    buttons: ['OK']
+                });
+            });
+        }
+
+        file.click();
+    }
+
+    const deletePerfil = (p: ProfileModel) => {
+        presentAlert({
+            header: "Eliminar Perfil",
+            message: "¿Está seguro de que desea eliminar el perfil?",
+            buttons: [
+                'Cancelar',
+                {
+                    text: 'Eliminar',
+                    handler: () => {
+                        data.deleteProfile(p.didId).then(() => {
+                            presentToast({
+                                message: 'Perfil eliminado.',
+                                duration: 1000,
+                                position: 'bottom'
+                            });
+                            data.setCurrentProfile(null);
+
+                            // me voy al Inbox
+                            history.push('/folder/Inbox');
+                        }).catch((e) => {
+                            presentAlert({
+                                header: 'Error',
+                                message: 'No se pudo eliminar el perfil.',
+                                buttons: ['OK']
+                            });
+                        });
                     }
                 }
             ]
@@ -114,12 +181,17 @@ const ProfilePage: React.FC = () => {
                     ) : ''}
                 </IonList>
                 {/*
-                    Ahora voy a poner un botón para exportar el perfil
+                    Ahora voy a poner una botonera para importar y exportar perfiles.
                 */}
-                <IonButton expand="block" onClick={() => {
+                <IonButton onClick={() => {
                     exportPerfil(currentProfile!);
-                }}
-                >Exportar Perfil</IonButton>
+                }}>Exportar Perfil</IonButton>
+                <IonButton onClick={() => {
+                    importPerfiles();
+                }}>Importar Perfil</IonButton>
+                <IonButton color="danger" onClick={() => {
+                    deletePerfil(currentProfile!);
+                }}>Eliminar Perfil</IonButton>
 
                 
             </IonContent>
