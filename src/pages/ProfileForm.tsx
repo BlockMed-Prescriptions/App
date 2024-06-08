@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonList, IonMenuButton, IonPage, IonTitle, IonToggle, IonToolbar, useIonAlert, useIonLoading } from '@ionic/react';
 import ProfileService from '../service/ProfileService';
@@ -10,6 +10,30 @@ const ProfileForm: React.FC = () => {
     const [isPaciente, setIsPaciente] = useState<boolean>(true);
     const [nombre, setNombre] = useState<string>('');
     const [email, setEmail] = useState<string>('');
+
+    // para validación
+    const [isTouched, setIsTouched] = useState(false);
+    const [isValid, setIsValid] = useState<boolean>(false);
+
+
+    const isValidEmail = (email: string) : boolean => {
+        if ('' === email.trim()) {
+            return false;
+        }
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+
+    const validateEmail = (ev: Event) => {
+        const value = (ev.target as HTMLInputElement).value;
+        if (value === '') return;
+        isValidEmail(value) ? setIsValid(true) : setIsValid(false);
+    };
+    
+    const markTouched = () => {
+        setIsTouched(true);
+    };
+    
     const history = useHistory();
     const perfilService = ProfileService.getInstance();
     const data = RecetaBcData.getInstance();
@@ -17,6 +41,16 @@ const ProfileForm: React.FC = () => {
     const [presentLoading, dismissLoading] = useIonLoading();
 
     const [presentAlert] = useIonAlert();
+
+    useEffect(() => {
+        // inicializo los roles
+        setIsMedico(false);
+        setIsPaciente(true);
+        // inicializo los campos
+        setNombre('');
+        setEmail('');
+        setIsValid(false)
+    }, []);
 
     const cancel = () => {
         // vuelvo a la página anterior
@@ -44,13 +78,6 @@ const ProfileForm: React.FC = () => {
         });
     }
 
-    const isValidEmail = (email: string) : boolean => {
-        if ('' === email.trim()) {
-            return false;
-        }
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
     const confirm = () => {
         // chequeo que haya ingresado nombre y email
         if (nombre.trim() === '' || !isValidEmail(email)) {
@@ -73,8 +100,6 @@ const ProfileForm: React.FC = () => {
         });
     }
     
-
-
     return (
         <IonPage>
             <IonHeader>
@@ -92,11 +117,19 @@ const ProfileForm: React.FC = () => {
                 <IonList>
                     <IonItem>
                         <IonLabel position="stacked">Nombre</IonLabel>
-                        <IonInput onIonChange={e => setNombre(e.detail.value ?? '')} required={true}></IonInput>
+                        <IonInput onIonChange={e => setNombre(e.detail.value ?? '')} required={true} value={nombre}></IonInput>
                     </IonItem>
                     <IonItem>
                         <IonLabel position="stacked">Email</IonLabel>
-                        <IonInput type="email" onIonChange={e => setEmail(e.detail.value ?? '')} required={true}></IonInput>
+                        <IonInput
+                            className={`${isValid && 'ion-valid'} ${isValid === false && 'ion-invalid'} ${isTouched && 'ion-touched'}`}
+                            type="email"
+                            required={true} value={email}
+                            errorText="Invalid email"
+                            onIonInput={(event) => { validateEmail(event); setEmail(event.detail.value ?? '')}}
+                            onIonBlur={() => markTouched()}
+                        >
+                        </IonInput>
                     </IonItem>
                     <IonItem>
                         <IonList>
