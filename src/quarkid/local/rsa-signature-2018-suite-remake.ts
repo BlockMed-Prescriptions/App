@@ -27,6 +27,8 @@ const { RsaSignature2018 } = jsigs.suites;
  * para evitar llamados a servicios que fallan por CORS
  * 
  * Incluye la clase mencionada y la clase @extrimian/kms-suite-jsonld
+ * 
+ * Quizás lo que tengamos que hacer aquí es utilizar el axios mock para evitar los llamados a servicios externos.
  */
 export class RSASignature2018SuiteRemake  implements IVCSuite{
   // file rsa-signature-2018-suite.ts

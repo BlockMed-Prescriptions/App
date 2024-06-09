@@ -9,6 +9,7 @@ import { DIDDocument } from '@quarkid/did-core';
 import { close, checkmark } from 'ionicons/icons';
 import RecetaBuilder from '../service/RecetaBuilder';
 import { CredentialSigner } from '../quarkid/CredentialSigner';
+import { CredentialVerifier } from '../quarkid/CredentialVerifier';
 
 const RecetaNew: React.FC = () => {
 
@@ -198,6 +199,7 @@ const RecetaNew: React.FC = () => {
         let vc
         try {
             vc = await CredentialSigner(certificado, currentProfile!)
+            receta.certificado = vc
             await dismissToast()
         } catch (e) {
             await dismissToast()
@@ -205,11 +207,44 @@ const RecetaNew: React.FC = () => {
         }
 
         presentToast({
-            message: "Certificado firmado",
+            message: "Certificado firmado, procedemos a verificar ...",
             position: "top",
             color: "success",
-            duration: 2000
         })
+
+        let verifyResult
+        try {
+            verifyResult = await CredentialVerifier(receta.certificado, currentProfile!)
+            console.log("Verificación del certificado", verifyResult)
+            await dismissToast()
+        } catch (e) {
+            await dismissToast()
+            throw e
+        }
+
+        if (verifyResult && verifyResult.result) {
+            presentToast({
+                message: "Certificado firmado y verificado.",
+                position: "top",
+                color: "success",
+                duration: 2000,
+                buttons: [
+                    {
+                        text: 'Cerrar',
+                        role: 'cancel'
+                    }
+                ]
+            })
+        } else if (verifyResult && !verifyResult.result) {
+            console.error("Certificado firmado pero no verificado. Error: ", verifyResult)
+            presentToast({
+                message: "Certificado firmado pero no verificado. Error: " + verifyResult.error?.description,
+                position: "top",
+                color: "danger",
+                duration: 2000
+            })
+        }
+
 
         console.log("Certificado firmado", vc)
         return vc
