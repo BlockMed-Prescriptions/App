@@ -21,6 +21,13 @@ import { isArray } from "util";
 const { RsaSignature2018 } = jsigs.suites;
 
 // @suiteDecorator(Suite.RsaSignature2018)
+
+/**
+ * Esta clase reemplaza al original RsaSignature2018Suite de extrimian (@extrimian/kms-suite-rsa-signature-2018)
+ * para evitar llamados a servicios que fallan por CORS
+ * 
+ * Incluye la clase mencionada y la clase @extrimian/kms-suite-jsonld
+ */
 export class RSASignature2018SuiteRemake  implements IVCSuite{
   // file rsa-signature-2018-suite.ts
 
@@ -71,11 +78,13 @@ export class RSASignature2018SuiteRemake  implements IVCSuite{
   // @ts-ignore
   protected didDocumentResolver: (did: string) => Promise<DIDDocument>;
 
+  // esto no va más.
   contextDictionary = [
           { key: "https://www.w3.org/2018/credentials/v1", value: "https://storage.googleapis.com/contexts/credentials-v1.json" },
           { key: "https://w3id.org/security/bbs/v1", value: "https://storage.googleapis.com/contexts/vc-di-bbs.json" },
       ];
 
+  // TODO: Optimizar el cache, de tal forma de hacerlo estático.
   private cache = new Map<string, any>();
 
   private useCache: boolean = true;
