@@ -14,7 +14,7 @@ export class ProfileKMSSecureStorage implements KMSStorage {
     }
   
     async get(key: string): Promise<any> {
-        this.profile.keyStorage.get[key];
+        return this.profile.keyStorage[key];
     }
   
     async getAll(): Promise<Map<string, any>> {
