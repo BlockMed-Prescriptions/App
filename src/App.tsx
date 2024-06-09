@@ -36,6 +36,7 @@ import '@ionic/react/css/palettes/dark.system.css';
 /* Theme variables */
 import './theme/variables.css';
 import RecetaBcData from './service/RecetaBcData';
+import RecetaNew from './pages/RecetaNew';
 
 setupIonicReact();
 
@@ -63,6 +64,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/profile" exact={true}>
               <ProfilePage />
+            </Route>
+            <Route path="/receta/new" exact={true}>
+              <RecetaNew />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>

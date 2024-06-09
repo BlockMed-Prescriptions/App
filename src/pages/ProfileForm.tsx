@@ -104,8 +104,6 @@ const ProfileForm: React.FC = () => {
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    <IonButtons slot="start">
-                    </IonButtons>
                     <IonTitle>Crear un Perfil</IonTitle>
                     <IonButtons slot="end">
                         <IonButton color="primary" onClick={() => confirm()}>Confirmar</IonButton>

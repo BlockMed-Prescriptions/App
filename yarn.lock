@@ -2349,6 +2349,14 @@
     multiformats "^9.6.5"
     text-encoding "^0.7.0"
 
+"@quarkid/vc-core@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@quarkid/vc-core/-/vc-core-1.0.0.tgz#8fc822d3fb1aa1eb8bf419390f8a47fcb4b474ba"
+  integrity sha512-9hH39hDzebcogR10gT+am3GcBt76OUg7TQC4FGZ0No4lbN2+OobH9D6ZqO/IGEo04VVz7xYAaKU61sK1XC9pCw==
+  dependencies:
+    "@extrimian/did-core" "1.1.0"
+    jsonld "^5.2.0"
+
 "@rollup/plugin-inject@^5.0.5":
   version "5.0.5"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-inject/-/plugin-inject-5.0.5.tgz#616f3a73fe075765f91c5bec90176608bed277a3"

@@ -113,7 +113,7 @@ const ProfilePage: React.FC = () => {
     }
 
     useEffect(() => {
-        const subscription = data.getCurrentProfile().subscribe((p) => {
+        const subscription = data.observeProfile().subscribe((p) => {
             setCurrentProfile(p);
             console.log(p);
            if (p)

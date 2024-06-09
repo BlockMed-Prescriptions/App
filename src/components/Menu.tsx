@@ -73,7 +73,7 @@ const Menu: React.FC = () => {
       setProfiles(p);
     });
 
-    const subscription = data.getCurrentProfile().subscribe((p) => {
+    const subscription = data.observeProfile().subscribe((p) => {
       console.log("Dentro de la suscripción de menú")
       if (currentProfile?.didId !== p?.didId) {
         setCurrentP(p);
@@ -103,7 +103,7 @@ const Menu: React.FC = () => {
       <IonContent>
         <IonList id="inbox-list">
           <IonListHeader>Recetas</IonListHeader>
-          <IonNote>{currentProfile.name}</IonNote>
+          <IonNote>{currentProfile?.name}</IonNote>
           <NewProfileButton />
           {appPages.map((appPage, index) => {
             return (

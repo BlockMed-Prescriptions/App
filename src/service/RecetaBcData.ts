@@ -61,8 +61,12 @@ export default class RecetaBcData {
             localforage.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
     }
 
-    public getCurrentProfile(): Observable<Profile | null> {
+    public observeProfile(): Observable<Profile | null> {
         return this.currentProfile.asObservable();
+    }
+
+    public getCurrentProfile(): Profile | null {
+        return this.currentProfile.getValue();
     }
 
     /**
