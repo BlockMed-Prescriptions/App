@@ -5,18 +5,26 @@
 import localforage from 'localforage';
 import Profile from '../model/Profile';
 import { BehaviorSubject, Observable } from 'rxjs';
+import Receta from '../model/Receta';
+
+type RecetaFolder = 'favoritos' | 'archivados' | 'papelera' | 'entrada' | 'salida';
+
+export const RECETA_FOLDER_FAVORITOS: RecetaFolder = 'favoritos';
+export const RECETA_FOLDER_ARCHIVED: RecetaFolder = 'archivados';
+export const RECETA_FOLDER_PAPELERA: RecetaFolder = 'papelera';
+export const RECETA_FOLDER_INBOX: RecetaFolder = 'entrada';
+export const RECETA_FOLDER_OUTBOX: RecetaFolder = 'salida';
 
 // TODO: Separar el currentProfile en otra clase.
 export default class RecetaBcData {
     private static instance: RecetaBcData;
     private static readonly RECETAS_KEY = 'recetas';
-    private static readonly FAVORITOS_KEY = 'favoritos';
-    private static readonly ARCHIVADOS_KEY = 'archivados';
-    private static readonly PAPELERA_KEY = 'papelera';
+    private static readonly FOLDER_KEY = 'folder';
     private static readonly PROFILES_KEY = 'profiles';
     private static readonly CURRENT_PROFILE_DID = 'did';
 
     private currentProfile: BehaviorSubject<Profile|null> = new BehaviorSubject<Profile|null>(null);
+    private folderSuscription: BehaviorSubject<RecetaFolder> = new BehaviorSubject<RecetaFolder>('entrada');
     
     public static getInstance(): RecetaBcData {
         if (!RecetaBcData.instance) {
@@ -63,6 +71,10 @@ export default class RecetaBcData {
 
     public observeProfile(): Observable<Profile | null> {
         return this.currentProfile.asObservable();
+    }
+
+    public observeFolders(): Observable<RecetaFolder> {
+        return this.folderSuscription.asObservable();
     }
 
     public getCurrentProfile(): Profile | null {
@@ -165,8 +177,97 @@ export default class RecetaBcData {
         await this.saveProfiles(profiles);
     }
 
+    /**
+     * Comienza el tratamiento de las recetas
+     */
+
+    /**
+     * Guarda la receta en el almacenamiento local
+     */
+    public async saveReceta(receta: Receta, folder: RecetaFolder|null = null) {
+        const key = this.buildKeyReceta(receta);
+        await localforage.setItem(key, JSON.stringify(receta));
+
+        if (folder) {
+            await this.addRecetaToFolder(receta, folder);
+        }
+    }
+
+    public async getReceta(id: string): Promise<Receta> {
+        const key = this.buildKeyReceta(id);
+        let receta = await localforage.getItem(key);
+        if (!receta) {
+            throw new Error('Receta not found');
+        } else if (typeof receta === 'string') {
+            return JSON.parse(receta);
+        } else {
+            throw new Error('Receta is not a string.');
+        }
+    }
+
+    public async addRecetaToFolder(receta: Receta, folder: RecetaFolder) {
+        let recetas = await this.getRecetasIdFromFolder(folder);
+        recetas.push(receta.id!);
+        await this.saveRecetasIdToFolder(folder, recetas);
+        this.folderSuscription.next(folder as RecetaFolder);
+    }
+
+    public async removeRecetaFromFolder(receta: Receta, folder: RecetaFolder) {
+        let recetas = await this.getRecetasIdFromFolder(folder);
+        let index = recetas.findIndex(id => id === receta.id);
+        if (index !== -1) {
+            recetas.splice(index, 1);
+            await this.saveRecetasIdToFolder(folder, recetas);
+            this.folderSuscription.next(folder as RecetaFolder);
+        }
+    }
+
+    public async moveRecetaToFolder(receta: Receta, from: RecetaFolder, to: RecetaFolder) {
+        await this.removeRecetaFromFolder(receta, from);
+        await this.addRecetaToFolder(receta, to);
+    }
+
+    public async getRecetasFromFolder(folder: string): Promise<Receta[]> {
+        let recetas = await localforage.getItem(folder);
+        if (!recetas) {
+            return [];
+        } else if (typeof recetas === 'string') {
+            const ids = await this.getRecetasIdFromFolder(folder);
+            let recetas: Receta[] = [];
+            for (let id of ids) {
+                recetas.push(await this.getReceta(id));
+            }
+            return recetas;
+        } else {
+            throw new Error('Recetas is not a string.');
+        }
+    }
+
+    private async getRecetasIdFromFolder(folder: string): Promise<string[]> {
+        let recetas = await localforage.getItem(folder);
+        if (!recetas) {
+            return [];
+        } else if (typeof recetas === 'string') {
+            return JSON.parse(recetas);
+        } else {
+            throw new Error('Recetas is not a string.');
+        }
+    }
+
+    private async saveRecetasIdToFolder(folder: string, recetaIds: string[]) {
+        await localforage.setItem(folder, JSON.stringify(recetaIds));
+    }
+
     private async saveProfiles(profiles: Profile[]) {
         await localforage.setItem(RecetaBcData.PROFILES_KEY, JSON.stringify(profiles));
     }
+
+    private buildKeyReceta(receta: Receta|string) : string {
+        if (typeof receta === 'string')
+            return RecetaBcData.RECETAS_KEY + ":" + receta;
+        else
+            return this.buildKeyReceta(receta.id!);
+    }
 }
+
 
