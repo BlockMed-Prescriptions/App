@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonMenuButton, IonPage, IonTitle, IonToggle, IonToolbar, LocationHistory, useIonAlert, useIonLoading, useIonToast } from '@ionic/react';
 import ProfileService from '../service/ProfileService';
-import RecetaBcData from '../service/RecetaBcData';
+import RecetaBcData, { RECETA_FOLDER_OUTBOX } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import { DIDDocument } from '@quarkid/did-core';
@@ -245,10 +245,11 @@ const RecetaNew: React.FC = () => {
             })
         }
 
+        // Guardo la receta en la persistencia local
+        data.saveReceta(receta, RECETA_FOLDER_OUTBOX)
 
         console.log("Certificado firmado", vc)
         return vc
-        
     }
 
     // Confirmación.

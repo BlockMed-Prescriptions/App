@@ -7,7 +7,7 @@ import Profile from '../model/Profile';
 import { BehaviorSubject, Observable } from 'rxjs';
 import Receta from '../model/Receta';
 
-type RecetaFolder = 'favoritos' | 'archivados' | 'papelera' | 'entrada' | 'salida';
+export type RecetaFolder = 'favoritos' | 'archivados' | 'papelera' | 'entrada' | 'salida';
 
 export const RECETA_FOLDER_FAVORITOS: RecetaFolder = 'favoritos';
 export const RECETA_FOLDER_ARCHIVED: RecetaFolder = 'archivados';
@@ -227,7 +227,7 @@ export default class RecetaBcData {
         await this.addRecetaToFolder(receta, to);
     }
 
-    public async getRecetasFromFolder(folder: string): Promise<Receta[]> {
+    public async getRecetasFromFolder(folder: RecetaFolder): Promise<Receta[]> {
         let recetas = await localforage.getItem(folder);
         if (!recetas) {
             return [];
@@ -243,8 +243,11 @@ export default class RecetaBcData {
         }
     }
 
-    private async getRecetasIdFromFolder(folder: string): Promise<string[]> {
-        let recetas = await localforage.getItem(folder);
+    private async getRecetasIdFromFolder(folder: RecetaFolder): Promise<string[]> {
+        if (!this.getCurrentProfile()) {
+            return [];
+        }
+        let recetas = await localforage.getItem(this.buildKeyFolder(folder));
         if (!recetas) {
             return [];
         } else if (typeof recetas === 'string') {
@@ -254,8 +257,8 @@ export default class RecetaBcData {
         }
     }
 
-    private async saveRecetasIdToFolder(folder: string, recetaIds: string[]) {
-        await localforage.setItem(folder, JSON.stringify(recetaIds));
+    private async saveRecetasIdToFolder(folder: RecetaFolder, recetaIds: string[]) {
+        await localforage.setItem(this.buildKeyFolder(folder), JSON.stringify(recetaIds));
     }
 
     private async saveProfiles(profiles: Profile[]) {
@@ -267,6 +270,14 @@ export default class RecetaBcData {
             return RecetaBcData.RECETAS_KEY + ":" + receta;
         else
             return this.buildKeyReceta(receta.id!);
+    }
+
+    private buildKeyFolder(folder: RecetaFolder) : string {
+        const id = this.getCurrentProfile()?.didId;
+        if (!id) {
+            throw new Error('Profile not found');
+        }
+        return RecetaBcData.FOLDER_KEY + ":" + id + ":" + folder;
     }
 }
 
