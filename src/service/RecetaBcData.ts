@@ -21,10 +21,13 @@ export default class RecetaBcData {
     private static readonly RECETAS_KEY = 'recetas';
     private static readonly FOLDER_KEY = 'folder';
     private static readonly PROFILES_KEY = 'profiles';
+    private static readonly LASTMSG_KEY = 'lastmsg'
     private static readonly CURRENT_PROFILE_DID = 'did';
 
     private currentProfile: BehaviorSubject<Profile|null> = new BehaviorSubject<Profile|null>(null);
     private folderSuscription: BehaviorSubject<RecetaFolder> = new BehaviorSubject<RecetaFolder>('entrada');
+    private storeData: LocalForage|null = null;
+    private storeProfiles: LocalForage;
     
     public static getInstance(): RecetaBcData {
         if (!RecetaBcData.instance) {
@@ -34,39 +37,47 @@ export default class RecetaBcData {
     }
 
     private constructor() {
-        localforage.config({
-            name: 'RecetaBcData',
-        });
+        this.storeProfiles = localforage.createInstance({
+            name: 'recetas-profiles',
+        })
 
         // si no existe el array "profiles", lo creamos
         this.getProfiles().then(profiles => {
             if (!profiles) {
-                localforage.setItem(RecetaBcData.PROFILES_KEY, []);
+                this.storeProfiles.setItem(RecetaBcData.PROFILES_KEY, []);
             } else {
                 // seteo el perfil actual, a partir del DID almacenado
-                localforage.getItem(RecetaBcData.CURRENT_PROFILE_DID).then((did) => {
+                this.storeProfiles.getItem(RecetaBcData.CURRENT_PROFILE_DID).then((did) => {
                     if (did) {
                         let pp = profiles as Profile[];
                         let p = pp.find((profile: Profile) => profile.didId === did);
                         if (p) {
                             console.log('o', p);
+                            this.setCurrentProfile(p);
                             this.currentProfile.next(p);
                         }
                     }
                 });
             }
         });
-
-        localforage.keys().then((keys) => {
-            console.log('keys', keys);
-        });
     }
 
     public async setCurrentProfile(profile: Profile|null) {
         console.log("setCurrentProfile", profile)
+        let name:string
+        if (profile) {
+            name = 'recetas-profiles-' + profile.didId
+        } else {
+            name = 'recetas-profiles'
+        }
+        this.storeData = localforage.createInstance({
+            name: name
+        })
+
         this.currentProfile.next(profile);
-        if (profile)
-            localforage.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
+        if (profile) {
+            this.storeProfiles.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
+        }
     }
 
     public observeProfile(): Observable<Profile | null> {
@@ -133,7 +144,7 @@ export default class RecetaBcData {
     }
 
     public async getProfiles(): Promise<Profile[]> {
-        let p = await localforage.getItem(RecetaBcData.PROFILES_KEY);
+        let p = await this.storeProfiles.getItem(RecetaBcData.PROFILES_KEY);
         if (!p) {
             return [];
         } else if (typeof p === 'string') {
@@ -178,6 +189,26 @@ export default class RecetaBcData {
     }
 
     /**
+     * Guardo fecha hora del último mensaje
+     */
+    public async saveLastMessageDate(date: Date) {
+        await this.ensureProfileData().setItem(this.buildKeyLastMessageDate(), date.toISOString());
+    }
+
+    /**
+     * Obtengo la fecha hora del último mensaje
+     */
+    public async getLastMessageDate(): Promise<Date> {
+        let date = await this.ensureProfileData().getItem(this.buildKeyLastMessageDate()) as string|null;
+        if (!date) {
+            // si no está, devuelvo 15 días para atrás
+            return new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+        } else {
+            return new Date(date);
+        }
+    }
+
+    /**
      * Comienza el tratamiento de las recetas
      */
 
@@ -186,7 +217,7 @@ export default class RecetaBcData {
      */
     public async saveReceta(receta: Receta, folder: RecetaFolder|null = null) {
         const key = this.buildKeyReceta(receta);
-        await localforage.setItem(key, JSON.stringify(receta));
+        await this.ensureProfileData().setItem(key, JSON.stringify(receta));
 
         if (folder) {
             await this.addRecetaToFolder(receta, folder);
@@ -195,7 +226,7 @@ export default class RecetaBcData {
 
     public async getReceta(id: string): Promise<Receta> {
         const key = this.buildKeyReceta(id);
-        let receta = await localforage.getItem(key);
+        let receta = await this.ensureProfileData().getItem(key);
         if (!receta) {
             throw new Error('Receta not found');
         } else if (typeof receta === 'string') {
@@ -228,7 +259,7 @@ export default class RecetaBcData {
     }
 
     public async getRecetasFromFolder(folder: RecetaFolder): Promise<Receta[]> {
-        let recetas = await localforage.getItem(folder);
+        let recetas = await this.ensureProfileData().getItem(this.buildKeyFolder(folder));
         if (!recetas) {
             return [];
         } else if (typeof recetas === 'string') {
@@ -243,11 +274,18 @@ export default class RecetaBcData {
         }
     }
 
+    private ensureProfileData(): LocalForage {
+        if (!this.storeData) {
+            throw new Error('No current profile');
+        }
+        return this.storeData;
+    }
+
     private async getRecetasIdFromFolder(folder: RecetaFolder): Promise<string[]> {
         if (!this.getCurrentProfile()) {
             return [];
         }
-        let recetas = await localforage.getItem(this.buildKeyFolder(folder));
+        let recetas = await this.ensureProfileData().getItem(this.buildKeyFolder(folder));
         if (!recetas) {
             return [];
         } else if (typeof recetas === 'string') {
@@ -258,11 +296,11 @@ export default class RecetaBcData {
     }
 
     private async saveRecetasIdToFolder(folder: RecetaFolder, recetaIds: string[]) {
-        await localforage.setItem(this.buildKeyFolder(folder), JSON.stringify(recetaIds));
+        await this.ensureProfileData().setItem(this.buildKeyFolder(folder), JSON.stringify(recetaIds));
     }
 
     private async saveProfiles(profiles: Profile[]) {
-        await localforage.setItem(RecetaBcData.PROFILES_KEY, JSON.stringify(profiles));
+        await this.storeProfiles.setItem(RecetaBcData.PROFILES_KEY, JSON.stringify(profiles));
     }
 
     private buildKeyReceta(receta: Receta|string) : string {
@@ -273,11 +311,11 @@ export default class RecetaBcData {
     }
 
     private buildKeyFolder(folder: RecetaFolder) : string {
-        const id = this.getCurrentProfile()?.didId;
-        if (!id) {
-            throw new Error('Profile not found');
-        }
-        return RecetaBcData.FOLDER_KEY + ":" + id + ":" + folder;
+        return RecetaBcData.FOLDER_KEY + ":" + folder;
+    }
+
+    private buildKeyLastMessageDate() : string {
+        return RecetaBcData.LASTMSG_KEY;
     }
 }
 
