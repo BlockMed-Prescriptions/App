@@ -54,7 +54,7 @@ class RecetaBuilder {
         const credential = await this.vcService.createCredential({
             context: [
                 "https://w3id.org/security/v2",
-                "https://w3id.org/security/bbs/v1"
+                "https://w3id.org/security/bbs/v1",
             ],
             vcInfo: {
                 issuer: receta.didMedico,
@@ -65,17 +65,44 @@ class RecetaBuilder {
             },
             data: {
                 type: "Receta",
-                medicamentos: receta.medicamentos,
-                indicaciones: receta.indicaciones,
-                fechaEmision: receta.fechaEmision,
-                fechaVencimiento: receta.fechaVencimiento,
-                didPaciente: receta.didPaciente,
-                nombrePaciente: receta.nombrePaciente
+                // indicaciones: receta.indicaciones,
+                "schema:MedicalGuideline": {
+                    "schema:guideline": receta.indicaciones,
+                    "schema:guidelineDate": receta.fechaEmision.toISOString(),
+
+                },
+                // didPaciente: receta.didPaciente,
+                // nombrePaciente: receta.nombrePaciente,
+                "shema:Patient": {
+                    "schema:name": receta.nombrePaciente,
+                    "schema:identifier": receta.didPaciente,
+                },
+                // medicamentos: receta.medicamentos,
+                "schema:Drug": {
+                    "schema:name": receta.medicamentos.join(", ")
+                }
+                // fechaEmision: receta.fechaEmision,
+                // fechaVencimiento: receta.fechaVencimiento,
             },
             mappingRules: null,
         })
 
         return credential;
+    }
+
+    public async buildRecetaFromCredential(credential: VerifiableCredential) : Promise<Receta> {
+        const receta: Receta = {
+            didMedico: 'string' === typeof credential.issuer ? credential.issuer : credential.issuer.id,
+            didPaciente: credential.credentialSubject["shema:Patient"]["schema:identifier"],
+            nombrePaciente: credential.credentialSubject["shema:Patient"]["schema:name"],
+            medicamentos: credential.credentialSubject["schema:Drug"]["schema:name"].split(", "),
+            indicaciones: credential.credentialSubject["schema:MedicalGuideline"]["schema:guideline"],
+            fechaEmision: credential.issuanceDate,
+            fechaVencimiento: credential.expirationDate!,
+            id: credential.id
+        }
+
+        return receta;   
     }
 
     private buildRandomId(receta: Receta) : string {
