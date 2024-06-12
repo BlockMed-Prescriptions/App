@@ -243,6 +243,8 @@ const RecetaNew: React.FC = () => {
                 color: "danger",
                 duration: 2000
             })
+
+            throw new Error("Certificado firmado pero no verificado. Error: " + verifyResult.error?.description)
         }
 
         // Guardo la receta en la persistencia local
