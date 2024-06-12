@@ -25,36 +25,40 @@ const Page: React.FC = () => {
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [recetas, setRecetas] = useState<Receta[]>([]);
 
-  const refreshRecetas = (folder: RecetaFolder) => {
-    data.getRecetasFromFolder(folder).then((recetas) => {
-        setRecetas(recetas);
-    });
-}
-
-
   useEffect(() => {
-    data.observeProfile().subscribe((p) => {
+    console.log("Observando cambios en el perfil")
+    const s = data.observeProfile().subscribe((p) => {
+        console.log("Cambio en el perfil", p)
         if (currentProfile?.didId !== p?.didId) {
             setCurrentProfile(p);
+            refreshRecetas(FolderConversion[name.trim()]);
         }
     })
-  })
+
+    return () => {
+        s.unsubscribe()
+    }
+  }, [])
 
   useEffect(() => {
       let recetaFolder = FolderConversion[name.trim()];
+      console.log("Ingresando a la carpeta", recetaFolder)
       if (!recetaFolder) {
           console.log(FolderConversion)
           throw new Error(`Folder ${name}. not found`);
       }
 
       setTimeout(() => {
-          refreshRecetas(recetaFolder);
+          console.log("Refrescando recetas")
+          if (currentProfile) {
+              refreshRecetas(recetaFolder);
+          }
       })
 
       console.log("Suscribiendo a cambios en la carpeta", recetaFolder)
       const suscriptor = data.observeFolders().subscribe((folder) => {
           if (folder === recetaFolder) {
-              console.log('folder', folder);
+              console.log('Parece que cambió la carpeta: ', folder);
               refreshRecetas(recetaFolder);
           }
       });
@@ -62,7 +66,19 @@ const Page: React.FC = () => {
       return () => {
           suscriptor.unsubscribe();
       }
-  }, [name]);
+  }, [name, currentProfile]);
+
+
+  const refreshRecetas = (folder: RecetaFolder) => {
+    if (!currentProfile) {
+        console.log("No hay perfil actual");
+        setRecetas([]);
+        return;
+    }
+    data.getRecetasFromFolder(folder).then((recetas) => {
+        setRecetas(recetas);
+    });
+  }
 
 
   return (

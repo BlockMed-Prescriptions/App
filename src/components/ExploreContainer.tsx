@@ -10,11 +10,11 @@ interface ContainerProps {
 
 const ExploreContainer: React.FC<ContainerProps> = ({ name, recetas }) => {
     return (
-        <IonList>
+        <>
             {recetas.map((receta) => (
                 RecetaCard({ receta })
             ))}
-      </IonList>
+        </>
     );
 };
 
