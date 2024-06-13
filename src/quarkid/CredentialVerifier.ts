@@ -15,7 +15,7 @@ export const CredentialVerifier = async (vc: VerifiableCredential, profile: Prof
 
     // TODO: esto debe optimizarse usando un mock de axios
     let num = axios.interceptors.request.use((config) => {
-        console.log('Axios request:', config);
+        // console.log('Axios request:', config);
         if (config.url === "https://extrimian.blob.core.windows.net/rskec/securitybbsv1.jsonld") {
             // @ts-ignore
             config.url = vc["@context"][1];
