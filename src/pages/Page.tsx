@@ -8,6 +8,8 @@ import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_F
 import ProfileHandler from '../service/ProfileHandler';
 import { add } from 'ionicons/icons';
 import Receta from '../model/Receta';
+import RecetaService from '../service/RecetaService';
+import RecetaCard from '../components/RecetaCard';
 
 const FolderConversion: { [key: string]: RecetaFolder } = {
   "Outbox": RECETA_FOLDER_OUTBOX,
@@ -20,19 +22,17 @@ const FolderConversion: { [key: string]: RecetaFolder } = {
 const Page: React.FC = () => {
 
   const { name } = useParams<{ name: string; }>();
-  const data = RecetaBcData.getInstance();
+  const data = RecetaBcData.getInstance()
+  const recetaService = RecetaService.getInstance()
 
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [recetas, setRecetas] = useState<Receta[]>([]);
 
   useEffect(() => {
-    console.log("Observando cambios en el perfil")
     const s = data.observeProfile().subscribe((p) => {
         console.log("Cambio en el perfil", p)
-        if (currentProfile?.didId !== p?.didId) {
-            setCurrentProfile(p);
-            refreshRecetas(FolderConversion[name.trim()]);
-        }
+        setCurrentProfile(p);
+        refreshRecetas(FolderConversion[name.trim()]);
     })
 
     return () => {
@@ -42,7 +42,6 @@ const Page: React.FC = () => {
 
   useEffect(() => {
       let recetaFolder = FolderConversion[name.trim()];
-      console.log("Ingresando a la carpeta", recetaFolder)
       if (!recetaFolder) {
           console.log(FolderConversion)
           throw new Error(`Folder ${name}. not found`);
@@ -55,10 +54,8 @@ const Page: React.FC = () => {
           }
       })
 
-      console.log("Suscribiendo a cambios en la carpeta", recetaFolder)
       const suscriptor = data.observeFolders().subscribe((folder) => {
           if (folder === recetaFolder) {
-              console.log('Parece que cambió la carpeta: ', folder);
               refreshRecetas(recetaFolder);
           }
       });
@@ -71,13 +68,16 @@ const Page: React.FC = () => {
 
   const refreshRecetas = (folder: RecetaFolder) => {
     if (!currentProfile) {
-        console.log("No hay perfil actual");
         setRecetas([]);
         return;
     }
     data.getRecetasFromFolder(folder).then((recetas) => {
         setRecetas(recetas);
     });
+  }
+
+  const sendReceta = (receta: Receta) => {
+      recetaService.sendReceta(currentProfile!, receta);
   }
 
 
@@ -98,7 +98,11 @@ const Page: React.FC = () => {
                 <IonTitle size="large">{name}</IonTitle>
               </IonToolbar>
             </IonHeader>
-            <ExploreContainer name={name} recetas={recetas} />
+            
+            {recetas.map((receta) => (
+               <RecetaCard key={receta.id} receta={receta} onClickSend={() => sendReceta(receta)} />
+            ))}
+
             {currentProfile && ProfileHandler.isMedico(currentProfile) && 'Outbox' === name ? (
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
                     <IonFabButton routerLink="/receta/new">

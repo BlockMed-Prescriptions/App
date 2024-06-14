@@ -5,9 +5,10 @@ import { archive, heart, send, trash } from "ionicons/icons";
 
 interface ContainerProps {
     receta: Receta;
+    onClickSend?: () => void;
 }
 
-const RecetaCard: React.FC<ContainerProps> = ({ receta }) => {
+const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend }) => {
 
     const [presentAlert] = useIonAlert();
     const fechaEmision = new Date(receta.fechaEmision)
@@ -23,7 +24,7 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta }) => {
     }
 
     return (
-        <IonCard key={receta.id} button={true}>
+        <IonCard button={true}>
             <IonCardHeader>
                 <IonCardTitle>{receta.nombrePaciente}</IonCardTitle>
                 <IonCardSubtitle>
@@ -45,10 +46,14 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta }) => {
                 <IonButton size="small" onClick={() => notImplementedAlert()}>
                     <IonIcon slot="icon-only" icon={archive} />
                 </IonButton>
-                <IonButton size="small" color="secondary" onClick={() => notImplementedAlert()}>
+                {onClickSend ? (
+                <IonButton size="small" color="secondary" onClick={() => onClickSend()}>
                     <IonIcon slot="icon-only" icon={send} />
                 </IonButton>
-                <IonButton fill="outline" color="danger"  size="small" onClick={() => notImplementedAlert()}>
+                ) : null}
+                <IonButton fill="outline" color="danger"  size="small" onClick={
+                    () => notImplementedAlert()
+                }>
                     <IonIcon slot="icon-only" icon={trash} />
                 </IonButton>
             </div>

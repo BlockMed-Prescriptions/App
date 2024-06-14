@@ -1,4 +1,6 @@
+import Profile from '../model/Profile';
 import Receta from '../model/Receta';
+import CredentialSend from '../quarkid/CredentialSender';
 import ProfileService from './ProfileService';
 
 import { VerifiableCredential, VerifiableCredentialService } from "@quarkid/vc-core";
@@ -7,17 +9,17 @@ import { VerifiableCredential, VerifiableCredentialService } from "@quarkid/vc-c
  * Esta clase se encarga de construir una receta.
  */
 
-class RecetaBuilder {
-    private static instance: RecetaBuilder;
+class RecetaService {
+    private static instance: RecetaService;
     private vcService: VerifiableCredentialService
 
-    public static getInstance(): RecetaBuilder {
-        if (!RecetaBuilder.instance) {
-            RecetaBuilder.instance = new RecetaBuilder(
+    public static getInstance(): RecetaService {
+        if (!RecetaService.instance) {
+            RecetaService.instance = new RecetaService(
                 new VerifiableCredentialService()
             );
         }
-        return RecetaBuilder.instance;
+        return RecetaService.instance;
     }
 
     private constructor(vcService: VerifiableCredentialService) {
@@ -90,7 +92,7 @@ class RecetaBuilder {
         return credential;
     }
 
-    public async buildRecetaFromCredential(credential: VerifiableCredential) : Promise<Receta> {
+    public buildRecetaFromCredential(credential: VerifiableCredential) : Receta {
         const receta: Receta = {
             didMedico: 'string' === typeof credential.issuer ? credential.issuer : credential.issuer.id,
             didPaciente: credential.credentialSubject["shema:Patient"]["schema:identifier"],
@@ -103,6 +105,11 @@ class RecetaBuilder {
         }
 
         return receta;   
+    }
+
+    public async sendReceta(profile: Profile, receta: Receta, targetDID?: string) : Promise<void> {
+        const target = targetDID || receta.didPaciente;
+        CredentialSend(profile, target, receta.certificado!)
     }
 
     private buildRandomId(receta: Receta) : string {
@@ -126,4 +133,4 @@ class RecetaBuilder {
 
 }
 
-export default RecetaBuilder;
+export default RecetaService;

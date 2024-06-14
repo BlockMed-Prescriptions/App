@@ -202,6 +202,7 @@ export default class RecetaBcData {
         let date = await this.ensureProfileData().getItem(this.buildKeyLastMessageDate()) as string|null;
         if (!date) {
             // si no está, devuelvo 15 días para atrás
+            console.log('No last message date. Default to 15 days ago.')
             return new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
         } else {
             return new Date(date);
@@ -238,9 +239,11 @@ export default class RecetaBcData {
 
     public async addRecetaToFolder(receta: Receta, folder: RecetaFolder) {
         let recetas = await this.getRecetasIdFromFolder(folder);
-        recetas.push(receta.id!);
-        await this.saveRecetasIdToFolder(folder, recetas);
-        this.folderSuscription.next(folder as RecetaFolder);
+        if (!recetas.includes(receta.id!)) {
+            recetas.push(receta.id!);
+            await this.saveRecetasIdToFolder(folder, recetas);
+            this.folderSuscription.next(folder as RecetaFolder);
+        }
     }
 
     public async removeRecetaFromFolder(receta: Receta, folder: RecetaFolder) {

@@ -7,7 +7,7 @@ import Profile from '../model/Profile';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import { DIDDocument } from '@quarkid/did-core';
 import { close, checkmark } from 'ionicons/icons';
-import RecetaBuilder from '../service/RecetaBuilder';
+import RecetaService from '../service/RecetaService';
 import { CredentialSigner } from '../quarkid/CredentialSigner';
 import { CredentialVerifier } from '../quarkid/CredentialVerifier';
 
@@ -18,7 +18,7 @@ const RecetaNew: React.FC = () => {
     const [presentAlert] = useIonAlert();
 
     const data = RecetaBcData.getInstance();
-    const recetaBuilder = RecetaBuilder.getInstance();
+    const recetaService = RecetaService.getInstance();
 
     const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
     let didDocument: DIDDocument | null = null;
@@ -172,7 +172,7 @@ const RecetaNew: React.FC = () => {
     }
 
     const confirmGeneral = async () => {
-        let receta = recetaBuilder.buildReceta(
+        let receta = recetaService.buildReceta(
             currentProfile?.didId!,
             DIDPaciente,
             nombrePaciente,
@@ -186,9 +186,16 @@ const RecetaNew: React.FC = () => {
             position: "top",
             color: "warning"
         })
-        const certificado = await recetaBuilder.generateCertificate(receta)
-        console.log("Certificado", certificado)
-        await dismissToast()
+
+        let certificado
+        try {
+            certificado = await recetaService.generateCertificate(receta)
+            console.log("Certificado", certificado)
+            await dismissToast()
+        } catch (e) {
+            await dismissToast()
+            throw e
+        }
         
         presentToast({
             message: "Firmando certificado ...",
@@ -248,7 +255,7 @@ const RecetaNew: React.FC = () => {
         }
 
         // Guardo la receta en la persistencia local
-        data.saveReceta(receta, RECETA_FOLDER_OUTBOX)
+        await data.saveReceta(receta, RECETA_FOLDER_OUTBOX)
 
         console.log("Certificado firmado", vc)
         return vc
@@ -274,6 +281,8 @@ const RecetaNew: React.FC = () => {
 
         confirmGeneral().then(() => {
             console.log("TODO GENERADO!")
+            // me muevo a la carpeta de salida
+            history.push('/folder/Outbox');
         }).catch((e) => {
             console.error(e)
             presentToast({

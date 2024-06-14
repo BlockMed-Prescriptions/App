@@ -16,7 +16,6 @@ const ProfilePage: React.FC = () => {
     const history = useHistory();
 
     const getDidDocument = (p: ProfileModel) => {
-        console.log("llamando a DIDResolver.", p)
         DIDResolver(p.didId).then((doc) => {
             setDidDocument(doc);
         }).catch((e) => {
