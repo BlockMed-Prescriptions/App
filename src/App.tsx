@@ -1,6 +1,6 @@
-import { IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact } from '@ionic/react';
+import { IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact, useIonToast } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useHistory } from 'react-router-dom';
 import Menu from './components/Menu';
 import Page from './pages/Page';
 import ProfileForm from './pages/ProfileForm';
@@ -37,6 +37,7 @@ import '@ionic/react/css/palettes/dark.system.css';
 import './theme/variables.css';
 import RecetaBcData from './service/RecetaBcData';
 import RecetaNew from './pages/RecetaNew';
+import { useEffect } from 'react';
 
 setupIonicReact();
 
@@ -46,6 +47,40 @@ const App: React.FC = () => {
   data.getProfiles().then((p) => {
     // do nothing
   });
+
+  const [presentToast, dismissToast] = useIonToast()
+  const history = useHistory();
+
+  useEffect(() => {
+      const suscriptor = data.observeRecetas().subscribe((receta) => {
+          const profile = data.getCurrentProfile();
+          if (!profile) {
+              return;
+          }
+          if (receta.didPaciente !== profile.didId) {
+              console.log("Receta no es para mi", receta.didPaciente, profile.didId)
+              return
+          }
+          presentToast({
+              message: '¡Receta recibida!',
+              color: 'success',
+              duration: 2000,
+              buttons: [
+                  {
+                      text: 'Ver',
+                      handler: () => {
+                          dismissToast();
+                          history.push('/folder/Inbox');
+                      }
+                  }
+              ]
+          })
+      })
+
+      return () => {
+          suscriptor.unsubscribe();
+      }
+  }, [data]);
 
   return (
     <IonApp>
