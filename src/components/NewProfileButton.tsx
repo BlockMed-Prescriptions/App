@@ -5,7 +5,13 @@ import { IonFab, IonFabButton, IonIcon, useIonActionSheet } from '@ionic/react';
 import { add, peopleCircleOutline, personOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 
-const NewProfileButton: React.FC = () => {
+interface ContainerProps {
+    onClick?: () => void;
+    onSelect?: (profile: Profile|null) => void;
+}
+
+
+const NewProfileButton: React.FC<ContainerProps> = ({onClick, onSelect}) => {
     const data = RecetaBcData.getInstance();
     const history = useHistory();
     const [present] = useIonActionSheet();
@@ -20,6 +26,9 @@ const NewProfileButton: React.FC = () => {
                     handler: () => {
                         data.setCurrentProfile(profile).then(() => {
                             history.push('/profile');
+                            setTimeout(() => {
+                                onSelect && onSelect(profile);
+                            })
                         });
                     }
                 }
@@ -29,6 +38,9 @@ const NewProfileButton: React.FC = () => {
                 role: 'destructive',
                 icon: add,
                 handler: () => {
+                    setTimeout(() => {
+                        onSelect && onSelect(null);
+                    })
                     history.push('/profile/new');
                 }
             });

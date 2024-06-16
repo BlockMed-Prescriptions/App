@@ -11,7 +11,7 @@ import {
   IonNote,
 } from '@ionic/react';
 
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { useLocation } from 'react-router-dom';
 import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp } from 'ionicons/icons';
@@ -76,6 +76,7 @@ const Menu: React.FC = () => {
   const [currentProfile, setCurrentP] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [appPages, setAppPages] = useState<AppPage[]>(appPagesInit);
+  const menuElement = useRef<HTMLIonMenuElement>(null);
 
   useEffect(() => {
     data.getProfiles().then((p) => {
@@ -146,12 +147,12 @@ const Menu: React.FC = () => {
   }
 
   return (
-    <IonMenu contentId="main" type="overlay">
+    <IonMenu contentId="main" type="overlay" ref={menuElement}>
       <IonContent>
         <IonList id="inbox-list">
           <IonListHeader>Recetas</IonListHeader>
           <IonNote>{currentProfile?.name}</IonNote>
-          <NewProfileButton />
+          <NewProfileButton onSelect={(profile) => menuElement.current?.close()}/>
           {appPages.map((appPage, index) => {
             return (
               <IonMenuToggle key={index} autoHide={false}>
