@@ -112,16 +112,21 @@ const ProfilePage: React.FC = () => {
     }
 
     useEffect(() => {
+        setCurrentProfile(data.getCurrentProfile())
         const subscription = data.observeProfile().subscribe((p) => {
             setCurrentProfile(p);
             console.log(p);
-           if (p)
-                getDidDocument(p);
         });
     
         // Limpiar la suscripción cuando el componente se desmonte
         return () => subscription.unsubscribe();
     }, []);
+
+    useEffect(() => {
+        if (currentProfile) {
+            getDidDocument(currentProfile);
+        }
+    }, [currentProfile]);
     /**
      * Dibujo la pantalla con los datos en "Profile"
      */

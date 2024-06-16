@@ -79,10 +79,7 @@ const Menu: React.FC = () => {
   const menuElement = useRef<HTMLIonMenuElement>(null);
 
   useEffect(() => {
-    data.getProfiles().then((p) => {
-      setProfiles(p);
-    });
-
+    setCurrentP(data.getCurrentProfile())
     const subscription = data.observeProfile().subscribe((p) => {
       //if (!currentProfile || currentProfile?.didId !== p?.didId) {
         setCurrentP(p);

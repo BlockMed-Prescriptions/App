@@ -29,6 +29,7 @@ const Page: React.FC = () => {
   const [recetas, setRecetas] = useState<Receta[]>([]);
 
   useEffect(() => {
+    setCurrentProfile(data.getCurrentProfile());
     const s = data.observeProfile().subscribe((p) => {
         console.log("Cambio en el perfil", p)
         setCurrentProfile(p);
@@ -48,7 +49,6 @@ const Page: React.FC = () => {
       }
 
       setTimeout(() => {
-          console.log("Refrescando recetas")
           if (currentProfile) {
               refreshRecetas(recetaFolder);
           }

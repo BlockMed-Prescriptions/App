@@ -4,7 +4,7 @@
 
 import localforage from 'localforage';
 import Profile from '../model/Profile';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import Receta from '../model/Receta';
 
 export type RecetaFolder = 'favoritos' | 'archivados' | 'papelera' | 'entrada' | 'salida';
@@ -24,8 +24,11 @@ export default class RecetaBcData {
     private static readonly LASTMSG_KEY = 'lastmsg'
     private static readonly CURRENT_PROFILE_DID = 'did';
 
-    private currentProfile: BehaviorSubject<Profile|null> = new BehaviorSubject<Profile|null>(null);
-    private folderSuscription: BehaviorSubject<RecetaFolder> = new BehaviorSubject<RecetaFolder>('entrada');
+    // TODO todos estos Subjects deben pasar a otra clase.
+    private currentProfileSubject: Subject<Profile|null> = new Subject<Profile|null>();
+    private currentProfile: Profile|null = null;
+    private folderSuscription: Subject<RecetaFolder> = new Subject<RecetaFolder>();
+    private newRecetaSubject: Subject<Receta> = new Subject<Receta>();
     private storeData: LocalForage|null = null;
     private storeProfiles: LocalForage;
     
@@ -54,7 +57,6 @@ export default class RecetaBcData {
                         if (p) {
                             console.log('o', p);
                             this.setCurrentProfile(p);
-                            this.currentProfile.next(p);
                         }
                     }
                 });
@@ -74,22 +76,27 @@ export default class RecetaBcData {
             name: name
         })
 
-        this.currentProfile.next(profile);
+        this.currentProfile = profile;
+        this.currentProfileSubject.next(profile);
         if (profile) {
             this.storeProfiles.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
         }
     }
 
     public observeProfile(): Observable<Profile | null> {
-        return this.currentProfile.asObservable();
+        return this.currentProfileSubject.asObservable();
     }
 
     public observeFolders(): Observable<RecetaFolder> {
         return this.folderSuscription.asObservable();
     }
 
+    public observeRecetas(): Observable<Receta> {
+        return this.newRecetaSubject.asObservable()
+    }
+
     public getCurrentProfile(): Profile | null {
-        return this.currentProfile.getValue();
+        return this.currentProfile
     }
 
     /**
@@ -223,6 +230,7 @@ export default class RecetaBcData {
         if (folder) {
             await this.addRecetaToFolder(receta, folder);
         }
+        this.newRecetaSubject.next(receta);
     }
 
     public async getReceta(id: string): Promise<Receta> {

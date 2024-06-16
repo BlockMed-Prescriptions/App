@@ -18,6 +18,19 @@ let interval: any
 let dwnClient: DWNClient|null
 let currentProfile: Profile|null
 
+const processProfile = async () => {
+    if (null === currentProfile) {
+        dwnClient = null
+    } else {
+        try {
+            dwnClient = await DwnFactory(currentProfile.didId)
+        } catch (e) {
+            console.error("Error creating DWN Client", e)
+            dwnClient = null
+        }
+    }
+}
+
 const Worker = () => {
     if (workerStarted) {
         return
@@ -26,16 +39,11 @@ const Worker = () => {
     }
 
     const data = RecetaBcData.getInstance()
+    currentProfile = data.getCurrentProfile()
+    processProfile().then(() => {})
     data.observeProfile().subscribe(async (profile) => {
-        if (profile) {
-            currentProfile = profile
-            try {
-                dwnClient = await DwnFactory(profile.didId)
-            } catch (e) {
-                console.error("Error creating DWN Client", e)
-                dwnClient = null
-            }
-        }
+        currentProfile = profile
+        processProfile()
     })
 
     interval = setInterval(() => {

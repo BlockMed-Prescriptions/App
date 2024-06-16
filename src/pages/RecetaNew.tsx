@@ -30,6 +30,7 @@ const RecetaNew: React.FC = () => {
     const [DIDPaciente, setDIDPaciente] = useState<string>('');
 
     useEffect(() => {
+        setCurrentProfile(data.getCurrentProfile());
         const s = data.observeProfile().subscribe((p) => {
             if (currentProfile?.didId !== p?.didId) {
                 setCurrentProfile(p);
