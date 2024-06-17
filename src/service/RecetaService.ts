@@ -101,7 +101,8 @@ class RecetaService {
             indicaciones: credential.credentialSubject["schema:MedicalGuideline"]["schema:guideline"],
             fechaEmision: credential.issuanceDate,
             fechaVencimiento: credential.expirationDate!,
-            id: credential.id
+            id: credential.id,
+            certificado: credential
         }
 
         return receta;   
