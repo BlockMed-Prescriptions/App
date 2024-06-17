@@ -32,10 +32,13 @@
     "@waiting/base64": "^4.2.9",
     "ionicons": "^7.0.0",
     "localforage": "^1.10.0",
+    "qr-scanner": "^1.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-qr-code": "^2.0.14",
     "react-router": "^5.3.4",
-    "react-router-dom": "^5.3.4"
+    "react-router-dom": "^5.3.4",
+    "use-sound": "^4.0.1"
   },
   "resolutions": {
     "@transmute/did-key-secp256k1": "0.3.0-unstable.10"
