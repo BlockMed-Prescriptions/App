@@ -41,7 +41,7 @@ export const RecetaGenerator = async (
 
     console.log("Receta", receta)
 
-    presentToast({
+    await presentToast({
         message: "Generando certificado ...",
         position: "top",
         color: "warning"
@@ -57,7 +57,7 @@ export const RecetaGenerator = async (
         throw e
     }
     
-    presentToast({
+    await presentToast({
         message: "Firmando certificado ...",
         position: "top",
         color: "warning"
@@ -73,7 +73,7 @@ export const RecetaGenerator = async (
         throw e
     }
 
-    presentToast({
+    await presentToast({
         message: "Certificado firmado, procedemos a verificar ...",
         position: "top",
         color: "warning",
@@ -96,10 +96,9 @@ export const RecetaGenerator = async (
 
     // Guardo la receta en la persistencia local
     await data.saveReceta(receta, RECETA_FOLDER_OUTBOX)
-    dismissToast()
 
     try {
-        presentToast({
+        await presentToast({
             message: "Enviando receta al paciente ...",
             position: "top",
             color: "warning"
@@ -107,11 +106,11 @@ export const RecetaGenerator = async (
         CredentialSend(profile, didPaciente, receta.certificado)
     } catch (e) {
         console.error("Error enviando la receta al paciente", e)
-        dismissToast()
+        await dismissToast()
         throw e
     }
 
-    dismissToast()
+    await dismissToast()
 
     return receta
 }
