@@ -10,6 +10,8 @@ import { close, checkmark } from 'ionicons/icons';
 import RecetaService from '../service/RecetaService';
 import { CredentialSigner } from '../quarkid/CredentialSigner';
 import { CredentialVerifier } from '../quarkid/CredentialVerifier';
+import { RecetaGenerator } from '../service/RecetaGenerator';
+import Receta from '../model/Receta';
 
 const RecetaNew: React.FC = () => {
 
@@ -36,11 +38,9 @@ const RecetaNew: React.FC = () => {
                 setCurrentProfile(p);
             }
         })
-        console.log("Subscribed to currentProfile.")
 
         return () => {
             s.unsubscribe();
-            console.log("Unsubscribed from currentProfile.")
         }
     }, [])
 
@@ -172,96 +172,6 @@ const RecetaNew: React.FC = () => {
         setIndicacionIsValid(true);
     }
 
-    const confirmGeneral = async () => {
-        let receta = recetaService.buildReceta(
-            currentProfile?.didId!,
-            DIDPaciente,
-            nombrePaciente,
-            [prescripcion],
-            indicacion);
-
-        console.log("Receta", receta)
-
-        presentToast({
-            message: "Generando certificado ...",
-            position: "top",
-            color: "warning"
-        })
-
-        let certificado
-        try {
-            certificado = await recetaService.generateCertificate(receta)
-            console.log("Certificado", certificado)
-            await dismissToast()
-        } catch (e) {
-            await dismissToast()
-            throw e
-        }
-        
-        presentToast({
-            message: "Firmando certificado ...",
-            position: "top",
-            color: "warning"
-        })
-
-        let vc
-        try {
-            vc = await CredentialSigner(certificado, currentProfile!)
-            receta.certificado = vc
-            await dismissToast()
-        } catch (e) {
-            await dismissToast()
-            throw e
-        }
-
-        presentToast({
-            message: "Certificado firmado, procedemos a verificar ...",
-            position: "top",
-            color: "success",
-        })
-
-        let verifyResult
-        try {
-            verifyResult = await CredentialVerifier(receta.certificado, currentProfile!)
-            console.log("Verificación del certificado", verifyResult)
-            await dismissToast()
-        } catch (e) {
-            await dismissToast()
-            throw e
-        }
-
-        if (verifyResult && verifyResult.result) {
-            presentToast({
-                message: "Certificado firmado y verificado.",
-                position: "top",
-                color: "success",
-                duration: 2000,
-                buttons: [
-                    {
-                        text: 'Cerrar',
-                        role: 'cancel'
-                    }
-                ]
-            })
-        } else if (verifyResult && !verifyResult.result) {
-            console.error("Certificado firmado pero no verificado. Error: ", verifyResult)
-            presentToast({
-                message: "Certificado firmado pero no verificado. Error: " + verifyResult.error?.description,
-                position: "top",
-                color: "danger",
-                duration: 2000
-            })
-
-            throw new Error("Certificado firmado pero no verificado. Error: " + verifyResult.error?.description)
-        }
-
-        // Guardo la receta en la persistencia local
-        await data.saveReceta(receta, RECETA_FOLDER_OUTBOX)
-
-        console.log("Certificado firmado", vc)
-        return vc
-    }
-
     // Confirmación.
     const confirm = () => {
         if (!isDIDValid || !isNombreValid || !isPrescripcionValid || !isIndicacionValid) {
@@ -280,8 +190,26 @@ const RecetaNew: React.FC = () => {
             return;
         }
 
-        confirmGeneral().then(() => {
+        RecetaGenerator(
+            currentProfile!, DIDPaciente, nombrePaciente, [prescripcion], indicacion,
+            presentToast, dismissToast
+        ).then((receta: Receta) => {
             console.log("TODO GENERADO!")
+            presentToast({
+                message: "Receta enviada al paciente.",
+                position: "top",
+                color: "success",
+                duration: 2000,
+                buttons: [
+                    {
+                        text: "Ok",
+                        handler: () => {
+                            dismissToast()
+                        }
+                    }
+                ]
+            })
+        
             // me muevo a la carpeta de salida
             history.push('/folder/Outbox');
         }).catch((e) => {
