@@ -56,6 +56,8 @@ const Worker = () => {
                     console.log(entry)
                     Unpack(currentProfile!, entry.data.packedMessage).then((unpackedMessage) => {
                         entries.next(unpackedMessage.message.body as VerifiableCredential)
+                    }).catch((e) => {
+                        
                     })
                 }
                 storage.removeMessage(entry)

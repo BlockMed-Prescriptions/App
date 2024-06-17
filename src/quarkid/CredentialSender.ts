@@ -63,7 +63,6 @@ const CredentialSend = async (profile: Profile, didTarget: string,
         message: message, //Mensage de tipo DIDComm
         packing: "authcrypt",
     });
-    console.log(packedMessage);
 
     sendMsg(didEmisor, didTarget, packedMessage);
 }
