@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import Receta from '../model/Receta';
 import { copyOutline, medalOutline } from 'ionicons/icons';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
+import { DIDResolver } from '../quarkid/DIDResolver';
 
 
 const RecetaView: React.FC = () => {
@@ -16,6 +17,10 @@ const RecetaView: React.FC = () => {
     const [presentToast] = useIonToast();
 
     const modal = useRef<HTMLModalCertificado>(null);
+    const modalMedico = useRef<HTMLModalCertificado>(null);
+    const buttonCertificadoMedico = useRef<HTMLIonButtonElement>(null);
+    const [certificadoMedico, setCertificadoMedico] = useState<any|undefined|null>(null)
+
     useEffect(() => {
         setCurrentProfile(data.getCurrentProfile());
         const s = data.observeProfile().subscribe((p) => {
@@ -38,6 +43,23 @@ const RecetaView: React.FC = () => {
 
     function showCertificado() {
         modal.current?.open();
+    }
+
+    function showCertificadoMedico() {
+        if (certificadoMedico === null) {
+            buttonCertificadoMedico.current!.disabled = true
+            DIDResolver(receta!.didMedico).then((doc) => {
+                setCertificadoMedico(doc)
+                modalMedico.current!.open();
+                buttonCertificadoMedico.current!.disabled = false
+            }).catch((e) => {
+                setCertificadoMedico(null)
+                buttonCertificadoMedico.current!.disabled = false
+                console.error("Error al obtener el certificado", e) 
+            })
+        } else {
+            modalMedico.current!.open();
+        }
     }
 
     return (
@@ -101,17 +123,23 @@ const RecetaView: React.FC = () => {
                             <p>{receta?.didMedico}</p>
                         </IonLabel>
                         {receta?.didMedico ? (
-                            <IonButton size="small" color="light" slot="end" onClick={() => {
-                                navigator.clipboard.writeText(receta?.didMedico);
-                                // acá abro un toast
-                                presentToast({
-                                    message: 'DID copiado al portapapeles.',
-                                    duration: 1000,
-                                    position: 'bottom'
-                                });
-                            }}>
-                                <IonIcon icon={copyOutline} slot="icon-only" />
-                            </IonButton>
+                            <IonButtons slot='end'>
+                                <IonButton size="small" onClick={() => {
+                                    navigator.clipboard.writeText(receta?.didMedico);
+                                    // acá abro un toast
+                                    presentToast({
+                                        message: 'DID copiado al portapapeles.',
+                                        duration: 1000,
+                                        position: 'bottom'
+                                    });
+                                }}>
+                                    <IonIcon icon={copyOutline} size="small" slot="icon-only" />
+                                </IonButton>
+                                <IonButton ref={buttonCertificadoMedico} size="small" onClick={() => showCertificadoMedico()}>
+                                    <IonIcon icon={medalOutline} size="small"  slot="icon-only" />
+                                </IonButton>
+                                <ModalCertificado ref={modalMedico} certificado={certificadoMedico} />
+                            </IonButtons>
                         ) : ''}
                     </IonItem>
                 </IonList>
