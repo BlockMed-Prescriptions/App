@@ -11,8 +11,10 @@ type Receta = {
     fechaVencimiento: Date;
 
     id?: string;
-
     certificado?: any
+
+    // Otras propiedades de trabajo
+    enCarpetaFavoritos?: boolean
 }
 
 export default Receta;

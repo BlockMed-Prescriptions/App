@@ -95,7 +95,6 @@ const Menu: React.FC = () => {
   }, []);
 
   const refreshRecetas = async (folder: RecetaFolder|null) => {
-    console.log("Actualizando las páginas para el profile", currentProfile)
     for (let page of appPagesInit) {
       if (folder && page.folder !== folder) {
         continue;
@@ -112,20 +111,16 @@ const Menu: React.FC = () => {
   }
 
   useEffect(() => {
-    console.log("Observando cambios en las carpetas")
     const suscription = data.observeFolders().subscribe((f) => {
-      console.log("Cambio en las carpeta", f, currentProfile)
       refreshRecetas(f).then(() => {}); 
     });
 
     return () => {
-      console.log("Desuscribiendo de los cambios en las carpetas")
       suscription.unsubscribe();
     }
   }, [currentProfile])
 
   useEffect(() => {
-    console.log("Dado que cambió el perfil, actualizo las recetas.")
     refreshRecetas(null).then(() => {});
   }, [currentProfile])
 

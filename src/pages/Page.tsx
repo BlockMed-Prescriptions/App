@@ -1,4 +1,4 @@
-import { IonButtons, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
 import { useParams } from 'react-router';
 import ExploreContainer from '../components/ExploreContainer';
 import './Page.css';
@@ -19,6 +19,10 @@ const FolderConversion: { [key: string]: RecetaFolder } = {
   "Favorites": RECETA_FOLDER_FAVORITOS
 }
 
+const getCurrentFolder = (name: string): RecetaFolder => {
+  return FolderConversion[name.trim()];
+}
+
 const Page: React.FC = () => {
 
   const { name } = useParams<{ name: string; }>();
@@ -31,7 +35,6 @@ const Page: React.FC = () => {
   useEffect(() => {
     setCurrentProfile(data.getCurrentProfile());
     const s = data.observeProfile().subscribe((p) => {
-        console.log("Cambio en el perfil", p)
         setCurrentProfile(p);
         refreshRecetas(FolderConversion[name.trim()]);
     })
@@ -42,9 +45,8 @@ const Page: React.FC = () => {
   }, [])
 
   useEffect(() => {
-      let recetaFolder = FolderConversion[name.trim()];
+      let recetaFolder = getCurrentFolder(name);
       if (!recetaFolder) {
-          console.log(FolderConversion)
           throw new Error(`Folder ${name}. not found`);
       }
 
@@ -77,7 +79,40 @@ const Page: React.FC = () => {
   }
 
   const sendReceta = (receta: Receta) => {
+      if (!currentProfile) {
+          return;
+      }
       recetaService.sendReceta(currentProfile!, receta);
+  }
+
+  const canSendArchive = () : boolean => {
+      let recetaFolder = getCurrentFolder(name);
+      return recetaFolder === RECETA_FOLDER_INBOX || recetaFolder === RECETA_FOLDER_OUTBOX;
+  }
+
+  const sendArchive = (receta: Receta) => {
+      if (!currentProfile) {
+          return;
+      }
+      data.addRecetaToFolder(receta, RECETA_FOLDER_ARCHIVED);
+      data.removeRecetaFromFolder(receta, getCurrentFolder(name));
+  }
+
+  const toggleFavorite = (receta: Receta) => {
+      if (!currentProfile) {
+          return;
+      }
+      data.getRecetasFromFolder(RECETA_FOLDER_FAVORITOS).then((recetas) => {
+          if (recetas.find((r) => r.id === receta.id)) {
+              data.removeRecetaFromFolder(receta, RECETA_FOLDER_FAVORITOS);
+              receta.enCarpetaFavoritos = false
+          } else {
+              data.addRecetaToFolder(receta, RECETA_FOLDER_FAVORITOS);
+              receta.enCarpetaFavoritos = true
+          }
+          console.log("Estoy actualizando las recetas")
+          setRecetas(prevRecetas => prevRecetas.map((r) => r.id === receta.id ? receta : r))
+      })
   }
 
 
@@ -98,10 +133,20 @@ const Page: React.FC = () => {
                 <IonTitle size="large">{name}</IonTitle>
               </IonToolbar>
             </IonHeader>
-            
-            {recetas.map((receta) => (
-               <RecetaCard key={receta.id} receta={receta} onClickSend={() => sendReceta(receta)} />
-            ))}
+
+            <IonGrid fixed={true}>
+              <IonRow>
+                {recetas.map((receta) => 
+                  <IonCol sizeLg='6' sizeMd="6" sizeSm="12" sizeXs="12" key={receta.id}>
+                    <RecetaCard receta={receta}
+                      onClickSend={() => sendReceta(receta)}
+                      onClickArchive={canSendArchive() ? (() => sendArchive(receta)) : undefined}
+                      onClickFavorite={() => toggleFavorite(receta)}
+                    />
+                  </IonCol>
+                )}
+              </IonRow>
+            </IonGrid>
 
             {currentProfile && ProfileHandler.isMedico(currentProfile) && 'Outbox' === name ? (
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
