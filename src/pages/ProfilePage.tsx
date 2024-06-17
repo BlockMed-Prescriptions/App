@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import React from 'react';
 import { default as ProfileModel } from '../model/Profile';
 import RecetaBcData from '../service/RecetaBcData';
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert, IonIcon, useIonToast } from '@ionic/react';
 import { DIDResolver } from '../quarkid/DIDResolver';
-import { copyOutline } from 'ionicons/icons';
+import { copyOutline, medalOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router';
+import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
 
 const ProfilePage: React.FC = () => {
     const data = RecetaBcData.getInstance();
@@ -14,6 +15,7 @@ const ProfilePage: React.FC = () => {
     const [presentAlert] = useIonAlert();
     const [presentToast] = useIonToast();
     const history = useHistory();
+    const modalCertificado = useRef<HTMLModalCertificado>(null);
 
     const getDidDocument = (p: ProfileModel) => {
         DIDResolver(p.didId).then((doc) => {
@@ -177,10 +179,11 @@ const ProfilePage: React.FC = () => {
                     </IonItem>
                     {didDocument ? (
                     <IonItem>
-                        <IonLabel>
-                            <h2>Documento</h2>
-                            <pre style={{"fontSize": "80%"}}>{JSON.stringify(didDocument, null, 2)}</pre>
-                        </IonLabel>
+                        <IonButton onClick={() => modalCertificado.current?.open()}>
+                            <IonIcon icon={medalOutline} slot="start" />
+                            Ver Certificado
+                        </IonButton>
+                        <ModalCertificado ref={modalCertificado} certificado={didDocument} />
                     </IonItem>
                     ) : ''}
                 </IonList>
