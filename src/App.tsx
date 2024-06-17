@@ -69,11 +69,11 @@ const App: React.FC = () => {
             <Route path="/profile" exact={true}>
               <ProfilePage />
             </Route>
-            <Route path="/receta/new" exact={true}>
-              <RecetaNew />
-            </Route>
             <Route path="/receta/:id" exact={true}>
               <RecetaView />
+            </Route>
+            <Route path="/receta/new" exact={true}>
+              <RecetaNew />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>
