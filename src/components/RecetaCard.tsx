@@ -46,6 +46,30 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
         history.push(`/receta/${receta.id}`)
     }
 
+    const favoriteClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+        onClickFavorite!()
+    }
+
+    const sendClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+        onClickSend!()
+    }
+
+    const trashClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+        onClickTrash!()
+    }
+
+    const archiveClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+        onClickArchive!()
+    }
+
     return (
         <IonCard button={true} onClick={() => click()}>
             <IonCardHeader>
@@ -64,22 +88,22 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
 
             <div className="ion-float-end">
                 {onClickFavorite ? (
-                <IonButton size="small" onClick={() => onClickFavorite()} color={enCarpetaFavoritos ? "primary" : "light"}>
+                <IonButton size="small" onClick={(e) => { favoriteClick(e) }} color={enCarpetaFavoritos ? "primary" : "light"}>
                     <IonIcon slot="icon-only" icon={enCarpetaFavoritos ? heart : heartOutline} />
                 </IonButton>
                 ) : null}
                 {onClickArchive ? (
-                <IonButton size="small" onClick={() => onClickArchive()}>
+                <IonButton size="small" onClick={(e) => archiveClick(e)}>
                     <IonIcon slot="icon-only" icon={archive} />
                 </IonButton>
                 ) : null}
                 {onClickSend ? (
-                <IonButton size="small" color="secondary" onClick={() => onClickSend()}>
+                <IonButton size="small" color="secondary" onClick={(e) => sendClick(e)}>
                     <IonIcon slot="icon-only" icon={send} />
                 </IonButton>
                 ) : null}
                 {onClickTrash ? (
-                <IonButton fill="outline" color="danger"  size="small" onClick={() => onClickTrash()}>
+                <IonButton fill="outline" color="danger"  size="small" onClick={(e) => trashClick(e)}>
                     <IonIcon slot="icon-only" icon={trash} />
                 </IonButton>
                 ) : null}
