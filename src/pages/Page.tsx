@@ -1,6 +1,5 @@
-import { IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
 import { useParams } from 'react-router';
-import ExploreContainer from '../components/ExploreContainer';
 import './Page.css';
 import { useEffect, useState } from 'react';
 import Profile from '../model/Profile';
@@ -28,6 +27,8 @@ const Page: React.FC = () => {
   const { name } = useParams<{ name: string; }>();
   const data = RecetaBcData.getInstance()
   const recetaService = RecetaService.getInstance()
+  const [presentAlert, dismissAlert] = useIonAlert();
+  const [presentToast, dismissToast] = useIonToast();
 
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [recetas, setRecetas] = useState<Receta[]>([]);
@@ -90,6 +91,11 @@ const Page: React.FC = () => {
       return recetaFolder === RECETA_FOLDER_INBOX || recetaFolder === RECETA_FOLDER_OUTBOX;
   }
 
+  const canDelete = () : boolean => {
+      let recetaFolder = getCurrentFolder(name);
+      return recetaFolder !== RECETA_FOLDER_PAPELERA;
+  }
+
   const sendArchive = (receta: Receta) => {
       if (!currentProfile) {
           return;
@@ -113,6 +119,31 @@ const Page: React.FC = () => {
           console.log("Estoy actualizando las recetas")
           setRecetas(prevRecetas => prevRecetas.map((r) => r.id === receta.id ? receta : r))
       })
+  }
+
+  const deleteReceta = (receta: Receta) => {
+      if (!currentProfile) {
+          return;
+      }
+      presentAlert({
+          "message": "¿Está seguro de que quiere eliminar la receta?",
+          "header": "Eliminar Receta",
+          "buttons": [
+              "Cancelar",
+              {
+                  text: "Eliminar",
+                  handler: () => {
+                      data.addRecetaToFolder(receta, RECETA_FOLDER_PAPELERA);
+                      data.removeRecetaFromFolder(receta, getCurrentFolder(name));
+                      presentToast({
+                          message: "Receta eliminada",
+                          duration: 1000,
+                          position: 'bottom'
+                      });
+                  }
+              }
+          ]
+      });
   }
 
 
@@ -142,6 +173,7 @@ const Page: React.FC = () => {
                       onClickSend={() => sendReceta(receta)}
                       onClickArchive={canSendArchive() ? (() => sendArchive(receta)) : undefined}
                       onClickFavorite={() => toggleFavorite(receta)}
+                      onClickTrash={canDelete() ? (() => deleteReceta(receta)) : undefined}
                     />
                   </IonCol>
                 )}

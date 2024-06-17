@@ -10,9 +10,10 @@ interface ContainerProps {
     onClickSend?: () => void;
     onClickArchive?: () => void;
     onClickFavorite?: () => void;
+    onClickTrash?: () => void;
 }
 
-const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArchive, onClickFavorite }) => {
+const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArchive, onClickFavorite, onClickTrash }) => {
 
     const [presentAlert] = useIonAlert();
     const [enCarpetaFavoritos, setEnCarpetaFavoritos] = useState(false)
@@ -81,11 +82,11 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
                     <IonIcon slot="icon-only" icon={send} />
                 </IonButton>
                 ) : null}
-                <IonButton fill="outline" color="danger"  size="small" onClick={
-                    () => notImplementedAlert()
-                }>
+                {onClickTrash ? (
+                <IonButton fill="outline" color="danger"  size="small" onClick={() => onClickTrash()}>
                     <IonIcon slot="icon-only" icon={trash} />
                 </IonButton>
+                ) : null}
             </div>
         
         </IonCard>
