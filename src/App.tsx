@@ -39,6 +39,7 @@ import RecetaBcData from './service/RecetaBcData';
 import RecetaNew from './pages/RecetaNew';
 import { useEffect } from 'react';
 import RecetaSuscriberElement from './components/RecetaSuscriberElement';
+import RecetaView from './pages/RecetaView';
 
 setupIonicReact();
 
@@ -70,6 +71,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/receta/new" exact={true}>
               <RecetaNew />
+            </Route>
+            <Route path="/receta/:id" exact={true}>
+              <RecetaView />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>

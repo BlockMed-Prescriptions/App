@@ -239,7 +239,14 @@ export default class RecetaBcData {
         if (!receta) {
             throw new Error('Receta not found');
         } else if (typeof receta === 'string') {
-            return JSON.parse(receta);
+            let data:any = JSON.parse(receta);
+            if (data.fechaEmision && typeof data.fechaEmision === 'string') {
+                data.fechaEmision = new Date(data.fechaEmision);
+            }
+            if (data.fechaVencimiento && typeof data.fechaVencimiento === 'string') {
+                data.fechaVencimiento = new Date(data.fechaVencimiento);
+            }
+            return data as Receta
         } else {
             throw new Error('Receta is not a string.');
         }

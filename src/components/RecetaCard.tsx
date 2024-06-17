@@ -3,6 +3,7 @@ import Receta from "../model/Receta";
 import { archive, heart, heartOutline, send, trash } from "ionicons/icons";
 import RecetaBcData, { RECETA_FOLDER_FAVORITOS } from "../service/RecetaBcData";
 import { useEffect, useState } from "react";
+import { useHistory } from "react-router";
 
 
 interface ContainerProps {
@@ -19,16 +20,7 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
     const [enCarpetaFavoritos, setEnCarpetaFavoritos] = useState(false)
     const fechaEmision = new Date(receta.fechaEmision)
     const data = RecetaBcData.getInstance()
-
-    const notImplementedAlert = () => {
-        presentAlert({
-            header: "No implementado aún ...",
-            message: "Esta funcionalidad aún no está implementada, pronto ya lo tendremos.",
-            buttons: [
-                'Ok'
-            ]
-        })
-    }
+    const history = useHistory()
 
     useEffect(() => {
         if (!receta) return
@@ -50,8 +42,12 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
         }
     })
 
+    const click = () => {
+        history.push(`/receta/${receta.id}`)
+    }
+
     return (
-        <IonCard button={true}>
+        <IonCard button={true} onClick={() => click()}>
             <IonCardHeader>
                 <IonCardTitle>{receta.nombrePaciente}</IonCardTitle>
                 <IonCardSubtitle>
