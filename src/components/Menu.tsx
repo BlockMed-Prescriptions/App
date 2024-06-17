@@ -73,20 +73,22 @@ const labels:string[] = ['Familia', 'Amigos']
 const Menu: React.FC = () => {
   const location = useLocation()
   const data = RecetaBcData.getInstance()
-  const [currentProfile, setCurrentP] = useState<Profile | null>(null);
+  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [appPages, setAppPages] = useState<AppPage[]>(appPagesInit);
   const menuElement = useRef<HTMLIonMenuElement>(null);
 
   useEffect(() => {
-    setCurrentP(data.getCurrentProfile())
     const subscription = data.observeProfile().subscribe((p) => {
       //if (!currentProfile || currentProfile?.didId !== p?.didId) {
-        setCurrentP(p);
+        setCurrentProfile(p);
         // cambiando el perfil, entonces
         console.log("Cambiando el perfil", p)
       //}
-    });
+    })
+    console.log("Para el perfil actual", data.getCurrentProfile())
+    setCurrentProfile(data.getCurrentProfile())
+    console.log("Para el perfil actual", currentProfile)
 
     // Limpiar la suscripción cuando el componente se desmonte
     return () => subscription.unsubscribe();
@@ -113,16 +115,14 @@ const Menu: React.FC = () => {
     console.log("Observando cambios en las carpetas")
     const suscription = data.observeFolders().subscribe((f) => {
       console.log("Cambio en las carpeta", f, currentProfile)
-      if (currentProfile) {
-        refreshRecetas(f).then(() => {}); 
-      }
+      refreshRecetas(f).then(() => {}); 
     });
 
     return () => {
+      console.log("Desuscribiendo de los cambios en las carpetas")
       suscription.unsubscribe();
     }
-  }, [])
-
+  }, [currentProfile])
 
   useEffect(() => {
     console.log("Dado que cambió el perfil, actualizo las recetas.")
