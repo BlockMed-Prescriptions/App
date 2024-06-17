@@ -8,6 +8,7 @@ const ProfileForm: React.FC = () => {
 
     const [isMedico, setIsMedico] = useState(false);
     const [isPaciente, setIsPaciente] = useState<boolean>(true);
+    const [isFarmacia, setIsFarmacia] = useState<boolean>(false);
     const [nombre, setNombre] = useState<string>('');
     const [email, setEmail] = useState<string>('');
 
@@ -44,13 +45,27 @@ const ProfileForm: React.FC = () => {
 
     useEffect(() => {
         // inicializo los roles
-        setIsMedico(false);
-        setIsPaciente(true);
+        setIsMedico(false)
+        setIsPaciente(true)
+        setIsFarmacia(false)
         // inicializo los campos
         setNombre('');
         setEmail('');
         setIsValid(false)
     }, []);
+
+    useEffect(() => {
+        if (isFarmacia) {
+            setIsMedico(false);
+            setIsPaciente(false);
+        }
+    }, [isFarmacia])
+
+    useEffect(() => {
+        if (isMedico || isPaciente) {
+            setIsFarmacia(false);
+        }
+    }, [isMedico, isPaciente])
 
     const cancel = () => {
         // vuelvo a la página anterior
@@ -68,6 +83,9 @@ const ProfileForm: React.FC = () => {
         }
         if (isPaciente) {
             roles.push('pac');
+        }
+        if (isFarmacia) {
+            roles.push('far');
         }
 
         perfilService.createProfile(nombre, email, roles).then((profile) => {
@@ -136,6 +154,9 @@ const ProfileForm: React.FC = () => {
                             </IonItem>
                             <IonItem lines="none">
                                 <IonToggle checked={isPaciente} onIonChange={e => setIsPaciente(e.detail.checked)}>Paciente</IonToggle>
+                            </IonItem>
+                            <IonItem lines="none">
+                                <IonToggle checked={isFarmacia} onIonChange={e => setIsFarmacia(e.detail.checked)}>Farmacia</IonToggle>
                             </IonItem>
                         </IonList>
                     </IonItem>
