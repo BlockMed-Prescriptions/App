@@ -86,8 +86,26 @@ const RecetaView: React.FC = () => {
                         <IonLabel>
                             <h2>Paciente</h2>
                             <p>{receta?.nombrePaciente}</p>
-                            <p>{receta?.didPaciente}</p>
+                            </IonLabel>
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel>
+                        <h2>DID Paciente</h2>
+                        <p>{receta?.didPaciente}</p>
                         </IonLabel>
+                        <IonButtons slot='end'>
+                            <IonButton size="small" onClick={() => {
+                                    navigator.clipboard.writeText(receta!.didPaciente);
+                                    // acá abro un toast
+                                    presentToast({
+                                        message: 'DID copiado al portapapeles.',
+                                        duration: 1000,
+                                        position: 'bottom'
+                                    });
+                            }}>
+                                <IonIcon icon={copyOutline} size="small" slot="icon-only" />
+                            </IonButton>
+                        </IonButtons>
                     </IonItem>
                     <IonItem>
                         <IonLabel>
