@@ -38,6 +38,7 @@ import './theme/variables.css';
 import RecetaBcData from './service/RecetaBcData';
 import RecetaNew from './pages/RecetaNew';
 import { useEffect } from 'react';
+import RecetaSuscriberElement from './components/RecetaSuscriberElement';
 
 setupIonicReact();
 
@@ -48,45 +49,12 @@ const App: React.FC = () => {
     // do nothing
   });
 
-  const [presentToast, dismissToast] = useIonToast()
-  const history = useHistory();
-
-  useEffect(() => {
-      const suscriptor = data.observeRecetas().subscribe((receta) => {
-          const profile = data.getCurrentProfile();
-          if (!profile) {
-              return;
-          }
-          if (receta.didPaciente !== profile.didId) {
-              console.log("Receta no es para mi", receta.didPaciente, profile.didId)
-              return
-          }
-          presentToast({
-              message: '¡Receta recibida!',
-              color: 'success',
-              duration: 2000,
-              buttons: [
-                  {
-                      text: 'Ver',
-                      handler: () => {
-                          dismissToast();
-                          history.push('/folder/Inbox');
-                      }
-                  }
-              ]
-          })
-      })
-
-      return () => {
-          suscriptor.unsubscribe();
-      }
-  }, [data]);
-
   return (
     <IonApp>
       <IonReactRouter>
         <IonSplitPane contentId="main">
           <Menu />
+          <RecetaSuscriberElement />
           <IonRouterOutlet id="main">
             <Route path="/" exact={true}>
               <Redirect to="/folder/Inbox" />
