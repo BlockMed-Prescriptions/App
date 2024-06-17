@@ -163,29 +163,27 @@ const ProfilePage: React.FC = () => {
                             <p>{currentProfile?.didId}</p>
                         </IonLabel>
                         {currentProfile?.didId ? (
-                            <IonButton size="small" color="light" slot="end" onClick={() => {
-                                navigator.clipboard.writeText(currentProfile?.didId);
-                                // acá abro un toast
-                                presentToast({
-                                    message: 'DID copiado al portapapeles.',
-                                    duration: 1000,
-                                    position: 'bottom'
-                                });
-                            }}>
-                                <IonIcon icon={copyOutline} slot="icon-only" />
-                            </IonButton>
+                            <IonButtons slot="end">
+                                <IonButton size="small" color="light" onClick={() => {
+                                    navigator.clipboard.writeText(currentProfile?.didId);
+                                    // acá abro un toast
+                                    presentToast({
+                                        message: 'DID copiado al portapapeles.',
+                                        duration: 1000,
+                                        position: 'bottom'
+                                    });
+                                }}>
+                                    <IonIcon icon={copyOutline} slot="icon-only" />
+                                </IonButton>
+                                {didDocument ? (
+                                <IonButton size="small" onClick={() => modalCertificado.current?.open()}>
+                                    <IonIcon icon={medalOutline} slot="icon-only" />
+                                </IonButton>
+                                ) : ''}
+                                <ModalCertificado ref={modalCertificado} certificado={didDocument} />
+                            </IonButtons>
                         ) : ''}
-
                     </IonItem>
-                    {didDocument ? (
-                    <IonItem>
-                        <IonButton onClick={() => modalCertificado.current?.open()}>
-                            <IonIcon icon={medalOutline} slot="start" />
-                            Ver Certificado
-                        </IonButton>
-                        <ModalCertificado ref={modalCertificado} certificado={didDocument} />
-                    </IonItem>
-                    ) : ''}
                 </IonList>
                 {/*
                     Ahora voy a poner una botonera para importar y exportar perfiles.
