@@ -179,7 +179,7 @@ const ProfilePage: React.FC = () => {
                         </IonLabel>
                         {currentProfile?.didId ? (
                             <IonButtons slot="end">
-                                <IonButton size="small" color="light" onClick={() => {
+                                <IonButton size="small" onClick={() => {
                                     navigator.clipboard.writeText(currentProfile?.didId);
                                     // acá abro un toast
                                     presentToast({
