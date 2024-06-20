@@ -2,6 +2,7 @@ import { useIonToast } from "@ionic/react";
 import { useEffect } from "react";
 import { useHistory } from "react-router";
 import RecetaBcData from "../service/RecetaBcData";
+import ProfileHandler from "../service/ProfileHandler";
 
 
 const RecetaSuscriberElement: React.FC = () => { 
@@ -16,6 +17,25 @@ const RecetaSuscriberElement: React.FC = () => {
             if (!profile) {
                 return;
             }
+
+            if (ProfileHandler.isFarmacia(profile)) {
+                presentToast({
+                    message: '¡Receta recibida de ' + receta.nombrePaciente + '!',
+                    color: 'success',
+                    duration: 2000,
+                    buttons: [
+                        {
+                            text: 'Inbox',
+                            handler: () => {
+                                dismissToast();
+                                history.push('/folder/Inbox');
+                            }
+                        }
+                    ]
+                })
+                return;
+            }
+
             if (receta.didPaciente !== profile.didId) {
                 console.log("Receta no es para mi", receta.didPaciente, profile.didId)
                 return
@@ -27,6 +47,12 @@ const RecetaSuscriberElement: React.FC = () => {
                 buttons: [
                     {
                         text: 'Ver',
+                        handler: () => {
+                            dismissToast();
+                            history.push('/receta/' + receta.id);
+                        }
+                    }, {
+                        text: 'Inbox',
                         handler: () => {
                             dismissToast();
                             history.push('/folder/Inbox');

@@ -1,14 +1,14 @@
 import { IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonMenuButton, IonPage, IonRow, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
 import { useParams } from 'react-router';
 import './Page.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Profile from '../model/Profile';
 import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX, RECETA_FOLDER_PAPELERA, RecetaFolder } from '../service/RecetaBcData';
 import ProfileHandler from '../service/ProfileHandler';
 import { add } from 'ionicons/icons';
 import Receta from '../model/Receta';
-import RecetaService from '../service/RecetaService';
 import RecetaCard from '../components/RecetaCard';
+import RecetaSender, { HTMLRecetaSender } from '../components/RecetaSender';
 
 const FolderConversion: { [key: string]: RecetaFolder } = {
   "Outbox": RECETA_FOLDER_OUTBOX,
@@ -26,12 +26,12 @@ const Page: React.FC = () => {
 
   const { name } = useParams<{ name: string; }>();
   const data = RecetaBcData.getInstance()
-  const recetaService = RecetaService.getInstance()
   const [presentAlert, dismissAlert] = useIonAlert();
   const [presentToast, dismissToast] = useIonToast();
 
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [recetas, setRecetas] = useState<Receta[]>([]);
+  const  recetaSender = useRef<HTMLRecetaSender>(null);
 
   useEffect(() => {
     setCurrentProfile(data.getCurrentProfile());
@@ -83,7 +83,8 @@ const Page: React.FC = () => {
       if (!currentProfile) {
           return;
       }
-      recetaService.sendReceta(currentProfile!, receta);
+      recetaSender.current?.send(receta);
+      //recetaService.sendReceta(currentProfile!, receta);
   }
 
   const canSendArchive = () : boolean => {
@@ -175,6 +176,7 @@ const Page: React.FC = () => {
                       onClickFavorite={() => toggleFavorite(receta)}
                       onClickTrash={canDelete() ? (() => deleteReceta(receta)) : undefined}
                     />
+                    
                   </IonCol>
                 )}
               </IonRow>
@@ -187,6 +189,7 @@ const Page: React.FC = () => {
                     </IonFabButton>
                 </IonFab>
             ) : null}
+            <RecetaSender ref={recetaSender}/>
         </IonContent>
       </IonPage>
   );
