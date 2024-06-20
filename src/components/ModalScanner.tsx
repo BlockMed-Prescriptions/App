@@ -7,6 +7,8 @@ import QrFrame from "../assets/qr-frame.svg";
 
 import './ModalScanner.css';
 import useSound from "use-sound";
+import popSoundEffect from '../assets/pop-94319.mp3';
+
 
 export type HTMLModalScanner = {
     open: () => void,
@@ -24,8 +26,7 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
     let scanner: QrScanner|null = null
     const videoEl = useRef<HTMLVideoElement>(null);
     const qrBoxEl = useRef<HTMLDivElement>(null);
-    const [pop] = useSound("../assets/pop-94319.mp3")
-
+    const [pop] = useSound(popSoundEffect, { volume: 0.5 })
 
     const [data, setData] = useState<string>("")
     const [qrOn, setQrOn] = useState<boolean>(true);
