@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonMenuButton, IonPage, IonTitle, IonToggle, IonToolbar, LocationHistory, useIonAlert, useIonLoading, useIonToast } from '@ionic/react';
 import ProfileService from '../service/ProfileService';
@@ -6,12 +6,13 @@ import RecetaBcData, { RECETA_FOLDER_OUTBOX } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import { DIDDocument } from '@quarkid/did-core';
-import { close, checkmark } from 'ionicons/icons';
+import { close, checkmark, cameraOutline } from 'ionicons/icons';
 import RecetaService from '../service/RecetaService';
 import { CredentialSigner } from '../quarkid/CredentialSigner';
 import { CredentialVerifier } from '../quarkid/CredentialVerifier';
 import { RecetaGenerator } from '../service/RecetaGenerator';
 import Receta from '../model/Receta';
+import ModalScanner, { HTMLModalScanner } from '../components/ModalScanner';
 
 const RecetaNew: React.FC = () => {
 
@@ -30,6 +31,7 @@ const RecetaNew: React.FC = () => {
     const [isDIDValid, setDIDIsValid] = useState<boolean>(false);
     const [DIDErrorText, setDIDErrorText] = useState<string>('');
     const [DIDPaciente, setDIDPaciente] = useState<string>('');
+    const modalScanner = useRef<HTMLModalScanner>(null);
 
     useEffect(() => {
         setCurrentProfile(data.getCurrentProfile());
@@ -172,6 +174,17 @@ const RecetaNew: React.FC = () => {
         setIndicacionIsValid(true);
     }
 
+    const scanData = (data: string) => {
+        let varData = JSON.parse(data);
+        if (varData.name) {
+            setNombrePaciente(varData.name);
+        }
+        if (varData.did) {
+            setDIDPaciente(varData.did);
+        }
+        modalScanner.current?.dismiss();
+    }
+
     // Confirmación.
     const confirm = () => {
         if (!isDIDValid || !isNombreValid || !isPrescripcionValid || !isIndicacionValid) {
@@ -270,6 +283,10 @@ const RecetaNew: React.FC = () => {
             </IonHeader>
             <IonContent>
                 <IonList>
+                    <IonItem lines="inset">
+                        <IonLabel position="stacked">DID Médico</IonLabel>
+                        <p>{currentProfile?.didId}</p>
+                    </IonItem>
                     <IonItem lines="none">
                         <IonInput
                             onIonChange={(event) => setDIDPaciente(event.detail.value!)}
@@ -283,10 +300,12 @@ const RecetaNew: React.FC = () => {
                         {isDIDTouched ?(
                         <IonIcon icon={isDIDValid ? checkmark : close} color={isDIDValid ? "success" : "danger"} slot="end" />
                         ) : null}
-                    </IonItem>
-                    <IonItem lines="inset">
-                        <IonLabel position="stacked">DID Médico</IonLabel>
-                        <p>{currentProfile?.didId}</p>
+                        <IonButtons slot="end">
+                            <IonButton onClick={() => {modalScanner?.current?.open()}}>
+                                <IonIcon icon={cameraOutline} slot="icon-only" />
+                            </IonButton>
+                        </IonButtons>
+                        <ModalScanner ref={modalScanner} onScan={(data) => {scanData(data)}} />
                     </IonItem>
 
                     <IonItem>

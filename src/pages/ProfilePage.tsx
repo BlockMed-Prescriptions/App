@@ -2,18 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import React from 'react';
 import { default as ProfileModel } from '../model/Profile';
 import RecetaBcData from '../service/RecetaBcData';
-import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert, IonIcon, useIonToast } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert, IonIcon, useIonToast, IonModal } from '@ionic/react';
 import { DIDResolver } from '../quarkid/DIDResolver';
-import { copyOutline, medalOutline } from 'ionicons/icons';
+import { codeOutline, copyOutline, medalOutline, qrCodeOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
+import QRCode from 'react-qr-code';
 
 const ProfilePage: React.FC = () => {
     const data = RecetaBcData.getInstance();
     const [currentProfile, setCurrentProfile] = useState<ProfileModel | null>(null);
     const [didDocument, setDidDocument] = useState<any | null>(null);
+    const [qrValue, setQrValue] = useState<string>('');
     const [presentAlert] = useIonAlert();
     const [presentToast] = useIonToast();
+    const modal = useRef<HTMLIonModalElement>(null);
     const history = useHistory();
     const modalCertificado = useRef<HTMLModalCertificado>(null);
 
@@ -113,11 +116,24 @@ const ProfilePage: React.FC = () => {
         })
     }
 
+    const buildQR = (p: ProfileModel) => {
+        return JSON.stringify({
+            "did": p.didId,
+            "name": p.name,
+            "roles": p.roles,
+        })
+    }
+
+    useEffect(() => {
+        if (currentProfile) {
+            setQrValue(buildQR(currentProfile));
+        }
+    }, [currentProfile]);
+
     useEffect(() => {
         setCurrentProfile(data.getCurrentProfile())
         const subscription = data.observeProfile().subscribe((p) => {
             setCurrentProfile(p);
-            console.log(p);
         });
     
         // Limpiar la suscripción cuando el componente se desmonte
@@ -129,6 +145,12 @@ const ProfilePage: React.FC = () => {
             getDidDocument(currentProfile);
         }
     }, [currentProfile]);
+
+    const dismiss = () => {
+        modal.current?.dismiss();
+    }
+
+
     /**
      * Dibujo la pantalla con los datos en "Profile"
      */
@@ -197,8 +219,25 @@ const ProfilePage: React.FC = () => {
                 <IonButton color="danger" onClick={() => {
                     deletePerfil(currentProfile!);
                 }}>Eliminar Perfil</IonButton>
+                <IonButton color="light" onClick={() => {
+                    modal.current?.present();
+                }}>
+                    QR
+                    <IonIcon icon={qrCodeOutline} slot='start' />
+                </IonButton>
 
-                
+                <IonModal ref={modal}>
+                    <IonHeader>
+                        <IonToolbar>
+                            <IonButtons slot="end">
+                                <IonButton onClick={() => dismiss()}>Cerrar</IonButton>
+                            </IonButtons>
+                        </IonToolbar>
+                    </IonHeader>
+                    <IonContent fullscreen={true} className="ion-padding ion-text-center">
+                        <QRCode value={qrValue} size={320} />
+                    </IonContent>
+                </IonModal>
             </IonContent>
         </IonPage>
     )
