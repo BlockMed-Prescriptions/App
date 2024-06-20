@@ -55,7 +55,6 @@ export default class RecetaBcData {
                         let pp = profiles as Profile[];
                         let p = pp.find((profile: Profile) => profile.didId === did);
                         if (p) {
-                            console.log('o', p);
                             this.setCurrentProfile(p);
                         }
                     }
@@ -65,7 +64,6 @@ export default class RecetaBcData {
     }
 
     public async setCurrentProfile(profile: Profile|null) {
-        console.log("setCurrentProfile", profile)
         let name:string
         if (profile) {
             name = 'recetas-profiles-' + profile.didId
@@ -179,6 +177,7 @@ export default class RecetaBcData {
             throw new Error('Profile already exists');
         }
 
+        console.log("Profile a guardar", profile, JSON.stringify(profile))
         profiles.push(profile);
         await this.saveProfiles(profiles);
     }
