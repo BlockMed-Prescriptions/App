@@ -15,7 +15,6 @@ interface ContainerProps {
 }
 
 const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArchive, onClickFavorite, onClickTrash }) => {
-
     const [presentAlert] = useIonAlert();
     const [enCarpetaFavoritos, setEnCarpetaFavoritos] = useState(false)
     const fechaEmision = new Date(receta.fechaEmision)
@@ -24,15 +23,12 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
 
     useEffect(() => {
         if (!receta) return
-        console.log("Receta", receta.enCarpetaFavoritos, receta.id)
         if ('undefined' === typeof receta.enCarpetaFavoritos) {
             data.getRecetasFromFolder(RECETA_FOLDER_FAVORITOS).then((recetas) => {
                 if (recetas.find((r) => r.id === receta.id)) {
-                    console.log(receta.nombrePaciente, "en favoritos true")
                     setEnCarpetaFavoritos(true)
                     receta.enCarpetaFavoritos = true
                 } else {
-                    console.log(receta.nombrePaciente, "en favoritos false")
                     setEnCarpetaFavoritos(false)
                     receta.enCarpetaFavoritos = false
                 }
@@ -108,8 +104,8 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
                 </IonButton>
                 ) : null}
             </div>
-        
         </IonCard>
+        
     )
 }
 
