@@ -7,11 +7,13 @@ import Receta from '../model/Receta';
 import { copyOutline, medalOutline } from 'ionicons/icons';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
 import { DIDResolver } from '../quarkid/DIDResolver';
+import RecetaDecorator from '../service/RecetaDecorator';
 
 
 const RecetaView: React.FC = () => {
     const { id } = useParams<{ id: string; }>();
     const data = RecetaBcData.getInstance();
+    const decorator = new RecetaDecorator();
     const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
     const [receta, setReceta] = useState<Receta | null>(null);
     const [presentToast] = useIonToast();
@@ -86,7 +88,7 @@ const RecetaView: React.FC = () => {
                         <IonLabel>
                             <h2>Paciente</h2>
                             <p>{receta?.nombrePaciente}</p>
-                            </IonLabel>
+                        </IonLabel>
                     </IonItem>
                     <IonItem>
                         <IonLabel>
@@ -139,6 +141,7 @@ const RecetaView: React.FC = () => {
                         <IonLabel>
                             <h2>Médico prescriptor</h2>
                             <p>{receta?.didMedico}</p>
+                            <p>{receta ? decorator.getNombreMedico(receta) : ''}</p>
                         </IonLabel>
                         {receta?.didMedico ? (
                             <IonButtons slot='end'>
