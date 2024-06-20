@@ -16,5 +16,23 @@
         "S3AndCloudFront": {}
       }
     }
+  },
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-recetasbcpoc01-prod-07b8c-authRole",
+      "UnauthRoleArn": "arn:aws:iam::533267109058:role/amplify-recetasbcpoc01-prod-07b8c-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::533267109058:role/amplify-recetasbcpoc01-prod-07b8c-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-recetasbcpoc01-prod-07b8c-deployment",
+      "UnauthRoleName": "amplify-recetasbcpoc01-prod-07b8c-unauthRole",
+      "StackName": "amplify-recetasbcpoc01-prod-07b8c",
+      "StackId": "arn:aws:cloudformation:us-east-1:533267109058:stack/amplify-recetasbcpoc01-prod-07b8c/57626e30-2f37-11ef-b01e-0e79dcf88761",
+      "AmplifyAppId": "d2uymtfafc7q5m"
+    },
+    "categories": {
+      "hosting": {
+        "S3AndCloudFront": {}
+      }
+    }
   }
 }
