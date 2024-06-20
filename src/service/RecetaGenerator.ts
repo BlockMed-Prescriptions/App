@@ -49,7 +49,7 @@ export const RecetaGenerator = async (
 
     let certificado
     try {
-        certificado = await recetaService.generateCertificate(receta)
+        certificado = await recetaService.generateCertificate(receta, profile)
         console.log("Certificado", certificado)
         await dismissToast()
     } catch (e) {
