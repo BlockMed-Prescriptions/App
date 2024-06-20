@@ -52,7 +52,7 @@ class RecetaService {
         return receta;
     }
 
-    public async generateCertificate(receta: Receta) : Promise<VerifiableCredential> {
+    public async generateCertificate(receta: Receta, profile: Profile) : Promise<VerifiableCredential> {
         const credential = await this.vcService.createCredential({
             context: [
                 "https://w3id.org/security/v2",
@@ -82,9 +82,15 @@ class RecetaService {
                 // medicamentos: receta.medicamentos,
                 "schema:Drug": {
                     "schema:name": receta.medicamentos.join(", ")
-                }
+                },
                 // fechaEmision: receta.fechaEmision,
                 // fechaVencimiento: receta.fechaVencimiento,
+
+                // Prescriptor
+                "schema:author": {
+                    "schema:name": profile.name,
+                    "schema:identifier": profile.didId,
+                }
             },
             mappingRules: null,
         })
