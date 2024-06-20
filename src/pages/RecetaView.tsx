@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenuButton, IonModal, IonPage, IonRow, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
+import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenuButton, IonModal, IonNote, IonPage, IonRow, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
 import { useParams } from 'react-router';
 import RecetaBcData from '../service/RecetaBcData';
 import Profile from '../model/Profile';
@@ -8,6 +8,8 @@ import { copyOutline, medalOutline } from 'ionicons/icons';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import RecetaDecorator from '../service/RecetaDecorator';
+
+import './RecetaView.css';
 
 
 const RecetaView: React.FC = () => {
@@ -83,7 +85,7 @@ const RecetaView: React.FC = () => {
                 </IonToolbar>
             </IonHeader>
             <IonContent>
-                <IonList>
+                <IonList className='receta-view-detail'>
                     <IonItem>
                         <IonLabel>
                             <h2>Paciente</h2>
@@ -92,8 +94,8 @@ const RecetaView: React.FC = () => {
                     </IonItem>
                     <IonItem>
                         <IonLabel>
-                        <h2>DID Paciente</h2>
-                        <p>{receta?.didPaciente}</p>
+                            <h2>DID Paciente</h2>
+                            <p>{receta?.didPaciente}</p>
                         </IonLabel>
                         <IonButtons slot='end'>
                             <IonButton size="small" onClick={() => {
@@ -112,7 +114,7 @@ const RecetaView: React.FC = () => {
                     <IonItem>
                         <IonLabel>
                             <h2>Fecha de emisión</h2>
-                            <p>{receta?.fechaEmision?.toLocaleDateString()}</p>
+                            <p>{receta?.fechaEmision?.toLocaleDateString()} {receta?.fechaEmision?.toLocaleTimeString()}</p>
                         </IonLabel>
                     </IonItem>
                     <IonItem>
