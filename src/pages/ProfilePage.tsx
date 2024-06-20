@@ -8,6 +8,7 @@ import { codeOutline, copyOutline, medalOutline, qrCodeOutline } from 'ionicons/
 import { useHistory } from 'react-router';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
 import QRCode from 'react-qr-code';
+import ProfileHandler from '../service/ProfileHandler';
 
 const ProfilePage: React.FC = () => {
     const data = RecetaBcData.getInstance();
@@ -116,17 +117,9 @@ const ProfilePage: React.FC = () => {
         })
     }
 
-    const buildQR = (p: ProfileModel) => {
-        return JSON.stringify({
-            "did": p.didId,
-            "name": p.name,
-            "roles": p.roles,
-        })
-    }
-
     useEffect(() => {
         if (currentProfile) {
-            setQrValue(buildQR(currentProfile));
+            setQrValue(ProfileHandler.toQrCode(currentProfile));
         }
     }, [currentProfile]);
 

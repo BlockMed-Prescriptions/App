@@ -13,6 +13,7 @@ import { CredentialVerifier } from '../quarkid/CredentialVerifier';
 import { RecetaGenerator } from '../service/RecetaGenerator';
 import Receta from '../model/Receta';
 import ModalScanner, { HTMLModalScanner } from '../components/ModalScanner';
+import ProfileHandler from '../service/ProfileHandler';
 
 const RecetaNew: React.FC = () => {
 
@@ -175,12 +176,10 @@ const RecetaNew: React.FC = () => {
     }
 
     const scanData = (data: string) => {
-        let varData = JSON.parse(data);
-        if (varData.name) {
-            setNombrePaciente(varData.name);
-        }
-        if (varData.did) {
-            setDIDPaciente(varData.did);
+        let profileTarget = ProfileHandler.fromQrCode(data);
+        if (profileTarget) {
+            setNombrePaciente(profileTarget.name)
+            setDIDPaciente(profileTarget.didId)
         }
         modalScanner.current?.dismiss();
     }
