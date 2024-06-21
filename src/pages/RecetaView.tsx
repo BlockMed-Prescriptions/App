@@ -1,24 +1,38 @@
 import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenuButton, IonModal, IonNote, IonPage, IonRow, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
 import { useParams } from 'react-router';
-import RecetaBcData from '../service/RecetaBcData';
+import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX, RECETA_FOLDER_PAPELERA } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { useEffect, useRef, useState } from 'react';
 import Receta from '../model/Receta';
-import { copyOutline, medalOutline } from 'ionicons/icons';
+import { bagAdd, checkmarkDone, copyOutline, heart, heartOutline, medalOutline, send, trash, trashOutline } from 'ionicons/icons';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import RecetaDecorator from '../receta/RecetaDecorator';
 
 import './RecetaView.css';
+import ProfileHandler from '../service/ProfileHandler';
+import RecetaService from '../receta/RecetaService';
+import RecetaPermisos from '../receta/RecetaPermisos';
+import RecetaSender, { HTMLRecetaSender } from '../components/RecetaSender';
 
 
 const RecetaView: React.FC = () => {
     const { id } = useParams<{ id: string; }>();
     const data = RecetaBcData.getInstance();
-    const decorator = new RecetaDecorator();
+    const decorator = RecetaDecorator.getInstance();
+    const recetaService = RecetaService.getInstance();
+    const permisos = RecetaPermisos.getInstance();
+    
     const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
     const [receta, setReceta] = useState<Receta | null>(null);
+    const [showSendFarmacia, setShowSendFarmacia] = useState(false);
+    const [showDispensar, setShowDispensar] = useState(false);
+    const [showConfirmarDispensa, setShowConfirmarDispensa] = useState(false);
+    const  recetaSender = useRef<HTMLRecetaSender>(null);
+
+
     const [presentToast] = useIonToast();
+    const [presentAlert] = useIonAlert();
 
     const modal = useRef<HTMLModalCertificado>(null);
     const modalMedico = useRef<HTMLModalCertificado>(null);
@@ -39,11 +53,27 @@ const RecetaView: React.FC = () => {
     useEffect(() => {
         if (currentProfile) {
             data.getReceta(id).then((receta) => {
-                console.log("Receta", receta)
+                decorator.decorate(receta).then(() => {
+                    setReceta({...receta})
+                })
                 setReceta(receta)
             })
         }
     }, [currentProfile, id, data])
+
+    useEffect(() => {
+        // si soy paciente, la receta es mía y no está dispensada,
+        // entonces puedo enviar la receta a la farmacia
+        if (!receta || !currentProfile) {
+            setShowSendFarmacia(false)
+            setShowConfirmarDispensa(false)
+            setShowDispensar(false)
+        } else {
+            setShowSendFarmacia(permisos.canSendFarmacia(receta!, currentProfile!))
+            setShowConfirmarDispensa(permisos.canConfirmarDispensa(receta!, currentProfile!))
+            setShowDispensar(permisos.canDispensa(receta!, currentProfile!))
+        }
+    }, [receta, currentProfile])
 
     function showCertificado() {
         modal.current?.open();
@@ -64,6 +94,57 @@ const RecetaView: React.FC = () => {
         } else {
             modalMedico.current!.open();
         }
+    }
+
+    const toggleFavorite = (receta: Receta) => {
+        if (!currentProfile) {
+            return;
+        }
+        data.getRecetasFromFolder(RECETA_FOLDER_FAVORITOS).then((recetas) => {
+            if (recetas.find((r) => r.id === receta.id)) {
+                data.removeRecetaFromFolder(receta, RECETA_FOLDER_FAVORITOS);
+                receta.enCarpetaFavoritos = false
+            } else {
+                data.addRecetaToFolder(receta, RECETA_FOLDER_FAVORITOS);
+                receta.enCarpetaFavoritos = true
+            }
+            console.log("Estoy actualizando las recetas")
+            setReceta( {...receta, ['enCarpetaFavoritos']: receta.enCarpetaFavoritos });
+        })
+    }
+
+    const deleteReceta = (receta: Receta) => {
+        if (!currentProfile) {
+            return;
+        }
+        presentAlert({
+            "message": "¿Está seguro de que quiere eliminar la receta?",
+            "header": "Eliminar Receta",
+            "buttons": [
+                "Cancelar",
+                {
+                    text: "Eliminar",
+                    handler: () => {
+                        data.moveRecetaToFolder(receta, RECETA_FOLDER_INBOX, RECETA_FOLDER_PAPELERA);
+                        data.moveRecetaToFolder(receta, RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_PAPELERA);
+                        data.moveRecetaToFolder(receta, RECETA_FOLDER_OUTBOX, RECETA_FOLDER_PAPELERA);
+                        presentToast({
+                            message: "Receta eliminada",
+                            duration: 1000,
+                            position: 'bottom'
+                        });
+                    }
+                }
+            ]
+        });
+    }
+
+    const sendReceta = (receta: Receta) => {
+        if (!currentProfile) {
+            return;
+        }
+        recetaSender.current?.send(receta);
+        //recetaService.sendReceta(currentProfile!, receta);
     }
 
     return (
@@ -143,7 +224,7 @@ const RecetaView: React.FC = () => {
                         <IonLabel>
                             <h2>Médico prescriptor</h2>
                             <p>{receta?.didMedico}</p>
-                            <p>{receta ? decorator.getNombreMedico(receta) : ''}</p>
+                            <p>{receta?.nombreMedico}</p>
                         </IonLabel>
                         {receta?.didMedico ? (
                             <IonButtons slot='end'>
@@ -165,9 +246,50 @@ const RecetaView: React.FC = () => {
                             </IonButtons>
                         ) : ''}
                     </IonItem>
+
+                    <IonItemDivider>
+                    </IonItemDivider>
+
+                    <IonItem>
+                        <IonButtons slot="start">
+                            {false === receta?.enCarpetaPapelera ? (
+                            <IonButton slot="start" color="light" fill="clear" onClick={(e) => deleteReceta(receta)}>
+                                <IonIcon slot="icon-only" icon={trashOutline} color="danger" />
+                            </IonButton>
+                            ) : ''}
+                            {receta ? (
+                            <IonButton slot="start" size="small" onClick={(e) => {toggleFavorite(receta!)}} color="primary">
+                                <IonIcon slot="icon-only" icon={receta?.enCarpetaFavoritos ? heart : heartOutline} />
+                            </IonButton>
+                            ) : ''}
+                        </IonButtons>
+                        <IonButtons slot="end">
+                            {showSendFarmacia ? (
+                            <IonButton slot="end" size="small" color="primary" fill="solid" onClick={(e) => sendReceta(receta!)}>
+                                <IonIcon slot="start" icon={send} />
+                                Enviar a farmacia
+                            </IonButton>
+                            ) : ''}
+                            {showConfirmarDispensa ? (
+                                <IonButton size="small" color="success" fill="solid">
+                                    <IonIcon slot="start" icon={checkmarkDone} />
+                                    Confirmar dispensa
+                                </IonButton>
+                            ) : ''}
+                            {showDispensar ? (
+                                <IonButton size="small" color="primary" fill="solid" routerLink={'/dispensa/'+receta?.id}>
+                                    <IonIcon slot="start" icon={bagAdd} />
+                                    Dispensar
+                                </IonButton>
+                            ) : ''}
+                        </IonButtons>
+                    </IonItem>
+
                 </IonList>
 
                 <ModalCertificado ref={modal} certificado={receta?.certificado} />
+                <RecetaSender ref={recetaSender}/>
+
             </IonContent>
         </IonPage>
     );

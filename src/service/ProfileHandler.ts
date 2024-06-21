@@ -42,6 +42,7 @@ class ProfileHandler {
             roles: obj.roles,
             keyStorage: {},
             email: "",
+            seed: ""
         }
     }
 }

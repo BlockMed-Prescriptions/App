@@ -20,8 +20,10 @@ const RecetaReceiver = () => {
         if ('receta' !== message.class) return;
         const receta: Receta = recetaService.buildRecetaFromCredential(message.credential)
         switch (message.type) {
-            case 'emision-receta':
             case 'envio-farmacia':
+                receta.estado = 'enviada-farmacia'
+            case 'emision-receta':
+                if (receta.estado === undefined) receta.estado = 'emitida'
                 recetaBcData.saveReceta(receta)
                 recetaBcData.addRecetaToFolder(receta, RECETA_FOLDER_INBOX)
                 break;
@@ -29,12 +31,16 @@ const RecetaReceiver = () => {
                 // busco la receta
                 recetaBcData.getReceta(receta.id!).then((r) => {
                     console.log("Me han pedido que confirme la receta ... ", receta)
+                    receta.estado = 'pendiente-confirmacion-dispensa';
+                    recetaBcData.saveReceta(receta)
                 })
                 break
             case 'dispensa':
                 // busco la receta
                 recetaBcData.getReceta(receta.id!).then((r) => {
                     console.log("Me han dispensado la receta ... ", receta)
+                    receta.estado = 'consumida'
+                    recetaBcData.saveReceta(receta)
                 })
                 break
             default:

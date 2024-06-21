@@ -3,6 +3,7 @@ import { MessageType } from '../model/Message';
 import Profile from '../model/Profile';
 import Receta from '../model/Receta';
 import DIDMessageSend from '../quarkid/DidMessageSender';
+import ProfileHandler from '../service/ProfileHandler';
 import ProfileService from '../service/ProfileService';
 
 import { VerifiableCredential, VerifiableCredentialService } from "@quarkid/vc-core";

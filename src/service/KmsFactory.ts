@@ -14,13 +14,10 @@ export const buildKms = async (profile: Profile)  : Promise<KMSClient> => {
     }
     let key = profile.seed + profile.name.replace(/\s/g, '') + profile.email.replace(/\s/g, '');
 
-    console.log("Building KMS for profile", profile.didId)
     if (cache.has(key)) {
-        console.log("Returning cached KMS for profile", profile.didId)
         return cache.get(key);
     }
 
-    console.log("Creating new KMS for profile", profile.didId)
     let kms = new KMS({
         lang: LANG.es,
         storage: new ProfileKMSSecureStorage(profile),

@@ -5,7 +5,7 @@ export type MessageType = 'emision-receta' | 'envio-farmacia' | 'solicitud-confi
 type Message = {
     type: MessageType,
     credential: VerifiableCredential,
-    class: 'receta' | 'credencial-financiador'
+    class: 'receta' | 'dispensa'
 }
 
 export const checkIfIsMessageType = (message: any) : boolean => {
@@ -14,7 +14,7 @@ export const checkIfIsMessageType = (message: any) : boolean => {
         // tipo sólo puede ser los tipos especificados
         if (["emision-receta", "envio-farmacia", "solicitud-confirmacion-dispensa", "dispensa"].includes(message.type)) {
             // class sólo puede ser los tipos especificados
-            if (["receta", "credencial-financiador"].includes(message.class)) {
+            if (["receta", 'dispensa'].includes(message.class)) {
                 return true
             }
         }
