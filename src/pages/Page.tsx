@@ -101,8 +101,7 @@ const Page: React.FC = () => {
       if (!currentProfile) {
           return;
       }
-      data.addRecetaToFolder(receta, RECETA_FOLDER_ARCHIVED);
-      data.removeRecetaFromFolder(receta, getCurrentFolder(name));
+      data.moveRecetaToFolder(receta, getCurrentFolder(name), RECETA_FOLDER_ARCHIVED);
   }
 
   const toggleFavorite = (receta: Receta) => {
@@ -134,8 +133,7 @@ const Page: React.FC = () => {
               {
                   text: "Eliminar",
                   handler: () => {
-                      data.addRecetaToFolder(receta, RECETA_FOLDER_PAPELERA);
-                      data.removeRecetaFromFolder(receta, getCurrentFolder(name));
+                      data.moveRecetaToFolder(receta, getCurrentFolder(name), RECETA_FOLDER_PAPELERA);
                       presentToast({
                           message: "Receta eliminada",
                           duration: 1000,

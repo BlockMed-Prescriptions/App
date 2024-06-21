@@ -6,6 +6,7 @@ import localforage from 'localforage';
 import Profile from '../model/Profile';
 import { Observable, Subject } from 'rxjs';
 import Receta from '../model/Receta';
+import Semaforo from './Semaforo';
 
 export type RecetaFolder = 'favoritos' | 'archivados' | 'papelera' | 'entrada' | 'salida';
 
@@ -31,6 +32,7 @@ export default class RecetaBcData {
     private newRecetaSubject: Subject<Receta> = new Subject<Receta>();
     private storeData: LocalForage|null = null;
     private storeProfiles: LocalForage;
+    private semaforo: Semaforo;
     
     public static getInstance(): RecetaBcData {
         if (!RecetaBcData.instance) {
@@ -40,6 +42,7 @@ export default class RecetaBcData {
     }
 
     private constructor() {
+        this.semaforo = new Semaforo();
         this.storeProfiles = localforage.createInstance({
             name: 'recetas-profiles',
         })
@@ -171,27 +174,37 @@ export default class RecetaBcData {
     }
 
     public async addProfile(profile: Profile) {
-        const profiles = await this.getProfiles();
-        // chequeo que el perfil no exista
-        if (profiles.find(p => p.name === profile.name)) {
-            throw new Error('Profile already exists');
-        }
+        const releaseLock = await this.semaforo.acquireLock()
+        try {
+            const profiles = await this.getProfiles();
+            // chequeo que el perfil no exista
+            if (profiles.find(p => p.name === profile.name)) {
+                throw new Error('Profile already exists');
+            }
 
-        console.log("Profile a guardar", profile, JSON.stringify(profile))
-        profiles.push(profile);
-        await this.saveProfiles(profiles);
+            console.log("Profile a guardar", profile, JSON.stringify(profile))
+            profiles.push(profile);
+            await this.saveProfiles(profiles);
+        } finally  {
+            releaseLock();
+        }
     }
 
     public async deleteProfile(didId: string) {
-        let profiles = await this.getProfiles();
-        let index = profiles.findIndex((profile: Profile) => profile.didId === didId);
+        const releaseLock = await this.semaforo.acquireLock()
+        try {
+            let profiles = await this.getProfiles();
+            let index = profiles.findIndex((profile: Profile) => profile.didId === didId);
 
-        if (index === -1) {
-            throw new Error('Profile not found');
+            if (index === -1) {
+                throw new Error('Profile not found');
+            }
+
+            profiles.splice(index, 1);
+            await this.saveProfiles(profiles);
+        } finally {
+            releaseLock();
         }
-
-        profiles.splice(index, 1);
-        await this.saveProfiles(profiles);
     }
 
     /**
@@ -252,27 +265,50 @@ export default class RecetaBcData {
     }
 
     public async addRecetaToFolder(receta: Receta, folder: RecetaFolder) {
+        const releaseLock = await this.semaforo.acquireLock()
+        try {
+            await this.safeAddRecetaToFolder(receta, folder);
+        } finally {
+            releaseLock();
+        }
+    }
+
+    private async safeAddRecetaToFolder(receta: Receta, folder: RecetaFolder) {
         let recetas = await this.getRecetasIdFromFolder(folder);
         if (!recetas.includes(receta.id!)) {
             recetas.push(receta.id!);
             await this.saveRecetasIdToFolder(folder, recetas);
-            this.folderSuscription.next(folder as RecetaFolder);
+            setTimeout(() => this.folderSuscription.next(folder as RecetaFolder))
         }
     }
 
     public async removeRecetaFromFolder(receta: Receta, folder: RecetaFolder) {
+        const releaseLock = await this.semaforo.acquireLock()
+        try {
+            this.safeRemoveRecetaFromFolder(receta, folder);
+        } finally {
+            releaseLock();
+        }
+    }
+
+    private async safeRemoveRecetaFromFolder(receta: Receta, folder: RecetaFolder) {
         let recetas = await this.getRecetasIdFromFolder(folder);
         let index = recetas.findIndex(id => id === receta.id);
         if (index !== -1) {
             recetas.splice(index, 1);
             await this.saveRecetasIdToFolder(folder, recetas);
-            this.folderSuscription.next(folder as RecetaFolder);
+            setTimeout(() => this.folderSuscription.next(folder as RecetaFolder))
         }
     }
 
     public async moveRecetaToFolder(receta: Receta, from: RecetaFolder, to: RecetaFolder) {
-        await this.removeRecetaFromFolder(receta, from);
-        await this.addRecetaToFolder(receta, to);
+        const releaseLock = await this.semaforo.acquireLock()
+        try {
+            await this.safeRemoveRecetaFromFolder(receta, from);
+            await this.safeAddRecetaToFolder(receta, to);
+        } finally {
+            releaseLock();
+        }
     }
 
     public async getRecetasFromFolder(folder: RecetaFolder): Promise<Receta[]> {
