@@ -37,6 +37,9 @@ export default class RecetaBcData {
     public static getInstance(): RecetaBcData {
         if (!RecetaBcData.instance) {
             RecetaBcData.instance = new RecetaBcData();
+            RecetaBcData.instance.loadCurrentProfile().then( (profile) => {
+                console.log('Current profile loaded', profile)
+            })
         }
         return RecetaBcData.instance;
     }
@@ -46,42 +49,36 @@ export default class RecetaBcData {
         this.storeProfiles = localforage.createInstance({
             name: 'recetas-profiles',
         })
-
-        // si no existe el array "profiles", lo creamos
-        this.getProfiles().then(profiles => {
-            if (!profiles) {
-                this.storeProfiles.setItem(RecetaBcData.PROFILES_KEY, []);
-            } else {
-                // seteo el perfil actual, a partir del DID almacenado
-                this.storeProfiles.getItem(RecetaBcData.CURRENT_PROFILE_DID).then((did) => {
-                    if (did) {
-                        let pp = profiles as Profile[];
-                        let p = pp.find((profile: Profile) => profile.didId === did);
-                        if (p) {
-                            this.setCurrentProfile(p);
-                        }
-                    }
-                });
-            }
-        });
     }
 
     public async setCurrentProfile(profile: Profile|null) {
         let name:string
         if (profile) {
             name = 'recetas-profiles-' + profile.didId
+            this.storeData = localforage.createInstance({
+                name: name
+            })
         } else {
-            name = 'recetas-profiles'
+            this.storeData = null
         }
-        this.storeData = localforage.createInstance({
-            name: name
-        })
 
         this.currentProfile = profile;
         this.currentProfileSubject.next(profile);
         if (profile) {
-            this.storeProfiles.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
+            await this.storeProfiles.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
         }
+    }
+
+    public async loadCurrentProfile() {
+        let didId = await this.storeProfiles.getItem(RecetaBcData.CURRENT_PROFILE_DID) as string|null;
+        if (didId) {
+            let profiles = await this.getProfiles();
+            let profile = profiles.find(p => p.didId === didId);
+            if (profile) {
+                await this.setCurrentProfile(profile);
+            }
+        }
+        return this.currentProfile;
     }
 
     public observeProfile(): Observable<Profile | null> {
@@ -353,6 +350,7 @@ export default class RecetaBcData {
     }
 
     private async saveProfiles(profiles: Profile[]) {
+        console.log("Profiles a guardar", profiles)
         await this.storeProfiles.setItem(RecetaBcData.PROFILES_KEY, JSON.stringify(profiles));
     }
 

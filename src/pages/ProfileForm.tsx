@@ -72,8 +72,8 @@ const ProfileForm: React.FC = () => {
         history.goBack();
     }
     
-    const crear = () => {
-        presentLoading({
+    const crear = async () => {
+        await presentLoading({
             message: 'Creando perfil...',
             spinner: 'bubbles'
         });
@@ -88,12 +88,11 @@ const ProfileForm: React.FC = () => {
             roles.push('far');
         }
 
-        perfilService.createProfile(nombre, email, roles).then((profile) => {
-            dismissLoading();
-            data.addProfile(profile);
-            data.setCurrentProfile(profile);
+        let profile = await perfilService.createProfile(nombre, email, roles)
+        await dismissLoading();
+        await data.addProfile(profile);
+        await data.setCurrentProfile(profile);
             history.push('/folder/Inbox');
-        });
     }
 
     const confirm = () => {
@@ -113,7 +112,7 @@ const ProfileForm: React.FC = () => {
             message: '¿Está seguro de crear el perfil?',
             buttons: [
                 { text: 'Cancelar', role: 'cancel' },
-                { text: 'OK', handler: () => crear()}
+                { text: 'OK', handler: () => crear().then(() => console.log('Perfil creado'))}
             ]
         });
     }

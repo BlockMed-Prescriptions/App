@@ -12,11 +12,15 @@ export const buildKms = async (profile: Profile)  : Promise<KMSClient> => {
     if (null === KMS) {
         KMS = (await import('@extrimian/kms-client')).KMSClient;
     }
+    let key = profile.seed + profile.name.replace(/\s/g, '') + profile.email.replace(/\s/g, '');
 
-    if (cache.has(profile.didId)) {
-        return cache.get(profile.didId);
+    console.log("Building KMS for profile", profile.didId)
+    if (cache.has(key)) {
+        console.log("Returning cached KMS for profile", profile.didId)
+        return cache.get(key);
     }
 
+    console.log("Creating new KMS for profile", profile.didId)
     let kms = new KMS({
         lang: LANG.es,
         storage: new ProfileKMSSecureStorage(profile),
@@ -29,7 +33,7 @@ export const buildKms = async (profile: Profile)  : Promise<KMSClient> => {
     // validadores que fallan por CORS.
     kms.suites.set(Suite.RsaSignature2018, RSASignature2018SuiteRemake)
 
-    cache.set(profile.didId, kms)
+    cache.set(key, kms)
 
     return kms
 }

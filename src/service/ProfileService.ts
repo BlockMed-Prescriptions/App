@@ -22,7 +22,8 @@ class ProfileService {
             email: email,
             roles: roles,
             keyStorage: new Map<string, any>(),
-            didId: ''
+            didId: '',
+            seed: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
         };
         const kms = await this.getKms(profile);
 
