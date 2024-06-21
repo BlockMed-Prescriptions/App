@@ -99,7 +99,7 @@ const RecetaCard: React.FC<ContainerProps> = ({ receta, onClickSend, onClickArch
                 </IonButton>
                 ) : null}
                 {onClickTrash ? (
-                <IonButton fill="outline" color="danger"  size="small" onClick={(e) => trashClick(e)}>
+                <IonButton fill="clear" color="danger" slot="start" size="small" onClick={(e) => trashClick(e)}>
                     <IonIcon slot="icon-only" icon={trash} />
                 </IonButton>
                 ) : null}
