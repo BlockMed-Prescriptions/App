@@ -1,16 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonMenuButton, IonPage, IonTitle, IonToggle, IonToolbar, LocationHistory, useIonAlert, useIonLoading, useIonToast } from '@ionic/react';
-import ProfileService from '../service/ProfileService';
 import RecetaBcData, { RECETA_FOLDER_OUTBOX } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import { DIDDocument } from '@quarkid/did-core';
 import { close, checkmark, cameraOutline } from 'ionicons/icons';
-import RecetaService from '../service/RecetaService';
-import { CredentialSigner } from '../quarkid/CredentialSigner';
-import { CredentialVerifier } from '../quarkid/CredentialVerifier';
-import { RecetaGenerator } from '../service/RecetaGenerator';
+import RecetaService from '../receta/RecetaService';
+import { RecetaGenerator } from '../receta/RecetaGenerator';
 import Receta from '../model/Receta';
 import ModalScanner, { HTMLModalScanner } from '../components/ModalScanner';
 import ProfileHandler from '../service/ProfileHandler';

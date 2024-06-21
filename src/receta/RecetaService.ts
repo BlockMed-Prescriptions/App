@@ -1,7 +1,9 @@
+import MesssageSender from '../message/MessageSender';
+import { MessageType } from '../model/Message';
 import Profile from '../model/Profile';
 import Receta from '../model/Receta';
-import CredentialSend from '../quarkid/CredentialSender';
-import ProfileService from './ProfileService';
+import DIDMessageSend from '../quarkid/DidMessageSender';
+import ProfileService from '../service/ProfileService';
 
 import { VerifiableCredential, VerifiableCredentialService } from "@quarkid/vc-core";
 
@@ -114,9 +116,10 @@ class RecetaService {
         return receta;   
     }
 
-    public async sendReceta(profile: Profile, receta: Receta, targetDID?: string) : Promise<void> {
+    public async sendReceta(profile: Profile, receta: Receta, targetDID?: string, messageType?: MessageType) : Promise<void> {
         const target = targetDID || receta.didPaciente;
-        CredentialSend(profile, target, receta.certificado!)
+        const type: MessageType = messageType || "emision-receta";
+        await MesssageSender(profile, target, type, receta.certificado!)
     }
 
     private buildRandomId(receta: Receta) : string {
@@ -136,8 +139,6 @@ class RecetaService {
 
         return first + "-" + second;
     }
-
-
 }
 
 export default RecetaService;

@@ -4,6 +4,7 @@ import Profile from "../model/Profile";
 import { buildKms } from "../service/KmsFactory";
 import { ThreadMethod } from "@quarkid/dwn-client";
 import DwnFactory, { DIDServiceUrl } from "../service/DwnFactory";
+import { checkIfIsMessageType } from "../model/Message";
 
 const sendMsg = async (emisor: string, target: string, packedMessage: any) => {
     const url = await DIDServiceUrl(target);
@@ -31,8 +32,11 @@ const sendMsg = async (emisor: string, target: string, packedMessage: any) => {
     return
 }
 
-const CredentialSend = async (profile: Profile, didTarget: string,
-        credential: VerifiableCredential
+const DIDMessageSend = async (profile: Profile,
+        didTarget: string,
+        messageId: string,
+        messageBody: any,
+        issuanceDate: Date,
     ) => {
     const kms = await buildKms(profile);
     
@@ -42,15 +46,13 @@ const CredentialSend = async (profile: Profile, didTarget: string,
         throw new Error("No DID found for profile.");
     }
 
-    let issuanceDate: string|Date = credential.issuanceDate
-
     let message:IDIDCommMessage = {
         type: "application/json",
-        body: credential,
+        body: messageBody,
         from: didEmisor,
         to: [didTarget],
-        id: credential.id,
-        created_time: 'string' === typeof issuanceDate ? issuanceDate : issuanceDate.toISOString(),
+        id: messageId,
+        created_time: issuanceDate.toISOString(),
     };
 
     // console.log("Verifiable Credential Signed", credential, message);
@@ -67,4 +69,4 @@ const CredentialSend = async (profile: Profile, didTarget: string,
     sendMsg(didEmisor, didTarget, packedMessage);
 }
 
-export default CredentialSend;
+export default DIDMessageSend;

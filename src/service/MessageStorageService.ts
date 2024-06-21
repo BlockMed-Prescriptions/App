@@ -4,13 +4,13 @@ import RecetaBcData from "./RecetaBcData";
 
 
 
-export default class MessageService implements MessageStorage {
-    static instance: MessageService;
-    static getInstance(): MessageService {
-        if (!MessageService.instance) {
-            MessageService.instance = new MessageService(RecetaBcData.getInstance());
+export default class MessageStorageService implements MessageStorage {
+    static instance: MessageStorageService;
+    static getInstance(): MessageStorageService {
+        if (!MessageStorageService.instance) {
+            MessageStorageService.instance = new MessageStorageService(RecetaBcData.getInstance());
         }
-        return MessageService.instance;
+        return MessageStorageService.instance;
     }
 
     private messagesStorage : Entry[] = [];
@@ -42,8 +42,5 @@ export default class MessageService implements MessageStorage {
     async removeMessage(entry: Entry): Promise<void> {
         this.messagesStorage = this.messagesStorage.filter((e) => e !== entry)
     }
-
-
-
 }
 

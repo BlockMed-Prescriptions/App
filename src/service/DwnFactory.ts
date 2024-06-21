@@ -1,7 +1,7 @@
 import { DIDDocumentUtils } from "@quarkid/did-core";
 import Profile from "../model/Profile"
 import { DIDResolver } from "../quarkid/DIDResolver";
-import MessageService from "./MessageService";
+import MessageStorageService from "./MessageStorageService";
 import { DWNClient } from "@quarkid/dwn-client";
 
 const cache = new Map<string, DWNClient>(); 
@@ -38,7 +38,7 @@ export const DwnFactory = async (emisor: string) : Promise<DWNClient> => {
     const dwnClient = new DWNClient({
         did : emisor,
         inboxURL : await DIDServiceUrl(emisor),
-        storage : MessageService.getInstance(),
+        storage : MessageStorageService.getInstance(),
       })
     
     cache.set(emisor, dwnClient)

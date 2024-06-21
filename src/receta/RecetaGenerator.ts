@@ -14,9 +14,9 @@ import Profile from "../model/Profile";
 import RecetaService from "./RecetaService";
 import { CredentialSigner } from "../quarkid/CredentialSigner";
 import { CredentialVerifier } from "../quarkid/CredentialVerifier";
-import RecetaBcData, { RECETA_FOLDER_OUTBOX } from "./RecetaBcData";
+import RecetaBcData, { RECETA_FOLDER_OUTBOX } from "../service/RecetaBcData";
 import Receta from "../model/Receta";
-import CredentialSend from "../quarkid/CredentialSender";
+import MesssageSender from "../message/MessageSender";
 
 const recetaService:RecetaService = RecetaService.getInstance()
 const data:RecetaBcData = RecetaBcData.getInstance()
@@ -103,7 +103,7 @@ export const RecetaGenerator = async (
             position: "top",
             color: "warning"
         })
-        CredentialSend(profile, didPaciente, receta.certificado)
+        await MesssageSender(profile, receta.didPaciente, 'emision-receta', receta.certificado)
     } catch (e) {
         console.error("Error enviando la receta al paciente", e)
         await dismissToast()

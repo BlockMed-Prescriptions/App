@@ -2,7 +2,7 @@
 
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import Receta from '../model/Receta';
-import RecetaService from '../service/RecetaService';
+import RecetaService from '../receta/RecetaService';
 import Profile from '../model/Profile';
 import RecetaBcData from '../service/RecetaBcData';
 import ProfileHandler from '../service/ProfileHandler';
@@ -17,6 +17,7 @@ interface ContainerProps {
 
 export type HTMLRecetaSender = {
     send: (receta: Receta) => void,
+    solicitudConfirmacion (receta: Receta): void
 }
 
 const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerProps> = (props, forwardedRef) => {
@@ -58,7 +59,7 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
                     duration: 2000,
                     position: "top"
                 })
-                recetaService.sendReceta(currentProfile!, recetaCallback!, profileTarget.didId)
+                recetaService.sendReceta(currentProfile!, recetaCallback!, profileTarget.didId, 'envio-farmacia')
             }
         }
     }
@@ -67,7 +68,7 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
         if (did) {
             console.log("Prompt DID", did, recetaCallback)
             DIDResolver(did).then((doc) => {
-                recetaService.sendReceta(currentProfile!, recetaCallback!, did)
+                recetaService.sendReceta(currentProfile!, recetaCallback!, did, 'envio-farmacia')
                 presentToast({
                     message: "Enviando receta a la farmacia.",
                     color: "success",
@@ -116,7 +117,7 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
     }
 
     const envioRecetaProfileMedico = (receta: Receta) => {
-        recetaService.sendReceta(currentProfile!, receta)
+        recetaService.sendReceta(currentProfile!, receta, receta.didPaciente, 'emision-receta')
         presentToast({
             message: "Enviando receta al paciente",
             color: "success",
@@ -135,6 +136,10 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
             } else if (ProfileHandler.isPaciente(currentProfile)) {
                 envioRecetaProfilePaciente(receta)
             }
+        },
+        solicitudConfirmacion(receta: Receta) {
+            if (!currentProfile) return;
+            recetaService.sendReceta(currentProfile, receta, receta.didPaciente, 'solicitud-confirmacion-dispensa')
         }
     }));
 

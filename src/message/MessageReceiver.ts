@@ -1,17 +1,16 @@
 // 
-import { Entry } from '@quarkid/dwn-client/dist/types/message';
 import { Subject, Observable } from 'rxjs';
 import DwnFactory from '../service/DwnFactory';
 import { DWNClient } from '@quarkid/dwn-client';
 import RecetaBcData from '../service/RecetaBcData';
-import MessageService from '../service/MessageService';
+import MessageStorageService from '../service/MessageStorageService';
 import { VerifiableCredential } from '@quarkid/vc-core';
 import { Unpack } from '../quarkid/Unpaker';
 import Profile from '../model/Profile';
-import { s } from 'vite/dist/node/types.d-aGj9QkWt';
+import Message, { checkIfIsMessageType } from '../model/Message';
 
-const storage: MessageService = MessageService.getInstance()
-const entries: Subject<VerifiableCredential> = new Subject<VerifiableCredential>()
+const storage: MessageStorageService = MessageStorageService.getInstance()
+const entries: Subject<Message> = new Subject<Message>()
 
 let workerStarted = false
 let interval: any
@@ -55,9 +54,22 @@ const Worker = () => {
                 if (entry && entry.data) {
                     console.log(entry)
                     Unpack(currentProfile!, entry.data.packedMessage).then((unpackedMessage) => {
-                        entries.next(unpackedMessage.message.body as VerifiableCredential)
+                        // trato de determinar si es un VC
+                        console.log("Unpacked message", unpackedMessage)
+                        if (!unpackedMessage.message.body?.type) {
+                            console.log("Version anterior de mensaje", unpackedMessage)
+                            if (unpackedMessage.message.body?.credentialSubject) {
+                                entries.next({type: "emision-receta", credential: unpackedMessage.message.body as VerifiableCredential, class: "receta"})
+                                return;
+                            }
+                        }
+                        if (checkIfIsMessageType(unpackedMessage.message.body)) {
+                            entries.next(unpackedMessage.message.body as Message)
+                        } else {
+                            console.error("No es un mensaje válido", unpackedMessage)
+                        }
                     }).catch((e) => {
-                        
+                        console.error("Error unpacking message", e)
                     })
                 }
                 storage.removeMessage(entry)
@@ -66,7 +78,7 @@ const Worker = () => {
     }, 2000)
 }
 
-export const MessageReceiver = () : Observable<VerifiableCredential> => {
+export const MessageReceiver = () : Observable<Message> => {
     Worker()
     return entries.asObservable()
 }

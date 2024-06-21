@@ -7,7 +7,7 @@ import Receta from '../model/Receta';
 import { copyOutline, medalOutline } from 'ionicons/icons';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
 import { DIDResolver } from '../quarkid/DIDResolver';
-import RecetaDecorator from '../service/RecetaDecorator';
+import RecetaDecorator from '../receta/RecetaDecorator';
 
 import './RecetaView.css';
 
