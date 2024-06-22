@@ -10,6 +10,7 @@ export type HTMLModalCertificado = {
 
 interface ContainerProps {
     certificado: any
+    title?: string
 }
 
 const ModalCertificado: React.ForwardRefRenderFunction<HTMLModalCertificado, ContainerProps> = (props, forwardedRef) => {
@@ -33,7 +34,7 @@ const ModalCertificado: React.ForwardRefRenderFunction<HTMLModalCertificado, Con
         <IonModal ref={modal}>
             <IonHeader>
                 <IonToolbar>
-                    <IonTitle>Certificado</IonTitle>
+                    <IonTitle>{props.title ? props.title : "Certificado"}</IonTitle>
                     <IonButtons slot="end">
                         <IonButton onClick={() => dismiss()}>Cerrar</IonButton>
                     </IonButtons>
