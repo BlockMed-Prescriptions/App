@@ -14,7 +14,9 @@ class RecetaPermisos {
     }
 
     public canSendFarmacia(receta: Receta, profile: Profile) : boolean {
-        if (ProfileHandler.isPaciente(profile) && profile.didId === receta.didPaciente && receta.estado === 'emitida') {
+        if (ProfileHandler.isPaciente(profile) &&
+            profile.didId === receta.didPaciente &&
+            ["emitida", "enviada-farmacia"].includes(receta.estado || '')) {
             return true;
         } else {
             return false;
