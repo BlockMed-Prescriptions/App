@@ -27,22 +27,6 @@ const RecetaReceiver = () => {
                 recetaBcData.saveReceta(receta)
                 recetaBcData.addRecetaToFolder(receta, RECETA_FOLDER_INBOX)
                 break;
-            case 'solicitud-confirmacion-dispensa':
-                // busco la receta
-                recetaBcData.getReceta(receta.id!).then((r) => {
-                    console.log("Me han pedido que confirme la receta ... ", receta)
-                    receta.estado = 'pendiente-confirmacion-dispensa';
-                    recetaBcData.saveReceta(receta)
-                })
-                break
-            case 'dispensa':
-                // busco la receta
-                recetaBcData.getReceta(receta.id!).then((r) => {
-                    console.log("Me han dispensado la receta ... ", receta)
-                    receta.estado = 'consumida'
-                    recetaBcData.saveReceta(receta)
-                })
-                break
             default:
                 console.error("Mensaje desconocido", message)
                 throw new Error("Mensaje desconocido")
