@@ -52,6 +52,19 @@ const RecetaView: React.FC = () => {
       }, [])
 
     useEffect(() => {
+        const suscriber = data.observeRecetas().subscribe((r) => {
+            if (r.id === id) {
+                decorator.decorate(r).then((receta) => {
+                    setReceta({...receta})
+                })
+            }
+        })
+        return () => {
+            suscriber.unsubscribe()
+        }
+    }, [data])
+
+    useEffect(() => {
         if (currentProfile) {
             data.getReceta(id).then((receta) => {
                 decorator.decorate(receta).then((receta) => {
@@ -77,7 +90,6 @@ const RecetaView: React.FC = () => {
     }, [receta, currentProfile])
 
     function showCertificado(modal: HTMLModalCertificado) {
-        console.log(receta?.dispensa?.certificado)
         modal.open();
     }
 
