@@ -93,7 +93,9 @@ class RecetaService {
                 "schema:author": {
                     "schema:name": profile.name,
                     "schema:identifier": profile.didId,
-                }
+                },
+
+                "schema:identifier": receta.id!,
             },
             mappingRules: null,
         })
