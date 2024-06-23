@@ -12,10 +12,12 @@ const data = RecetaBcData.getInstance()
 export const RecepcionGenerator = async (
     profile: Profile,
     receta: Receta,
+    onProgress? : (msg: string, type: 'success' | 'info' | 'error') => void,
 ) : Promise<Recepcion> => {
 
     const fechaRecepcion = new Date
 
+    onProgress && onProgress("Generando certificado de recepción", 'success')
     const credential = await vcService.createCredential({
         context: [
         "https://w3id.org/security/v2",
@@ -44,16 +46,20 @@ export const RecepcionGenerator = async (
 
     let vc
     try {
+        onProgress && onProgress("Firmando certificado de recepción.", 'success')
         vc = await CredentialSigner(credential, profile)
     } catch (e) {
+        onProgress && onProgress("Error firmando certificado de recepción", 'error')
         throw e
     }
 
+    onProgress && onProgress("Enviando confirmación de recepción.", 'info')
     await MesssageSender(profile, receta.dispensa!.didFarmacia, 'confirmacion-dispensa', recepcion.certificado)
     receta.recepcion = recepcion
     receta.estado = 'consumida'
     receta.consumida = true
     await data.saveReceta(receta)
+    onProgress && onProgress("Recepción enviada.", 'success')
     return recepcion
 }
 

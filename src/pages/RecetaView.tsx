@@ -32,7 +32,7 @@ const RecetaView: React.FC = () => {
     const  recetaSender = useRef<HTMLRecetaSender>(null);
 
 
-    const [presentToast] = useIonToast();
+    const [presentToast, dismissToast] = useIonToast();
     const [presentAlert] = useIonAlert();
 
     const modal = useRef<HTMLModalCertificado>(null);
@@ -169,12 +169,17 @@ const RecetaView: React.FC = () => {
                 {
                     text: "Confirmar",
                     handler: () => {
-                        RecepcionGenerator(currentProfile!, receta);
-                        presentToast({
-                            message: "Dispensa confirmada",
-                            duration: 1000,
-                            position: 'bottom'
-                        });
+                        RecepcionGenerator(currentProfile!, receta, (msg, type) => {
+                            dismissToast().then(() => {
+                                let color = (type === 'info' ? 'primary' : type);
+                                presentToast({
+                                    message: msg,
+                                    duration: 1000,
+                                    position: 'top',
+                                    color: color
+                                });
+                            })
+                        })
                     }
                 }
             ]
