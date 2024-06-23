@@ -10,6 +10,7 @@ export type RecetaEstado = 'emitida' | 'vencida' | 'consumida' | 'pendiente-conf
  * 'emitida' | 'enviada-farmacia' | 'pendiente-confirmacion-dispensa'' => 'vencida'
  */
 type Receta = {
+    // Campos inmutables
     didMedico: string;
     didPaciente: string;
     nombrePaciente: string;
@@ -23,6 +24,7 @@ type Receta = {
     id?: string;
     certificado?: any
 
+    // Modificaciones a lo largo del ciclo de vida
     dispensa?: Dispensa
     recepcion?: Recepcion
 
