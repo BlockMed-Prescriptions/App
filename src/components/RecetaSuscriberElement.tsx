@@ -16,6 +16,7 @@ const RecetaSuscriberElement: React.FC = () => {
      * Control de farmacia.
      */
     const casoEnviadaFarmacia = (receta: Receta, profile: Profile) : boolean => {
+        //console.log("casoEnviadaFarmacia", receta.estado, profile.roles)
         if (ProfileHandler.isFarmacia(profile) && 'enviada-farmacia' === receta.estado) {
             presentToast({
                 message: '¡Receta recibida de ' + receta.nombrePaciente + '!',
@@ -34,17 +35,18 @@ const RecetaSuscriberElement: React.FC = () => {
             return true;
         }
 
-        return true;
+        return false;
     }
 
     const casoDeboConfirmarDispensa = (receta: Receta, profile: Profile) : boolean => {
+        //console.log("casoDeboConfirmarDispensa", receta.estado, receta.didPaciente, profile.didId)
         if (receta.didPaciente !== profile.didId) {
             console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
             return false;
         }
 
         if (receta.estado !== 'pendiente-confirmacion-dispensa') {
-            console.log("Receta no está pendiente de confirmación de dispensa, por ahora, no hacemos nada.", receta.estado)
+            //console.log("Receta no está pendiente de confirmación de dispensa, por ahora, no hacemos nada.", receta.estado)
             return false;
         }
 
@@ -75,12 +77,13 @@ const RecetaSuscriberElement: React.FC = () => {
      * Paciente recibe del médico una nueva receta
      */
     const casoPacienteRecibeReceta = (receta: Receta, profile: Profile) : boolean => {
+        //console.log("casoPacienteRecibeReceta", receta.estado, receta.didPaciente, profile.didId)
         if (receta.didPaciente !== profile.didId) {
-            console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
+            //console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
             return false;
         }
         if (receta.estado !== 'emitida') {
-            console.log("Receta no está activa, por ahora, no hacemos nada.", receta.estado)
+            //console.log("Receta no está activa, por ahora, no hacemos nada.", receta.estado)
             return false;
         }
         presentToast({
