@@ -19,6 +19,26 @@ class RecetaDecorator {
         this.data = data;
     }
 
+    public decorateFechas(receta: Receta) : Receta {
+        if ('string' === typeof receta.fechaEmision) {
+            receta.fechaEmision = new Date(receta.fechaEmision);
+        }
+        if ('string' === typeof receta.fechaVencimiento) {
+            receta.fechaVencimiento = new Date(receta.fechaVencimiento);
+        }
+        if ('string' === typeof receta.certificado?.issuanceDate) {
+            receta.certificado.issuanceDate = new Date(receta.certificado.issuanceDate);
+        }
+        if ('string' === typeof receta.certificado?.expirationDate) {
+            receta.certificado.expirationDate = new Date(receta.certificado.expirationDate);
+        }
+        if ('string' === typeof receta.dispensa?.fechaDispensa) {
+            receta.dispensa.fechaDispensa = new Date(receta.dispensa.fechaDispensa);
+        }
+
+        return receta
+    }
+
     public async decorate(receta: Receta) {
         receta.nombreMedico = this.getNombreMedico(receta);
         let list = await this.data.getRecetasFromFolder(RECETA_FOLDER_PAPELERA);
@@ -31,6 +51,9 @@ class RecetaDecorator {
         if (undefined === receta.estado) {
             receta.estado = 'emitida';
         }
+      
+        return this.decorateFechas(receta)
+
     }
 
     private getNombreMedico(receta: Receta) : string {
