@@ -42,8 +42,8 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
     }, [data])
 
     let recetaCallback: Receta|null = null;
-    const scanCallback = (data: string) => {
-        const profileTarget = ProfileHandler.fromQrCode(data)
+    const scanCallback = (scanned: string) => {
+        const profileTarget = ProfileHandler.fromQrCode(scanned)
         if (profileTarget) {
             if (!ProfileHandler.isFarmacia(profileTarget)) {
                 presentToast({
@@ -60,6 +60,8 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
                     position: "top"
                 })
                 recetaService.sendReceta(currentProfile!, recetaCallback!, profileTarget.didId, 'envio-farmacia')
+                recetaCallback!.estado = 'enviada-farmacia'
+                data.saveReceta(recetaCallback!)
             }
         }
     }
@@ -69,6 +71,8 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
             console.log("Prompt DID", did, recetaCallback)
             DIDResolver(did).then((doc) => {
                 recetaService.sendReceta(currentProfile!, recetaCallback!, did, 'envio-farmacia')
+                recetaCallback!.estado = 'enviada-farmacia'
+                data.saveReceta(recetaCallback!)
                 presentToast({
                     message: "Enviando receta a la farmacia.",
                     color: "success",

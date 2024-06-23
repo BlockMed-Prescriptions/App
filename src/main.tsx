@@ -1,16 +1,14 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-
-import RecetaReceiver from './message/RecetaReceiver';
-import DispensaReceiver from './message/DispensaReceiver';
+import StartReceivers from './message/StartReceivers';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
-
-setTimeout(() => RecetaReceiver(), 1000);
-setTimeout(() => DispensaReceiver(), 1000);
+setTimeout(() => {
+  StartReceivers()
+})
 
 root.render(
   <React.StrictMode>

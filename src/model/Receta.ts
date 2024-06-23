@@ -1,4 +1,5 @@
 import Dispensa from "./Dispensa";
+import Recepcion from "./Recepcion";
 
 export type RecetaEstado = 'emitida' | 'vencida' | 'consumida' | 'pendiente-confirmacion-dispensa' | 'enviada-farmacia';
 
@@ -23,6 +24,7 @@ type Receta = {
     certificado?: any
 
     dispensa?: Dispensa
+    recepcion?: Recepcion
 
     // Otras propiedades de trabajo
     enCarpetaFavoritos?: boolean

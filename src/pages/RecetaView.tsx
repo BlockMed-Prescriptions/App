@@ -14,6 +14,7 @@ import ProfileHandler from '../service/ProfileHandler';
 import RecetaService from '../receta/RecetaService';
 import RecetaPermisos from '../receta/RecetaPermisos';
 import RecetaSender, { HTMLRecetaSender } from '../components/RecetaSender';
+import RecepcionGenerator from '../receta/RecepcionGenerator';
 
 
 const RecetaView: React.FC = () => {
@@ -153,6 +154,33 @@ const RecetaView: React.FC = () => {
         });
     }
 
+    const confirmarRecepcion = (receta: Receta) => {
+        if (!currentProfile) {
+            return;
+        }
+        if (!receta.dispensa) {
+            return;
+        }
+        presentAlert({
+            "message": "¿Está seguro de que quiere confirmar la recepción de la medicación?",
+            "header": "Confirmar Recepción",
+            "buttons": [
+                "Cancelar",
+                {
+                    text: "Confirmar",
+                    handler: () => {
+                        RecepcionGenerator(currentProfile!, receta);
+                        presentToast({
+                            message: "Dispensa confirmada",
+                            duration: 1000,
+                            position: 'bottom'
+                        });
+                    }
+                }
+            ]
+        })
+    }
+
     const sendReceta = (receta: Receta) => {
         if (!currentProfile) {
             return;
@@ -265,7 +293,12 @@ const RecetaView: React.FC = () => {
                     <IonItem>
                         <IonLabel>
                             <h2>Dispensa</h2>
-                            <p>{receta.dispensa.fechaDispensa.toLocaleDateString() + " " + receta.dispensa.fechaDispensa.toLocaleTimeString()}</p>
+                            <p>
+                                {receta.dispensa.fechaDispensa.toLocaleDateString() + " " + receta.dispensa.fechaDispensa.toLocaleTimeString()}
+                                {receta.dispensa.medicamentos.map((medicamento, index) => (
+                                    <div key={index}>{medicamento}</div>
+                                ))}
+                            </p>
                         </IonLabel>
                         <IonButtons slot="end">
                             <IonButton size="small" onClick={(e) => showCertificado(modalDispensa.current!)}>
@@ -275,6 +308,16 @@ const RecetaView: React.FC = () => {
                         <ModalCertificado ref={modalDispensa} certificado={receta.dispensa.certificado}  title="Dispensa" />
                     </IonItem>
                     ) : ''}
+
+                    {receta?.recepcion ? (
+                    <IonItem>
+                        <IonLabel>
+                            <h2>Recepción medicamentos</h2>
+                            <p>{receta.recepcion.fechaRecepcion.toLocaleDateString() + " " + receta.recepcion.fechaRecepcion.toLocaleTimeString()}</p>
+                        </IonLabel>
+                    </IonItem>
+                    ) : ''}
+
 
                     <IonItemDivider>
                     </IonItemDivider>
@@ -300,7 +343,7 @@ const RecetaView: React.FC = () => {
                             </IonButton>
                             ) : ''}
                             {showConfirmarDispensa ? (
-                                <IonButton size="small" color="success" fill="solid">
+                                <IonButton size="small" color="success" fill="solid" onClick={(e) => confirmarRecepcion(receta!)}>
                                     <IonIcon slot="start" icon={checkmarkDone} />
                                     Confirmar dispensa
                                 </IonButton>

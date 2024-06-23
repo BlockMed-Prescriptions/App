@@ -35,6 +35,9 @@ class RecetaDecorator {
         if ('string' === typeof receta.dispensa?.fechaDispensa) {
             receta.dispensa.fechaDispensa = new Date(receta.dispensa.fechaDispensa);
         }
+        if ('string' === typeof receta.recepcion?.fechaRecepcion) {
+            receta.recepcion.fechaRecepcion = new Date(receta.recepcion.fechaRecepcion);
+        }
 
         return receta
     }

@@ -1,20 +1,23 @@
 import { VerifiableCredential } from "@quarkid/vc-core";
 
-export type MessageType = 'emision-receta' | 'envio-farmacia' | 'solicitud-confirmacion-dispensa' | 'dispensa';
+export type MessageType = 'emision-receta' | 
+    'envio-farmacia' |
+    'solicitud-confirmacion-dispensa' |
+    'confirmacion-dispensa';
 
 type Message = {
     type: MessageType,
     credential: VerifiableCredential,
-    class: 'receta' | 'dispensa'
+    class: 'receta' | 'dispensa' | 'recepcion'
 }
 
 export const checkIfIsMessageType = (message: any) : boolean => {
     // chequeo que todos los campos de message estén en el tipo Message
     if (message.type && message.credential && message.class) {
         // tipo sólo puede ser los tipos especificados
-        if (["emision-receta", "envio-farmacia", "solicitud-confirmacion-dispensa", "dispensa"].includes(message.type)) {
+        if (["emision-receta", "envio-farmacia", "solicitud-confirmacion-dispensa", "dispensa", "confirmacion-dispensa"].includes(message.type)) {
             // class sólo puede ser los tipos especificados
-            if (["receta", 'dispensa'].includes(message.class)) {
+            if (["receta", 'dispensa', 'recepcion'].includes(message.class)) {
                 return true
             }
         }

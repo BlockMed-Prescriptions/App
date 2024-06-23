@@ -30,6 +30,7 @@ const generateCertificate = async (dispensa: Dispensa) => {
             "schema:Drug": medicamentos,
             "schema:DrugBatch": lotes,
             "schema:Date": dispensa.confirmacionDispensa ? dispensa.confirmacionDispensa.toISOString() : null,
+            "schema:identifier": dispensa.recetaId,
         },
         mappingRules: null,
     })

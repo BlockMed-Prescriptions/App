@@ -16,9 +16,6 @@ const DispensaReceiver = () => {
             case 'solicitud-confirmacion-dispensa':
                 estado = 'pendiente-confirmacion-dispensa'
                 break
-            case 'dispensa':
-                estado = 'consumida'
-                break
             default:
                 throw new Error("Mensaje desconocido. Error ent ipo de mensaje")
         }
@@ -30,6 +27,7 @@ const DispensaReceiver = () => {
             medicamentos: [message.credential.credentialSubject["schema:Drug"]["schema:name"]],
             lotes: [message.credential.credentialSubject["schema:DrugBatch"]["schema:batchNumber"]],
             confirmacionDispensa: null,
+            certificado: message.credential
         }
 
         if (message.credential.credentialSubject["schema:Date"]) {
