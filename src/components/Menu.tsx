@@ -1,6 +1,7 @@
 import {
   IonBadge,
   IonContent,
+  IonFooter,
   IonIcon,
   IonItem,
   IonLabel,
@@ -9,6 +10,7 @@ import {
   IonMenu,
   IonMenuToggle,
   IonNote,
+  IonText,
 } from '@ionic/react';
 
 import React, { useRef } from 'react';
@@ -20,6 +22,7 @@ import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_F
 import Profile from '../model/Profile';
 import { useState, useEffect } from 'react';
 import NewProfileButton from './NewProfileButton';
+import {version as recetasBcVersion} from '../version';
 
 interface AppPage {
   url: string;
@@ -67,8 +70,6 @@ const appPagesInit: AppPage[] = [
     folder: RECETA_FOLDER_PAPELERA
   }
 ];
-
-const labels:string[] = ['Familia', 'Amigos']
 
 const Menu: React.FC = () => {
   const location = useLocation()
@@ -157,17 +158,10 @@ const Menu: React.FC = () => {
             );
           })}
         </IonList>
-
-        <IonList id="labels-list">
-          <IonListHeader>Etiquetas</IonListHeader>
-          {labels.map((label, index) => (
-            <IonItem lines="none" key={index}>
-              <IonIcon aria-hidden="true" slot="start" icon={bookmarkOutline} />
-              <IonLabel>{label}</IonLabel>
-            </IonItem>
-          ))}
-        </IonList>
       </IonContent>
+      <IonFooter>
+          <IonText style={{"font-size": "80%"}} className='ion-padding' color="medium">Versión {recetasBcVersion}</IonText>
+      </IonFooter>
     </IonMenu>
   );
 };
