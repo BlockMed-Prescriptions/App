@@ -7,15 +7,26 @@
 
 import { MessageReceiver } from "./MessageReceiver";
 import Receta from "../model/Receta";
-import RecetaBcData, { RECETA_FOLDER_INBOX } from "../service/RecetaBcData";
+import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_INBOX, RECETA_FOLDER_PAPELERA } from "../service/RecetaBcData";
 import RecetaService from "../receta/RecetaService";
-
 
 const RecetaReceiver = () => {
     const recetaService = RecetaService.getInstance()
     console.log("Starting worker RecetaReceiver")
     const recetaBcData = RecetaBcData.getInstance();
     const observable = MessageReceiver()
+
+    const saveReceta = (receta: Receta) => {
+        recetaBcData.getReceta(receta.id!).then((oldReceta) => {
+            // la receta ya la tengo, entonces no la guardo
+            recetaBcData.removeRecetaFromFolder(oldReceta, RECETA_FOLDER_ARCHIVED)
+            recetaBcData.removeRecetaFromFolder(oldReceta, RECETA_FOLDER_PAPELERA)
+            recetaBcData.addRecetaToFolder(oldReceta, RECETA_FOLDER_INBOX)
+        }).catch((e) => {
+            recetaBcData.saveReceta(receta)
+            recetaBcData.addRecetaToFolder(receta, RECETA_FOLDER_INBOX)
+        })
+    }
     
     observable.subscribe((message) => {
         if ('receta' !== message.class) return;
@@ -25,8 +36,7 @@ const RecetaReceiver = () => {
                 receta.estado = 'enviada-farmacia'
             case 'emision-receta':
                 if (receta.estado === undefined) receta.estado = 'emitida'
-                recetaBcData.saveReceta(receta)
-                recetaBcData.addRecetaToFolder(receta, RECETA_FOLDER_INBOX)
+                saveReceta(receta)
                 break;
             default:
                 console.error("Mensaje desconocido", message)
