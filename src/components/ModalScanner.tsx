@@ -11,8 +11,8 @@ import popSoundEffect from '../assets/pop-94319.mp3';
 
 
 export type HTMLModalScanner = {
-    open: () => void,
-    dismiss: () => void
+    open: () => Promise<void>,
+    dismiss: () => Promise<boolean>
 }
 
 interface ContainerProps {
@@ -32,15 +32,16 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
     const [qrOn, setQrOn] = useState<boolean>(true);
 
     const dismiss = () => {
-        modal.current!.dismiss();
-    }
+        stopAll()
+        return modal.current!.dismiss();
+    }   
 
     useImperativeHandle(forwardedRef, () => ({
         open() {
-            modal.current!.present();
+            return modal.current!.present();
         },
         dismiss() {
-            dismiss();
+            return dismiss()
         },
     }));
 
@@ -116,7 +117,7 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
                 <IonToolbar>
                     <IonTitle>Scan</IonTitle>
                     <IonButtons slot="end">
-                        <IonButton onClick={() => dismiss()}>Cerrar</IonButton>
+                        <IonButton onClick={() => dismiss().then(() => {})}>Cerrar</IonButton>
                     </IonButtons>
                 </IonToolbar>
             </IonHeader>
