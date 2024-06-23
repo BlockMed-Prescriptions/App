@@ -160,7 +160,7 @@ const Menu: React.FC = () => {
         </IonList>
       </IonContent>
       <IonFooter>
-          <IonText style={{"font-size": "80%"}} className='ion-padding' color="medium">Versión {recetasBcVersion}</IonText>
+          <IonText style={{"fontSize": "80%"}} className='ion-padding' color="medium">Versión {recetasBcVersion}</IonText>
       </IonFooter>
     </IonMenu>
   );
