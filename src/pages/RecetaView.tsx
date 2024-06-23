@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenuButton, IonModal, IonNote, IonPage, IonRow, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
+import { IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonMenuButton, IonModal, IonNote, IonPage, IonRow, IonText, IonTitle, IonToolbar, useIonAlert, useIonToast } from '@ionic/react';
 import { useParams } from 'react-router';
 import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX, RECETA_FOLDER_PAPELERA } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
@@ -36,6 +36,7 @@ const RecetaView: React.FC = () => {
 
     const modal = useRef<HTMLModalCertificado>(null);
     const modalMedico = useRef<HTMLModalCertificado>(null);
+    const modalDispensa = useRef<HTMLModalCertificado>(null);
     const buttonCertificadoMedico = useRef<HTMLIonButtonElement>(null);
     const [certificadoMedico, setCertificadoMedico] = useState<any|undefined|null>(null)
 
@@ -53,10 +54,10 @@ const RecetaView: React.FC = () => {
     useEffect(() => {
         if (currentProfile) {
             data.getReceta(id).then((receta) => {
-                decorator.decorate(receta).then(() => {
+                decorator.decorate(receta).then((receta) => {
                     setReceta({...receta})
                 })
-                setReceta(receta)
+                setReceta(decorator.decorateFechas(receta))
             })
         }
     }, [currentProfile, id, data])
@@ -75,8 +76,9 @@ const RecetaView: React.FC = () => {
         }
     }, [receta, currentProfile])
 
-    function showCertificado() {
-        modal.current?.open();
+    function showCertificado(modal: HTMLModalCertificado) {
+        console.log(receta?.dispensa?.certificado)
+        modal.open();
     }
 
     function showCertificadoMedico() {
@@ -157,7 +159,7 @@ const RecetaView: React.FC = () => {
                     <IonTitle>Receta</IonTitle>
                     <IonButtons slot="end">
                         {receta?.certificado ?(
-                        <IonButton onClick={() => showCertificado()} >
+                        <IonButton onClick={() => showCertificado(modal.current!)} >
                             <IonIcon slot="start" icon={medalOutline} />
                             Ver certificado
                         </IonButton>
@@ -242,10 +244,25 @@ const RecetaView: React.FC = () => {
                                 <IonButton ref={buttonCertificadoMedico} size="small" onClick={() => showCertificadoMedico()}>
                                     <IonIcon icon={medalOutline} size="small"  slot="icon-only" />
                                 </IonButton>
-                                <ModalCertificado ref={modalMedico} certificado={certificadoMedico} />
+                                <ModalCertificado ref={modalMedico} certificado={certificadoMedico} title={receta.nombreMedico}/>
                             </IonButtons>
                         ) : ''}
                     </IonItem>
+
+                    {receta?.dispensa ? (
+                    <IonItem>
+                        <IonLabel>
+                            <h2>Dispensa</h2>
+                            <p>{receta.dispensa.fechaDispensa.toLocaleDateString() + " " + receta.dispensa.fechaDispensa.toLocaleTimeString()}</p>
+                        </IonLabel>
+                        <IonButtons slot="end">
+                            <IonButton size="small" onClick={(e) => showCertificado(modalDispensa.current!)}>
+                                <IonIcon icon={medalOutline} size="small" slot="icon-only" />
+                            </IonButton>
+                        </IonButtons>
+                        <ModalCertificado ref={modalDispensa} certificado={receta.dispensa.certificado}  title="Dispensa" />
+                    </IonItem>
+                    ) : ''}
 
                     <IonItemDivider>
                     </IonItemDivider>
@@ -284,11 +301,11 @@ const RecetaView: React.FC = () => {
                             ) : ''}
                         </IonButtons>
                     </IonItem>
-
                 </IonList>
 
                 <ModalCertificado ref={modal} certificado={receta?.certificado} />
                 <RecetaSender ref={recetaSender}/>
+                <IonText className='ion-padding' color="medium">Estado interno: {receta?.estado}</IonText>
 
             </IonContent>
         </IonPage>
