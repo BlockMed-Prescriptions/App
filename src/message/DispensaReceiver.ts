@@ -4,12 +4,13 @@ import Dispensa from "../model/Dispensa";
 import RecetaBcData from "../service/RecetaBcData";
 import { RecetaEstado } from "../model/Receta";
 
-const data = RecetaBcData.getInstance();
-const observable = MessageReceiver()
-
 const DispensaReceiver = () => {
+    console.log("Starting worker DispensaReceiver")
+
+    const data = RecetaBcData.getInstance();
+    const observable = MessageReceiver()
+    
     observable.subscribe((message) => {
-        console.log("DispensaReceiver", message)
         if ('dispensa' !== message.class) return;
         let estado:RecetaEstado
         switch (message.type) {

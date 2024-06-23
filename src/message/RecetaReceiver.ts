@@ -10,12 +10,13 @@ import Receta from "../model/Receta";
 import RecetaBcData, { RECETA_FOLDER_INBOX } from "../service/RecetaBcData";
 import RecetaService from "../receta/RecetaService";
 
-const recetaBcData = RecetaBcData.getInstance();
-const observable = MessageReceiver()
 
 const RecetaReceiver = () => {
     const recetaService = RecetaService.getInstance()
-
+    console.log("Starting worker RecetaReceiver")
+    const recetaBcData = RecetaBcData.getInstance();
+    const observable = MessageReceiver()
+    
     observable.subscribe((message) => {
         if ('receta' !== message.class) return;
         const receta: Receta = recetaService.buildRecetaFromCredential(message.credential)

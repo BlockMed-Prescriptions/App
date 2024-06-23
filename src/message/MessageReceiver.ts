@@ -37,6 +37,8 @@ const Worker = () => {
         workerStarted = true
     }
 
+    console.log("Starting worker MessageReceiver")
+
     const data = RecetaBcData.getInstance()
     currentProfile = data.getCurrentProfile()
     processProfile().then(() => {})
@@ -79,7 +81,6 @@ const Worker = () => {
 }
 
 export const MessageReceiver = () : Observable<Message> => {
-    Worker()
     return entries.asObservable()
 }
 
@@ -87,4 +88,8 @@ export const stopWorker = () => {
     console.log("Stopping worker", interval)
     if (interval) clearInterval(interval)
     workerStarted = false
+}
+
+export const startWorker = () => {
+    Worker()
 }
