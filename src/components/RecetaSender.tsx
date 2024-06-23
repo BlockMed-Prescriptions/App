@@ -4,7 +4,7 @@ import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import Receta from '../model/Receta';
 import RecetaService from '../receta/RecetaService';
 import Profile from '../model/Profile';
-import RecetaBcData from '../service/RecetaBcData';
+import RecetaBcData, { RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX } from '../service/RecetaBcData';
 import ProfileHandler from '../service/ProfileHandler';
 import { IonAlert, useIonActionSheet, useIonToast } from '@ionic/react';
 import ModalScanner, { HTMLModalScanner } from './ModalScanner';
@@ -41,44 +41,53 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
         }
     }, [data])
 
+    const sendReceta = (targetDid: string, receta: Receta) => {
+        recetaService.sendReceta(currentProfile!, recetaCallback!, targetDid, 'envio-farmacia')
+        recetaCallback!.estado = 'enviada-farmacia'
+        data.saveReceta(recetaCallback!)
+        data.moveRecetaToFolder(receta, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX)
+    }
+
     let recetaCallback: Receta|null = null;
     const scanCallback = (scanned: string) => {
-        const profileTarget = ProfileHandler.fromQrCode(scanned)
-        if (profileTarget) {
-            if (!ProfileHandler.isFarmacia(profileTarget)) {
-                presentToast({
-                    message: "El código QR no corresponde a una farmacia.",
-                    color: "danger",
-                    duration: 2000,
-                    position: "top"
-                })
-            } else {
-                presentToast({
-                    message: "Enviando receta a la farmacia.",
-                    color: "success",
-                    duration: 2000,
-                    position: "top"
-                })
-                recetaService.sendReceta(currentProfile!, recetaCallback!, profileTarget.didId, 'envio-farmacia')
-                recetaCallback!.estado = 'enviada-farmacia'
-                data.saveReceta(recetaCallback!)
-            }
+        if (!recetaCallback) {
+            console.error("No hay recetaCallback")
+            return
         }
+        modalScanner.current?.dismiss().then(() => {
+            const profileTarget = ProfileHandler.fromQrCode(scanned)
+            if (profileTarget) {
+                if (!ProfileHandler.isFarmacia(profileTarget)) {
+                    presentToast({
+                        message: "El código QR no corresponde a una farmacia.",
+                        color: "danger",
+                        duration: 2000,
+                        position: "top"
+                    })
+                } else {
+                    presentToast({
+                        message: "Enviando receta a la farmacia.",
+                        color: "success",
+                        duration: 2000,
+                        position: "top"
+                    })
+                    sendReceta(profileTarget.didId!, recetaCallback!)
+                }
+            }
+        })
     }
 
     const promptDidCallback = (did: string) => {
         if (did) {
             console.log("Prompt DID", did, recetaCallback)
             DIDResolver(did).then((doc) => {
-                recetaService.sendReceta(currentProfile!, recetaCallback!, did, 'envio-farmacia')
-                recetaCallback!.estado = 'enviada-farmacia'
-                data.saveReceta(recetaCallback!)
                 presentToast({
                     message: "Enviando receta a la farmacia.",
                     color: "success",
                     duration: 2000,
                     position: "top"
                 })
+                sendReceta(did, recetaCallback!)
             }).catch((e) => {
                 presentToast({
                     message: "Revise el ID de farmacia ... No se pudo enviar la receta.",
@@ -99,6 +108,7 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
                     text: "Scanear QR",
                     icon: qrCode,
                     handler: () => {
+                        recetaCallback = receta;
                         modalScanner.current?.open()
                     }
                 },
