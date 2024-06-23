@@ -51,7 +51,7 @@ const RecetaSuscriberElement: React.FC = () => {
         }
 
         presentToast({
-            message: '¡Debes confirmar la receta!',
+            message: '¡Debes confirmar la recepción de medicamentos!',
             color: 'success',
             buttons: [
                 {
