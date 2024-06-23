@@ -8,6 +8,7 @@ import { VerifiableCredential } from '@quarkid/vc-core';
 import { Unpack } from '../quarkid/Unpaker';
 import Profile from '../model/Profile';
 import Message, { checkIfIsMessageType } from '../model/Message';
+import { Entry } from '@quarkid/dwn-client/dist/types/message';
 
 const storage: MessageStorageService = MessageStorageService.getInstance()
 const entries: Subject<Message> = new Subject<Message>()
@@ -28,6 +29,38 @@ const processProfile = async () => {
             dwnClient = null
         }
     }
+}
+
+const processEntry = (entry: Entry) : boolean => {
+    console.log(entry)
+    let recipents:string[] = entry.data.packedMessage.recipients.map((r:any) => r.header.kid)
+    // busco si en los recipientes está mi didId, teniendo en cuenta que el recipiente
+    // es de la forma did:method:id#key y el didId es de la forma did:method:id
+    let found = recipents.find((r) => r.startsWith(currentProfile!.didId))
+    if (!found) {
+        console.log("No es para mi", recipents, currentProfile!.didId)
+        return false
+    }
+
+    Unpack(currentProfile!, entry.data.packedMessage).then((unpackedMessage) => {
+        // trato de determinar si es un VC
+        console.log("Unpacked message", unpackedMessage)
+        if (!unpackedMessage.message.body?.type) {
+            console.log("Version anterior de mensaje", unpackedMessage)
+            if (unpackedMessage.message.body?.credentialSubject) {
+                entries.next({type: "emision-receta", credential: unpackedMessage.message.body as VerifiableCredential, class: "receta"})
+                return;
+            }
+        }
+        if (checkIfIsMessageType(unpackedMessage.message.body)) {
+            entries.next(unpackedMessage.message.body as Message)
+        } else {
+            console.error("No es un mensaje válido", unpackedMessage)
+        }
+    }).catch((e) => {
+        console.error("Error unpacking message", e)
+    })
+    return true
 }
 
 const Worker = () => {
@@ -53,28 +86,11 @@ const Worker = () => {
             // tomo el primer mensaje y lo proceso
             storage.getMessages().then((messages) => {
                 const entry = messages[0]
-                if (entry && entry.data) {
-                    console.log(entry)
-                    Unpack(currentProfile!, entry.data.packedMessage).then((unpackedMessage) => {
-                        // trato de determinar si es un VC
-                        console.log("Unpacked message", unpackedMessage)
-                        if (!unpackedMessage.message.body?.type) {
-                            console.log("Version anterior de mensaje", unpackedMessage)
-                            if (unpackedMessage.message.body?.credentialSubject) {
-                                entries.next({type: "emision-receta", credential: unpackedMessage.message.body as VerifiableCredential, class: "receta"})
-                                return;
-                            }
-                        }
-                        if (checkIfIsMessageType(unpackedMessage.message.body)) {
-                            entries.next(unpackedMessage.message.body as Message)
-                        } else {
-                            console.error("No es un mensaje válido", unpackedMessage)
-                        }
-                    }).catch((e) => {
-                        console.error("Error unpacking message", e)
-                    })
+                if (entry) {
+                    let ret = processEntry(entry)
+                    storage.removeMessage(entry)
+                    if (ret) return;
                 }
-                storage.removeMessage(entry)
             })
         }
     }, 2000)
