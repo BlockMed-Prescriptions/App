@@ -365,7 +365,7 @@ const RecetaView: React.FC = () => {
 
                 <ModalCertificado ref={modal} certificado={receta?.certificado} />
                 <RecetaSender ref={recetaSender}/>
-                <IonText className='ion-padding' color="medium">Estado interno: {receta?.estado}</IonText>
+                <IonText className='ion-padding' color="medium">Estado interno: {receta?.estado}. Hash: {receta?.transactionHashEmision}</IonText>
 
             </IonContent>
         </IonPage>

@@ -23,10 +23,12 @@ type Receta = {
 
     id?: string;
     certificado?: any
+    transactionHashEmision?: string
 
     // Modificaciones a lo largo del ciclo de vida
     dispensa?: Dispensa
     recepcion?: Recepcion
+    transactionHashDispensa?: string
 
     // Otras propiedades de trabajo
     enCarpetaFavoritos?: boolean
@@ -35,6 +37,7 @@ type Receta = {
     estado?: RecetaEstado
     nombreMedico?: string
     consumida?: boolean
+    estadoBc?: 'emitida' | 'dispensada'
 }
 
 export default Receta;

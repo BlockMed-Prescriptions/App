@@ -17,9 +17,11 @@ import { CredentialVerifier } from "../quarkid/CredentialVerifier";
 import RecetaBcData, { RECETA_FOLDER_OUTBOX } from "../service/RecetaBcData";
 import Receta from "../model/Receta";
 import MesssageSender from "../message/MessageSender";
+import BlockchainPublisher from "./BlockchainPublisher";
 
 const recetaService:RecetaService = RecetaService.getInstance()
 const data:RecetaBcData = RecetaBcData.getInstance()
+const publisher: BlockchainPublisher = BlockchainPublisher.getInstance()
 
 
 export const RecetaGenerator = async (
@@ -94,8 +96,23 @@ export const RecetaGenerator = async (
         throw new Error("Certificado firmado pero no verificado. Error: " + verifyResult.error?.description)
     }
 
+    // Registrando receta en la blockchain
+    await presentToast({
+        message: "Registrando receta en la blockchain ...",
+        position: "top",
+        color: "warning"
+    })
+    try {
+        receta.transactionHashEmision = await publisher.emitir(receta)
+        await dismissToast()
+    } catch (e) {
+        await dismissToast()
+        throw e
+    }
+
     // Guardo la receta en la persistencia local
     await data.saveReceta(receta, RECETA_FOLDER_OUTBOX)
+
 
     try {
         await presentToast({

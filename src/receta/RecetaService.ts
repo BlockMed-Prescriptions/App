@@ -74,7 +74,7 @@ class RecetaService {
                 "schema:MedicalGuideline": {
                     "schema:guideline": receta.indicaciones,
                     "schema:guidelineDate": receta.fechaEmision.toISOString(),
-
+                    "schema:identifer": receta.transactionHashEmision
                 },
                 // didPaciente: receta.didPaciente,
                 // nombrePaciente: receta.nombrePaciente,
@@ -113,7 +113,8 @@ class RecetaService {
             fechaEmision: credential.issuanceDate,
             fechaVencimiento: credential.expirationDate!,
             id: credential.id,
-            certificado: credential
+            certificado: credential,
+            transactionHashEmision: credential.credentialSubject["schema:MedicalGuideline"]["schema:identifer"]
         }
 
         return receta;   
