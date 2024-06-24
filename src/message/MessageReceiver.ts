@@ -12,6 +12,7 @@ import { Entry } from '@quarkid/dwn-client/dist/types/message';
 
 const storage: MessageStorageService = MessageStorageService.getInstance()
 const entries: Subject<Message> = new Subject<Message>()
+const status: Subject<number> = new Subject<number>()
 
 let workerStarted = false
 let interval: any
@@ -82,7 +83,17 @@ const Worker = () => {
 
     interval = setInterval(() => {
         if (storage && dwnClient && currentProfile) {
-            dwnClient.pullNewMessageWait()
+            dwnClient.pullNewMessageWait().then(() => {
+                status.next(200)
+            }).catch((e) => {
+                let captureError = /reply.entries is undefined/
+                if (e.message.match(captureError)) {
+                    status.next(501)
+                } else {
+                    console.error("Error pulling message", e)
+                    status.next(500)
+                }
+            })
             // tomo el primer mensaje y lo proceso
             storage.getMessages().then((messages) => {
                 const entry = messages[0]
@@ -99,6 +110,11 @@ const Worker = () => {
 export const MessageReceiver = () : Observable<Message> => {
     return entries.asObservable()
 }
+
+export const MessageStatus = () : Observable<number> => {
+    return status.asObservable()
+}
+
 
 export const stopWorker = () => {
     console.log("Stopping worker", interval)

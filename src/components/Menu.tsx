@@ -11,18 +11,20 @@ import {
   IonMenuToggle,
   IonNote,
   IonText,
+  IonTitle,
 } from '@ionic/react';
 
 import React, { useRef } from 'react';
 
 import { useLocation } from 'react-router-dom';
-import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp } from 'ionicons/icons';
+import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp, wifiOutline } from 'ionicons/icons';
 import './Menu.css';
 import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX, RECETA_FOLDER_PAPELERA, RecetaFolder } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { useState, useEffect } from 'react';
 import NewProfileButton from './NewProfileButton';
 import {version as recetasBcVersion} from '../version';
+import { MessageStatus } from '../message/MessageReceiver';
 
 interface AppPage {
   url: string;
@@ -74,6 +76,7 @@ const appPagesInit: AppPage[] = [
 const Menu: React.FC = () => {
   const location = useLocation()
   const data = RecetaBcData.getInstance()
+  const [connectionStatus, setConnectionStatus] = useState<number>(200)
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [appPages, setAppPages] = useState<AppPage[]>(appPagesInit);
@@ -87,13 +90,20 @@ const Menu: React.FC = () => {
         console.log("Cambiando el perfil", p)
       //}
     })
-    console.log("Para el perfil actual", data.getCurrentProfile())
     setCurrentProfile(data.getCurrentProfile())
-    console.log("Para el perfil actual", currentProfile)
 
     // Limpiar la suscripción cuando el componente se desmonte
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const subscription = MessageStatus().subscribe((status) => {
+      console.log("Cambiando el estado de la conexión", status)
+      setConnectionStatus(status);
+    })
+
+    return () => subscription.unsubscribe();
+  }, [])
 
   const refreshRecetas = async (folder: RecetaFolder|null) => {
     for (let page of appPagesInit) {
@@ -160,7 +170,10 @@ const Menu: React.FC = () => {
         </IonList>
       </IonContent>
       <IonFooter>
-          <IonText style={{"fontSize": "80%"}} className='ion-padding' color="medium">Versión {recetasBcVersion}</IonText>
+          <IonText style={{"fontSize": "80%"}} className='ion-padding' color="medium">
+            <IonIcon icon={connectionStatus === 200 ? wifiOutline : warningOutline} color={connectionStatus === 200 ? "success" : "danger"} />
+            Versión {recetasBcVersion}
+          </IonText>
       </IonFooter>
     </IonMenu>
   );
