@@ -23,8 +23,10 @@ const RecetaReceiver = () => {
             recetaBcData.removeRecetaFromFolder(oldReceta, RECETA_FOLDER_PAPELERA)
             recetaBcData.addRecetaToFolder(oldReceta, RECETA_FOLDER_INBOX)
         }).catch((e) => {
-            recetaBcData.saveReceta(receta)
-            recetaBcData.addRecetaToFolder(receta, RECETA_FOLDER_INBOX)
+            recetaBcData.saveReceta(receta).then(() => {
+                console.log("Receta guardada", receta)
+                recetaBcData.addRecetaToFolder(receta, RECETA_FOLDER_INBOX)
+            })
         })
     }
     

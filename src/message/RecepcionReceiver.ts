@@ -11,8 +11,8 @@ const RecepcionReceiver = () => {
     const observable = MessageReceiver()
     
     observable.subscribe((message) => {
-        console.log("Recepcion", message)
         if ('recepcion' !== message.class) return;
+        console.log("Recepcion", message)
         switch (message.type) {
             case 'confirmacion-dispensa':
                 break
