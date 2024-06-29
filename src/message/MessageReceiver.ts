@@ -93,6 +93,10 @@ const Worker = () => {
                     console.error("Error pulling message", e)
                     status.next(500)
                 }
+                let quinceMinutosAtras = new Date()
+                quinceMinutosAtras.setMinutes(quinceMinutosAtras.getMinutes() - 15)
+                storage.updateLastPullDate(quinceMinutosAtras)
+                
             })
             // tomo el primer mensaje y lo proceso
             storage.getMessages().then((messages) => {
