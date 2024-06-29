@@ -39,6 +39,25 @@ class RecetaDecorator {
             receta.recepcion.fechaRecepcion = new Date(receta.recepcion.fechaRecepcion);
         }
 
+        if (undefined === typeof receta.transacciones) {
+            receta.transacciones = []
+        }
+
+        return receta
+    }
+
+    public decorateTransacciones(receta: Receta) : Receta {
+        if (undefined === receta.transacciones) {
+            receta.transacciones = []
+        }
+        receta.transacciones.forEach((t) => {
+            if ('emision' === t.tipo) {
+                receta.transactionHashEmision = t.hashTransaccion
+            } else if ('dispensa' === t.tipo) {
+                receta.transactionHashDispensa = t.hashTransaccion
+            }
+        })
+
         return receta
     }
 

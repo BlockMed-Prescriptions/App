@@ -3,11 +3,14 @@ import Profile from "../model/Profile";
 import Recepcion from "../model/Recepcion";
 import Receta from "../model/Receta";
 import { CredentialSigner } from "../quarkid/CredentialSigner";
-import MesssageSender from "../message/MessageSender";
+import MessageSender from "../message/MessageSender";
 import RecetaBcData from "../service/RecetaBcData";
+import BlockchainPublisher from "./BlockchainPublisher";
+import TransaccionGenerator from "./TransaccionGenerator";
 
 const vcService = new VerifiableCredentialService
 const data = RecetaBcData.getInstance()
+const publisher = BlockchainPublisher.getInstance()
 
 export const RecepcionGenerator = async (
     profile: Profile,
@@ -46,7 +49,7 @@ export const RecepcionGenerator = async (
 
     let vc
     try {
-        onProgress && onProgress("Firmando certificado de recepción.", 'success')
+        onProgress && onProgress("Firmando certificado de recepción.", 'info')
         vc = await CredentialSigner(credential, profile)
     } catch (e) {
         onProgress && onProgress("Error firmando certificado de recepción", 'error')
@@ -54,11 +57,30 @@ export const RecepcionGenerator = async (
     }
 
     onProgress && onProgress("Enviando confirmación de recepción.", 'info')
-    await MesssageSender(profile, receta.dispensa!.didFarmacia, 'confirmacion-dispensa', recepcion.certificado)
+    await MessageSender(profile, receta.dispensa!.didFarmacia, 'confirmacion-dispensa', recepcion.certificado)
     receta.recepcion = recepcion
     receta.estado = 'consumida'
     receta.consumida = true
     await data.saveReceta(receta)
+
+    onProgress && onProgress("Registrando recepción en blockchain.", 'info')
+    let hashTransaccion: string
+    try {
+        hashTransaccion = await publisher.dispensar(receta, receta.dispensa!.didFarmacia)
+    } catch (e) {
+        onProgress && onProgress("Error registrando recepción en blockchain.", 'error')
+        throw e
+    }
+
+    try {
+        const transaccion = await TransaccionGenerator(profile, receta.id!, hashTransaccion, 'dispensa', onProgress)
+        await data.addTransaccionToReceta(receta, transaccion)
+        await MessageSender(profile, receta.dispensa!.didFarmacia, 'informar-transaccion', transaccion.certificado!)
+    } catch(e) {
+        onProgress && onProgress("Error firmando transacción de recepción.", 'error')
+        throw e
+    }
+    
     onProgress && onProgress("Recepción enviada.", 'success')
     return recepcion
 }

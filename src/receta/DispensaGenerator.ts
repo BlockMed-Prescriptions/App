@@ -2,7 +2,7 @@ import { VerifiableCredentialService } from "@quarkid/vc-core";
 import Dispensa from "../model/Dispensa";
 import Profile from "../model/Profile";
 import { CredentialSigner } from "../quarkid/CredentialSigner";
-import MesssageSender from "../message/MessageSender";
+import MessageSender from "../message/MessageSender";
 import Receta from "../model/Receta";
 import RecetaBcData, { RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX } from "../service/RecetaBcData";
 
@@ -81,7 +81,7 @@ export const DispensaGenerator = async (
             position: "top",
             color: "success"
         })
-        await MesssageSender(profile, receta.didPaciente, 'solicitud-confirmacion-dispensa', dispensa.certificado)
+        await MessageSender(profile, receta.didPaciente, 'solicitud-confirmacion-dispensa', dispensa.certificado)
     } catch (e) {
         console.error("Error enviando la dispensa al paciente", e)
         await dismissToast()

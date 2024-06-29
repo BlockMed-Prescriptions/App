@@ -7,6 +7,7 @@ import Profile from '../model/Profile';
 import { Observable, Subject } from 'rxjs';
 import Receta from '../model/Receta';
 import Semaforo from './Semaforo';
+import Transaccion from '../model/Transaccion';
 
 export type RecetaFolder = 'favoritos' | 'archivados' | 'papelera' | 'entrada' | 'salida';
 
@@ -261,10 +262,54 @@ export default class RecetaBcData {
         }
     }
 
+    public async deleteReceta(receta: Receta) {
+        const releaseLock = await this.semaforo.acquireLock()
+        try {
+            await this.safeDeleteReceta(receta);
+        } finally {
+            releaseLock();
+        }
+    }
+
+    public async getAllRecetas(): Promise<Receta[]> {
+        let recetas = await this.ensureProfileData().keys();
+        let result: Receta[] = [];
+        for (let key of recetas) {
+            if (key.startsWith(RecetaBcData.RECETAS_KEY)) {
+                let receta = await this.getReceta(key.replace(RecetaBcData.RECETAS_KEY + ":", ''));
+                result.push(receta);
+            }
+        }
+        return result;
+    }
+
     public async addRecetaToFolder(receta: Receta, folder: RecetaFolder) {
         const releaseLock = await this.semaforo.acquireLock()
         try {
             await this.safeAddRecetaToFolder(receta, folder);
+        } finally {
+            releaseLock();
+        }
+    }
+
+    public async addTransaccionToReceta(receta: Receta, transaccion: Transaccion) {
+        const releaseLock = await this.semaforo.acquireLock()
+        try {
+            if (!receta.transacciones.find((t) => t.hashTransaccion === transaccion.hashTransaccion)) {
+                if (!Array.isArray(receta.transacciones)) {
+                    receta.transacciones = [];
+                }
+                if ('emision' === transaccion.tipo) {
+                    receta.transactionHashEmision = transaccion.hashTransaccion
+                } else if ('dispensa' === transaccion.tipo) {
+                    receta.transactionHashDispensa = transaccion.hashTransaccion
+                }
+                receta.transacciones.push(transaccion)
+                await this.saveReceta(receta);
+                return true
+            } else {
+                return false
+            }
         } finally {
             releaseLock();
         }
@@ -276,6 +321,13 @@ export default class RecetaBcData {
             recetas.push(receta.id!);
             await this.saveRecetasIdToFolder(folder, recetas);
             setTimeout(() => this.folderSuscription.next(folder as RecetaFolder))
+        }
+    }
+
+    private async safeDeleteReceta(receta: Receta) {
+        await this.ensureProfileData().removeItem(this.buildKeyReceta(receta));
+        for (let folder of [RECETA_FOLDER_FAVORITOS, RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_PAPELERA, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX]) {
+            await this.safeRemoveRecetaFromFolder(receta, folder);
         }
     }
 

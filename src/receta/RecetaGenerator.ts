@@ -16,8 +16,10 @@ import { CredentialSigner } from "../quarkid/CredentialSigner";
 import { CredentialVerifier } from "../quarkid/CredentialVerifier";
 import RecetaBcData, { RECETA_FOLDER_OUTBOX } from "../service/RecetaBcData";
 import Receta from "../model/Receta";
-import MesssageSender from "../message/MessageSender";
+import MessageSender from "../message/MessageSender";
 import BlockchainPublisher from "./BlockchainPublisher";
+import TransaccionGenerator from "./TransaccionGenerator";
+import Transaccion from "../model/Transaccion";
 
 const recetaService:RecetaService = RecetaService.getInstance()
 const data:RecetaBcData = RecetaBcData.getInstance()
@@ -110,9 +112,17 @@ export const RecetaGenerator = async (
         throw e
     }
 
+    let transaccion: Transaccion
+    try {
+        transaccion = await TransaccionGenerator(profile, receta.id!, receta.transactionHashEmision, 'emision')
+        receta.transacciones.push(transaccion)
+    } catch (e) {
+        console.error("Error firmando transacción de emisión.", e)
+        throw e
+    }
+
     // Guardo la receta en la persistencia local
     await data.saveReceta(receta, RECETA_FOLDER_OUTBOX)
-
 
     try {
         await presentToast({
@@ -120,7 +130,7 @@ export const RecetaGenerator = async (
             position: "top",
             color: "warning"
         })
-        await MesssageSender(profile, receta.didPaciente, 'emision-receta', receta.certificado)
+        await recetaService.sendReceta(profile, receta, didPaciente, 'emision-receta')
     } catch (e) {
         console.error("Error enviando la receta al paciente", e)
         await dismissToast()
@@ -128,6 +138,7 @@ export const RecetaGenerator = async (
     }
 
     await dismissToast()
+
 
     return receta
 }

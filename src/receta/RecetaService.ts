@@ -1,4 +1,4 @@
-import MesssageSender from '../message/MessageSender';
+import MessageSender from '../message/MessageSender';
 import { MessageType } from '../model/Message';
 import Profile from '../model/Profile';
 import Receta from '../model/Receta';
@@ -47,7 +47,8 @@ class RecetaService {
             medicamentos: medicamentos,
             indicaciones: indicaciones,
             fechaEmision: fechaEmision,
-            fechaVencimiento: fechaVencimiento
+            fechaVencimiento: fechaVencimiento,
+            transacciones: [],
         };
 
         receta.id = this.buildRandomId(receta);
@@ -74,7 +75,7 @@ class RecetaService {
                 "schema:MedicalGuideline": {
                     "schema:guideline": receta.indicaciones,
                     "schema:guidelineDate": receta.fechaEmision.toISOString(),
-                    "schema:identifer": receta.transactionHashEmision
+                    "schema:identifier": receta.transactionHashEmision
                 },
                 // didPaciente: receta.didPaciente,
                 // nombrePaciente: receta.nombrePaciente,
@@ -114,7 +115,7 @@ class RecetaService {
             fechaVencimiento: credential.expirationDate!,
             id: credential.id,
             certificado: credential,
-            transactionHashEmision: credential.credentialSubject["schema:MedicalGuideline"]["schema:identifer"]
+            transacciones: [],
         }
 
         return receta;   
@@ -123,7 +124,12 @@ class RecetaService {
     public async sendReceta(profile: Profile, receta: Receta, targetDID?: string, messageType?: MessageType) : Promise<void> {
         const target = targetDID || receta.didPaciente;
         const type: MessageType = messageType || "emision-receta";
-        await MesssageSender(profile, target, type, receta.certificado!)
+        await MessageSender(profile, target, type, receta.certificado!)
+        if (Array.isArray(receta.transacciones)) {
+            for(let t of receta.transacciones!) {
+                await MessageSender(profile, target, 'informar-transaccion', t.certificado!)
+            }
+        }
     }
 
     private buildRandomId(receta: Receta) : string {
