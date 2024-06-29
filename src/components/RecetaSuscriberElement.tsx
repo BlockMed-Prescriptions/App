@@ -113,7 +113,6 @@ const RecetaSuscriberElement: React.FC = () => {
     useEffect(() => {
         const suscriptor = data.observeRecetas().subscribe((receta) => {
             const profile = data.getCurrentProfile();
-            console.log("Receta actualizada", receta, profile)
             if (!profile) {
                 return;
             }
