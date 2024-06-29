@@ -46,13 +46,6 @@ const processEntry = (entry: Entry) : boolean => {
     Unpack(currentProfile!, entry.data.packedMessage).then((unpackedMessage) => {
         // trato de determinar si es un VC
         console.log("Unpacked message", unpackedMessage)
-        if (!unpackedMessage.message.body?.type) {
-            console.log("Version anterior de mensaje", unpackedMessage)
-            if (unpackedMessage.message.body?.credentialSubject) {
-                entries.next({type: "emision-receta", credential: unpackedMessage.message.body as VerifiableCredential, class: "receta"})
-                return;
-            }
-        }
         if (checkIfIsMessageType(unpackedMessage.message.body)) {
             entries.next(unpackedMessage.message.body as Message)
         } else {
