@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import { default as ProfileModel } from '../model/Profile';
 import RecetaBcData from '../service/RecetaBcData';
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, useIonAlert, IonIcon, useIonToast, IonModal } from '@ionic/react';
 import { DIDResolver } from '../quarkid/DIDResolver';
-import { codeOutline, copyOutline, medalOutline, qrCodeOutline } from 'ionicons/icons';
+import { codeOutline, copyOutline, medalOutline, qrCodeOutline, remove } from 'ionicons/icons';
 import { useHistory } from 'react-router';
 import ModalCertificado, { HTMLModalCertificado } from '../components/ModalCertificado';
 import QRCode from 'react-qr-code';
@@ -117,6 +117,48 @@ const ProfilePage: React.FC = () => {
         })
     }
 
+    const removeAllRecetasProcess = async () => {
+        const recetas = await data.getAllRecetas();
+        for (let r of recetas) {
+            await data.deleteReceta(r);
+        }
+    }
+
+    const reprocesarMensajes = (e:MouseEvent) => {
+        if (e.ctrlKey) {
+            presentAlert({
+                message: '¿Está seguro de que desea reprocesar todos los mensajes, borrando lo anterior?',
+                buttons: [
+                    'Cancelar',
+                    {
+                        text: 'Borrar todo',
+                        role: 'destructive',
+                        handler: () => {
+                            removeAllRecetasProcess().then(() => {
+                                presentToast({
+                                    message: 'Mensajes eliminados.',
+                                    duration: 1000,
+                                    position: 'bottom'
+                                })
+                            }).catch((e) => {
+                                console.error(e)
+                                presentAlert({
+                                    header: 'Error',
+                                    message: 'No se pudieron eliminar los mensajes.',
+                                    buttons: ['OK']
+                                });
+                            })
+                        }
+                    }
+                ]
+            })
+            return
+        }
+        const hoy = new Date();
+        const ayer: Date = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - 1);
+        data.saveLastMessageDate(ayer).then(() => {});
+    }
+
     useEffect(() => {
         if (currentProfile) {
             setQrValue(ProfileHandler.toQrCode(currentProfile));
@@ -212,6 +254,11 @@ const ProfilePage: React.FC = () => {
                 <IonButton color="danger" onClick={() => {
                     deletePerfil(currentProfile!);
                 }}>Eliminar Perfil</IonButton>
+                <IonButton color="primary" fill='outline' onClick={(e) => {
+                    reprocesarMensajes(e)
+                }}>
+                    Reprocesar Mensajes
+                </IonButton>
                 <IonButton color="light" onClick={() => {
                     modal.current?.present();
                 }}>
