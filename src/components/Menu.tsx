@@ -17,61 +17,18 @@ import {
 import React, { useRef } from 'react';
 
 import { useLocation } from 'react-router-dom';
-import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp, wifiOutline } from 'ionicons/icons';
 import './Menu.css';
-import RecetaBcData, { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX, RECETA_FOLDER_PAPELERA, RecetaFolder } from '../service/RecetaBcData';
+import RecetaBcData, { RecetaFolder } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { useState, useEffect } from 'react';
 import NewProfileButton from './NewProfileButton';
 import {version as recetasBcVersion} from '../version';
 import { MessageStatus } from '../message/MessageReceiver';
 
-interface AppPage {
-  url: string;
-  iosIcon: string;
-  mdIcon: string;
-  title: string;
-  folder?: string;
-  count?: number;
-}
+import { AppPage, appPagesInit } from '../service/MenuProvider';
+import { warningOutline, wifiOutline } from 'ionicons/icons';
+import ProfileHandler from '../service/ProfileHandler';
 
-const appPagesInit: AppPage[] = [
-  {
-    title: 'Ingresos',
-    url: '/folder/Inbox ',
-    iosIcon: cloudDownloadOutline,
-    mdIcon: cloudDownloadSharp,
-    folder: RECETA_FOLDER_INBOX
-  },
-  {
-    title: 'Envíos',
-    url: '/folder/Outbox',
-    iosIcon: paperPlaneOutline,
-    mdIcon: paperPlaneSharp,
-    folder: RECETA_FOLDER_OUTBOX
-  },
-  {
-    title: 'Favoritos',
-    url: '/folder/Favorites',
-    iosIcon: heartOutline,
-    mdIcon: heartSharp,
-    folder: RECETA_FOLDER_FAVORITOS
-  },
-  {
-    title: 'Archivados',
-    url: '/folder/Archived',
-    iosIcon: archiveOutline,
-    mdIcon: archiveSharp,
-    folder: RECETA_FOLDER_ARCHIVED
-  },
-  {
-    title: 'Papelera',
-    url: '/folder/Trash',
-    iosIcon: trashOutline,
-    mdIcon: trashSharp,
-    folder: RECETA_FOLDER_PAPELERA
-  }
-];
 
 const Menu: React.FC = () => {
   const location = useLocation()
@@ -114,7 +71,6 @@ const Menu: React.FC = () => {
       if (page.folder && currentProfile) {
         const r = await data.getRecetasFromFolder(page.folder as RecetaFolder)
         page.count = r.length;
-        console.log("para la carpeta", page.folder, "hay", r.length, "recetas"  )
       };
     }
     const appPagesInitCopy = JSON.parse(JSON.stringify(appPagesInit));
@@ -135,6 +91,15 @@ const Menu: React.FC = () => {
     refreshRecetas(null).then(() => {});
   }, [currentProfile])
 
+  const footer = (
+    <IonFooter>
+        <IonText style={{"fontSize": "80%"}} className='ion-padding' color="medium">
+          <IonIcon icon={connectionStatus === 200 ? wifiOutline : warningOutline} color={connectionStatus === 200 ? "success" : "danger"} />
+          Versión {recetasBcVersion}
+        </IonText>
+    </IonFooter>
+  )
+
   if (!currentProfile) {
     return (<IonMenu contentId="main" type="overlay">
       <IonContent>
@@ -146,6 +111,7 @@ const Menu: React.FC = () => {
           </IonNote>
         </IonList>
       </IonContent>
+      {footer}
     </IonMenu>)
   }
 
@@ -157,11 +123,16 @@ const Menu: React.FC = () => {
           <IonNote>{currentProfile?.name}</IonNote>
           <NewProfileButton onSelect={(profile) => menuElement.current?.close()}/>
           {appPages.map((appPage, index) => {
+            let title: string = appPage.title;
+            if (!appPage.roles.includes(currentProfile?.roles[0] ?? '')) {
+              return null;
+            }
+            
             return (
               <IonMenuToggle key={index} autoHide={false}>
                 <IonItem className={location.pathname === appPage.url ? 'selected' : ''} routerLink={appPage.url} routerDirection="none" lines="none" detail={false}>
                   <IonIcon aria-hidden="true" slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
-                  <IonLabel>{appPage.title}</IonLabel>
+                  <IonLabel>{title}</IonLabel>
                   {appPage.count && appPage.count > 0 ? (<IonBadge slot="end">{appPage.count}</IonBadge>) : null}
                 </IonItem>
               </IonMenuToggle>
@@ -169,12 +140,7 @@ const Menu: React.FC = () => {
           })}
         </IonList>
       </IonContent>
-      <IonFooter>
-          <IonText style={{"fontSize": "80%"}} className='ion-padding' color="medium">
-            <IonIcon icon={connectionStatus === 200 ? wifiOutline : warningOutline} color={connectionStatus === 200 ? "success" : "danger"} />
-            Versión {recetasBcVersion}
-          </IonText>
-      </IonFooter>
+      {footer}
     </IonMenu>
   );
 };

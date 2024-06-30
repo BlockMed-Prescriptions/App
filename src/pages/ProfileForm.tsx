@@ -62,10 +62,18 @@ const ProfileForm: React.FC = () => {
     }, [isFarmacia])
 
     useEffect(() => {
-        if (isMedico || isPaciente) {
+        if (isMedico) {
             setIsFarmacia(false);
+            setIsPaciente(false);
         }
-    }, [isMedico, isPaciente])
+    }, [isMedico])
+
+    useEffect(() => {
+        if (isPaciente) {
+            setIsFarmacia(false);
+            setIsMedico(false);
+        }
+    }, [isPaciente])
 
     const cancel = () => {
         // vuelvo a la página anterior

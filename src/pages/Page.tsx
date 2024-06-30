@@ -9,18 +9,7 @@ import { add } from 'ionicons/icons';
 import Receta from '../model/Receta';
 import RecetaCard from '../components/RecetaCard';
 import RecetaSender, { HTMLRecetaSender } from '../components/RecetaSender';
-
-const FolderConversion: { [key: string]: RecetaFolder } = {
-  "Outbox": RECETA_FOLDER_OUTBOX,
-  "Inbox": RECETA_FOLDER_INBOX,
-  "Trash": RECETA_FOLDER_PAPELERA,
-  "Archived": RECETA_FOLDER_ARCHIVED,
-  "Favorites": RECETA_FOLDER_FAVORITOS
-}
-
-const getCurrentFolder = (name: string): RecetaFolder => {
-  return FolderConversion[name.trim()];
-}
+import getAppPage, { AppPage } from '../service/MenuProvider';
 
 const Page: React.FC = () => {
 
@@ -28,6 +17,7 @@ const Page: React.FC = () => {
   const data = RecetaBcData.getInstance()
   const [presentAlert, dismissAlert] = useIonAlert();
   const [presentToast, dismissToast] = useIonToast();
+  const [appPage, setAppPage] = useState<AppPage>(getAppPage(name));
 
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [recetas, setRecetas] = useState<Receta[]>([]);
@@ -35,9 +25,10 @@ const Page: React.FC = () => {
 
   useEffect(() => {
     setCurrentProfile(data.getCurrentProfile());
+    setAppPage(getAppPage(name, currentProfile?.roles[0]));
     const s = data.observeProfile().subscribe((p) => {
         setCurrentProfile(p);
-        refreshRecetas(FolderConversion[name.trim()]);
+        refreshRecetas(appPage.folder);
     })
 
     return () => {
@@ -45,12 +36,11 @@ const Page: React.FC = () => {
     }
   }, [])
 
-  useEffect(() => {
-      let recetaFolder = getCurrentFolder(name);
-      if (!recetaFolder) {
-          throw new Error(`Folder ${name}. not found`);
-      }
 
+  useEffect(() => {
+      setAppPage(getAppPage(name, currentProfile?.roles[0]));
+      let recetaFolder = appPage.folder;
+      
       setTimeout(() => {
           if (currentProfile) {
               refreshRecetas(recetaFolder);
@@ -88,20 +78,18 @@ const Page: React.FC = () => {
   }
 
   const canSendArchive = () : boolean => {
-      let recetaFolder = getCurrentFolder(name);
-      return recetaFolder === RECETA_FOLDER_INBOX || recetaFolder === RECETA_FOLDER_OUTBOX;
+      return appPage.folder === RECETA_FOLDER_INBOX || appPage.folder === RECETA_FOLDER_OUTBOX;
   }
 
   const canDelete = () : boolean => {
-      let recetaFolder = getCurrentFolder(name);
-      return recetaFolder !== RECETA_FOLDER_PAPELERA;
+      return appPage.folder !== RECETA_FOLDER_PAPELERA;
   }
 
   const sendArchive = (receta: Receta) => {
       if (!currentProfile) {
           return;
       }
-      data.moveRecetaToFolder(receta, getCurrentFolder(name), RECETA_FOLDER_ARCHIVED);
+      data.moveRecetaToFolder(receta, appPage.folder, RECETA_FOLDER_ARCHIVED);
   }
 
   const toggleFavorite = (receta: Receta) => {
@@ -133,7 +121,7 @@ const Page: React.FC = () => {
               {
                   text: "Eliminar",
                   handler: () => {
-                      data.moveRecetaToFolder(receta, getCurrentFolder(name), RECETA_FOLDER_PAPELERA);
+                      data.moveRecetaToFolder(receta, appPage.folder, RECETA_FOLDER_PAPELERA);
                       presentToast({
                           message: "Receta eliminada",
                           duration: 1000,
@@ -153,7 +141,7 @@ const Page: React.FC = () => {
               <IonButtons slot="start">
                 <IonMenuButton />
               </IonButtons>
-              <IonTitle>{name}</IonTitle>
+              <IonTitle>{appPage.pageTitle ? appPage.pageTitle : appPage.title}</IonTitle>
             </IonToolbar>
         </IonHeader>
 

@@ -59,7 +59,7 @@ const App: React.FC = () => {
           <RecetaSuscriberElement />
           <IonRouterOutlet id="main">
             <Route path="/" exact={true}>
-              <Redirect to="/folder/Inbox" />
+              <Redirect to="/folder/default" />
             </Route>
             <Route path="/folder/:name" exact={true}>
               <Page />
