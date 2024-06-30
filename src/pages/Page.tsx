@@ -168,7 +168,7 @@ const Page: React.FC = () => {
               </IonRow>
             </IonGrid>
 
-            {currentProfile && ProfileHandler.isMedico(currentProfile) && 'Outbox' === name ? (
+            {currentProfile && ProfileHandler.isMedico(currentProfile) ? (
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
                     <IonFabButton routerLink="/receta/new">
                         <IonIcon icon={add} />
