@@ -11,6 +11,7 @@ import { RecetaGenerator } from '../receta/RecetaGenerator';
 import Receta from '../model/Receta';
 import ModalScanner, { HTMLModalScanner } from '../components/ModalScanner';
 import ProfileHandler from '../service/ProfileHandler';
+import PacienteProvider from '../receta/PacienteProvider';
 
 const RecetaNew: React.FC = () => {
 
@@ -19,7 +20,7 @@ const RecetaNew: React.FC = () => {
     const [presentAlert] = useIonAlert();
 
     const data = RecetaBcData.getInstance();
-    const recetaService = RecetaService.getInstance();
+    const pacienteProvider = PacienteProvider.getInstance();
 
     const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
     let didDocument: DIDDocument | null = null;
@@ -102,6 +103,20 @@ const RecetaNew: React.FC = () => {
         validateDid(DIDPaciente);
     }, [DIDPaciente])
 
+    useEffect(() => {
+        console.log("DID Paciente", DIDPaciente, isDIDValid)
+        if (isDIDValid) {
+            console.log("buscando")
+            pacienteProvider.getPaciente(DIDPaciente).then((paciente) => {
+                console.log("Paciente", paciente)
+                if (paciente && nombrePaciente === '') {
+                    setNombrePaciente(paciente.nombre)
+                }
+            })
+        }
+    }, [isDIDValid])
+
+
     // Validación del nombre de paciente
     const [isNombreTouched, setNombreIsTouched] = useState(false);
     const [isNombreValid, setNombreIsValid] = useState<boolean>(false);
@@ -165,7 +180,7 @@ const RecetaNew: React.FC = () => {
         setIndicacion(indicacion);
         if (!indicacion) {
             setIndicacionIsValid(false);
-            setIndicacionErrorText('La indicación no puede estar vacía.');
+            setIndicacionErrorText('El diagnóstico no puede estar vacío.');
             return;
         }
 
@@ -334,7 +349,7 @@ const RecetaNew: React.FC = () => {
                         <IonInput
                             onIonChange={(event) => setIndicacion(event.detail.value!)}
                             onIonBlur={() => setIndicacionIsTouched(true)}
-                            label="Indicación"
+                            label="Diagnóstico"
                             labelPlacement="stacked"
                             className={`${isIndicacionValid && 'ion-valid'} ${isIndicacionValid === false && 'ion-invalid'} ${isIndicacionTouched && 'ion-touched'}`}
                             errorText={indicacionErrorText}

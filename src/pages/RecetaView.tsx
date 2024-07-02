@@ -263,7 +263,7 @@ const RecetaView: React.FC = () => {
                     </IonItem>
                     <IonItem>
                         <IonLabel>
-                            <h2>Indicaciones</h2>
+                            <h2>Diagnóstico</h2>
                             <p>{receta?.indicaciones}</p>
                         </IonLabel>
                     </IonItem>
