@@ -11,4 +11,4 @@ Pendientes
 * [ ] Quitar mensajes de transaccion, pasarlo a una consulta blockchain.
 * [ ] Controlar estado en blockchain antes de hacer la dispensa.
 * [ ] Refactoring de cada uno de los mensajes.
-
+* [ ] Uso de dwn propio. Verificar si se borran los mensajes.
