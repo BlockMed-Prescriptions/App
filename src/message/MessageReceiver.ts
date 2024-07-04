@@ -128,7 +128,7 @@ const Worker = () => {
                 }
             }).catch((e) => {
                 let captureError = /reply.entries is undefined/
-                let captureError2 = /thread.map is not a function/
+                let captureError2 = /.map is not a function/
                 if (e.message.match(captureError)) {
                     emitStatus(501)
                 } else if (e.message.match(captureError2)) {
