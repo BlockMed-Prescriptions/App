@@ -192,6 +192,8 @@ const RecetaNew: React.FC = () => {
         if (profileTarget) {
             setNombrePaciente(profileTarget.name)
             setDIDPaciente(profileTarget.didId)
+            validateDid(profileTarget.didId)
+            validateNombrePaciente(profileTarget.name)
         }
         modalScanner.current?.dismiss();
     }
