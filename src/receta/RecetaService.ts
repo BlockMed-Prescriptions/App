@@ -125,9 +125,18 @@ class RecetaService {
         const target = targetDID || receta.didPaciente;
         const type: MessageType = messageType || "emision-receta";
         await MessageSender(profile, target, type, receta.certificado!)
+        setTimeout(() => {
+            this.sendTransacciones(profile, receta)
+        }, 1500)
+    }
+
+    private sendTransacciones(profile: Profile, receta: Receta) {
         if (Array.isArray(receta.transacciones)) {
             for(let t of receta.transacciones!) {
-                await MessageSender(profile, target, 'informar-transaccion', t.certificado!)
+                MessageSender(profile, receta.didPaciente, 'informar-transaccion', t.certificado!).then(() => {
+                }).catch((e) => {
+                    console.error("Error enviando transacción", e)
+                })
             }
         }
     }
