@@ -32,6 +32,8 @@ export const RecetaGenerator = async (
     nombrePaciente: string,
     medicamentos: string[],
     indicaciones: string,
+    didFinanciador: string|null,
+    credencial: string|null,
     presentToast: (opts: any) => Promise<void>,
     dismissToast: () => Promise<void>
 )
@@ -41,7 +43,10 @@ export const RecetaGenerator = async (
         didPaciente,
         nombrePaciente,
         medicamentos,
-        indicaciones);
+        indicaciones,
+        didFinanciador,
+        credencial
+    );
 
     console.log("Receta", receta)
 

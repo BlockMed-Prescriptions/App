@@ -34,7 +34,9 @@ class RecetaService {
         didPaciente: string,
         nombrePaciente: string,
         medicamentos: string[],
-        indicaciones: string
+        indicaciones: string,
+        financiador: string|null,
+        credencial: string|null,
     ) : Receta {
         const fechaEmision = new Date();
         const fechaVencimiento = new Date()
@@ -49,6 +51,8 @@ class RecetaService {
             fechaEmision: fechaEmision,
             fechaVencimiento: fechaVencimiento,
             transacciones: [],
+            didFinanciador: financiador,
+            credencial: credencial,
         };
 
         receta.id = this.buildRandomId(receta);
@@ -82,6 +86,10 @@ class RecetaService {
                 "shema:Patient": {
                     "schema:name": receta.nombrePaciente,
                     "schema:identifier": receta.didPaciente,
+                    "schema:affiliation": {
+                        "schema:name": receta.didFinanciador,
+                        "schema:identifier": receta.credencial
+                    }
                 },
                 // medicamentos: receta.medicamentos,
                 "schema:Drug": {
@@ -114,6 +122,8 @@ class RecetaService {
             fechaEmision: credential.issuanceDate,
             fechaVencimiento: credential.expirationDate!,
             id: credential.id,
+            didFinanciador: credential.credentialSubject["shema:Patient"]["schema:affiliation"]["schema:name"],
+            credencial: credential.credentialSubject["shema:Patient"]["schema:affiliation"]["schema:identifier"],
             certificado: credential,
             transacciones: [],
         }

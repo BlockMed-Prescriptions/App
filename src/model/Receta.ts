@@ -21,6 +21,9 @@ type Receta = {
 
     fechaEmision: Date;
     fechaVencimiento: Date;
+    
+    didFinanciador: string|null
+    credencial: string|null
 
     id?: string;
     certificado?: any

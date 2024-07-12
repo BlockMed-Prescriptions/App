@@ -15,22 +15,23 @@ import RecetaService from '../receta/RecetaService';
 import RecetaPermisos from '../receta/RecetaPermisos';
 import RecetaSender, { HTMLRecetaSender } from '../components/RecetaSender';
 import RecepcionGenerator from '../receta/RecepcionGenerator';
+import FinanciadorProvider from '../service/FinanciadorProvider';
 
 
 const RecetaView: React.FC = () => {
     const { id } = useParams<{ id: string; }>();
     const data = RecetaBcData.getInstance();
     const decorator = RecetaDecorator.getInstance();
-    const recetaService = RecetaService.getInstance();
     const permisos = RecetaPermisos.getInstance();
+    const financiadorProvider = FinanciadorProvider.getInstance();
     
     const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
     const [receta, setReceta] = useState<Receta | null>(null);
+    const [financiador, setFinanciador] = useState<string| null>(null);
     const [showSendFarmacia, setShowSendFarmacia] = useState(false);
     const [showDispensar, setShowDispensar] = useState(false);
     const [showConfirmarDispensa, setShowConfirmarDispensa] = useState(false);
     const  recetaSender = useRef<HTMLRecetaSender>(null);
-
 
     const [presentToast, dismissToast] = useIonToast();
     const [presentAlert] = useIonAlert();
@@ -38,8 +39,12 @@ const RecetaView: React.FC = () => {
     const modal = useRef<HTMLModalCertificado>(null);
     const modalMedico = useRef<HTMLModalCertificado>(null);
     const modalDispensa = useRef<HTMLModalCertificado>(null);
+    const modalFinanciador = useRef<HTMLModalCertificado>(null);
     const buttonCertificadoMedico = useRef<HTMLIonButtonElement>(null);
+    const buttonCertificadoFinanciador = useRef<HTMLIonButtonElement>(null);
+
     const [certificadoMedico, setCertificadoMedico] = useState<any|undefined|null>(null)
+    const [certificadoFinanciador, setCertificadoFinanciador] = useState<any|undefined|null>(null)
 
     useEffect(() => {
         setCurrentProfile(data.getCurrentProfile());
@@ -90,6 +95,18 @@ const RecetaView: React.FC = () => {
         }
     }, [receta, currentProfile])
 
+    useEffect(() => {
+        setFinanciador(null)
+        if (receta) {
+            financiadorProvider.getFinanciadores().then((financiadores) => {
+                const f = financiadores.find((f) => f.did === receta!.didFinanciador)
+                if (f) {
+                    setFinanciador(f.nombre)
+                }
+            })
+        }
+    }, [receta])
+
     function showCertificado(modal: HTMLModalCertificado) {
         modal.open();
     }
@@ -110,6 +127,29 @@ const RecetaView: React.FC = () => {
             modalMedico.current!.open();
         }
     }
+
+    function showCertificadoFinanciador() {
+        const didFinanciador = receta?.didFinanciador
+        if (!didFinanciador) {
+            console.error("No hay financiador")
+            return
+        }
+        if (certificadoFinanciador === null) {
+            buttonCertificadoFinanciador.current!.disabled = true
+            DIDResolver(didFinanciador).then((doc) => {
+                setCertificadoFinanciador(doc)
+                modalFinanciador.current!.open();
+                buttonCertificadoFinanciador.current!.disabled = false
+            }).catch((e) => {
+                setCertificadoFinanciador(null)
+                buttonCertificadoFinanciador.current!.disabled = false
+                console.error("Error al obtener el certificado", e) 
+            })
+        } else {
+            modalFinanciador.current!.open();
+        }
+    }
+
 
     const toggleFavorite = (receta: Receta) => {
         if (!currentProfile) {
@@ -293,6 +333,21 @@ const RecetaView: React.FC = () => {
                             </IonButtons>
                         ) : ''}
                     </IonItem>
+
+                    {receta?.didFinanciador ? (
+                        <IonItem>
+                            <IonLabel>
+                                <h2>Cobertura</h2>
+                                <p>{financiador} - Credencial {receta.credencial}</p>
+                            </IonLabel>
+                            <IonButtons slot='end'>
+                                <IonButton ref={buttonCertificadoFinanciador} size="small" onClick={() => showCertificadoFinanciador()}>
+                                    <IonIcon icon={medalOutline} size="small"  slot="icon-only" />
+                                </IonButton>
+                            </IonButtons>
+                            <ModalCertificado ref={modalFinanciador} certificado={certificadoFinanciador} title={financiador!}/>
+                        </IonItem>
+                    ) : ''}
 
                     {receta?.dispensa ? (
                     <IonItem>

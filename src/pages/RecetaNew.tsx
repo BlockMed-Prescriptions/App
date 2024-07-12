@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonMenuButton, IonPage, IonTitle, IonToggle, IonToolbar, LocationHistory, useIonAlert, useIonLoading, useIonToast } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonMenuButton, IonPage, IonSelect, IonSelectOption, IonTitle, IonToggle, IonToolbar, LocationHistory, useIonAlert, useIonLoading, useIonToast } from '@ionic/react';
 import RecetaBcData, { RECETA_FOLDER_OUTBOX } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { DIDResolver } from '../quarkid/DIDResolver';
@@ -12,6 +12,7 @@ import Receta from '../model/Receta';
 import ModalScanner, { HTMLModalScanner } from '../components/ModalScanner';
 import ProfileHandler from '../service/ProfileHandler';
 import PacienteProvider from '../receta/PacienteProvider';
+import FinanciadorProvider from '../service/FinanciadorProvider';
 
 const RecetaNew: React.FC = () => {
 
@@ -20,60 +21,38 @@ const RecetaNew: React.FC = () => {
     const [presentAlert] = useIonAlert();
 
     const data = RecetaBcData.getInstance();
-    const pacienteProvider = PacienteProvider.getInstance();
+    const pacienteProvider = PacienteProvider.getInstance()
+    const financiadorProvider = FinanciadorProvider.getInstance()
+
+    // Lista de financiadores
+    const [financiadores, setFinanciadores] = useState<any[]>([])
+    useEffect(() => {
+        financiadorProvider.getFinanciadores().then((f) => {
+            console.log(f)
+            setFinanciadores(f)
+        })
+    }, [financiadorProvider])
 
     const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
     let didDocument: DIDDocument | null = null;
+    const modalScanner = useRef<HTMLModalScanner>(null);
 
     // Validación de DID Paciente
     const [isDIDTouched, setDIDIsTouched] = useState(false);
     const [isDIDValid, setDIDIsValid] = useState<boolean>(false);
     const [DIDErrorText, setDIDErrorText] = useState<string>('');
     const [DIDPaciente, setDIDPaciente] = useState<string>('');
-    const modalScanner = useRef<HTMLModalScanner>(null);
 
     useEffect(() => {
         setCurrentProfile(data.getCurrentProfile());
         const s = data.observeProfile().subscribe((p) => {
-            if (currentProfile?.didId !== p?.didId) {
-                setCurrentProfile(p);
-            }
+            setCurrentProfile(p);
         })
 
         return () => {
             s.unsubscribe();
         }
     }, [])
-
-    // cada vez que entro a la página, reseteo los datos
-    useEffect(() => {
-        const listen = history.listen(() => {
-            setDIDIsTouched(false);
-            setDIDIsValid(false);
-            setDIDErrorText('');
-            setDIDPaciente('');
-
-            setNombreIsTouched(false);
-            setNombreIsValid(false);
-            setNombreErrorText('');
-            setNombrePaciente('');
-
-            setPrescripcionIsTouched(false);
-            setPrescripcionIsValid(false);
-            setPrescripcionErrorText('');
-            setPrescripcion('');
-
-            setIndicacionIsTouched(false);
-            setIndicacionIsValid(false);
-            setIndicacionErrorText('');
-            setIndicacion('');
-        })
-
-        return () => {
-            console.log("Unsubscribed from history.")
-            listen()
-        }
-    }, [history])
 
     const validateDid = (didId: string) => {
         setDIDPaciente(didId);
@@ -111,6 +90,10 @@ const RecetaNew: React.FC = () => {
                 console.log("Paciente", paciente)
                 if (paciente && nombrePaciente === '') {
                     setNombrePaciente(paciente.nombre)
+                    if (paciente.financiador) {
+                        setFinanciador(paciente.financiador)
+                        setCredencial(paciente.credencial ?? '')
+                    }
                 }
             })
         }
@@ -187,6 +170,81 @@ const RecetaNew: React.FC = () => {
         setIndicacionIsValid(true);
     }
 
+    // Cobertura
+    const [isCredencialTouched, setCredencialTouched] = useState(false);
+    const [isCredencialValid, setCredencialValid] = useState<boolean>(false);
+    const [credencialErrorText, setCredencialErrorText] = useState<string>('');
+    const [credencial, setCredencial] = useState<string>('');
+    const [financiador, setFinanciador] = useState<string>('');
+
+    useEffect(() => {
+        validateCredencial(credencial);
+    }, [credencial, financiador])
+
+    // Para validar la credencial, la misma es obligatoria si está el financiador
+    // cargado. Si no, no se valida.
+    // De validarse, debe ser un número de al menos 6 dígitos.
+    const validateCredencial = (credencial: string) => {
+        setCredencial(credencial);
+        if (!financiador) {
+            setCredencialValid(true);
+            setCredencial(''); // si no hay financiador, no hay credencial
+            setCredencialErrorText('')
+            return;
+        }
+
+        if (!credencial) {
+            setCredencialValid(false);
+            setCredencialErrorText('La credencial no puede estar vacía.');
+            return;
+        }
+
+        if (!credencial.match(/^[0-9]{6,}$/)) {
+            setCredencialValid(false);
+            setCredencialErrorText('La credencial debe ser un número de al menos 6 dígitos.');
+            return;
+        }
+
+        setCredencialValid(true);
+    }
+
+
+    // cada vez que entro a la página, reseteo los datos
+    useEffect(() => {
+        const listen = history.listen(() => {
+            setDIDIsTouched(false);
+            setDIDIsValid(false);
+            setDIDErrorText('');
+            setDIDPaciente('');
+
+            setNombreIsTouched(false);
+            setNombreIsValid(false);
+            setNombreErrorText('');
+            setNombrePaciente('');
+
+            setPrescripcionIsTouched(false);
+            setPrescripcionIsValid(false);
+            setPrescripcionErrorText('');
+            setPrescripcion('');
+
+            setIndicacionIsTouched(false);
+            setIndicacionIsValid(false);
+            setIndicacionErrorText('');
+            setIndicacion('');
+
+            setFinanciador('');
+            setCredencialTouched(false);
+            setCredencialValid(false);
+            setCredencialErrorText('');
+            setCredencial('');
+        })
+
+        return () => {
+            console.log("Unsubscribed from history.")
+            listen()
+        }
+    }, [history])
+
     const scanData = (data: string) => {
         let profileTarget = ProfileHandler.fromQrCode(data);
         if (profileTarget) {
@@ -200,7 +258,7 @@ const RecetaNew: React.FC = () => {
 
     // Confirmación.
     const confirm = () => {
-        if (!isDIDValid || !isNombreValid || !isPrescripcionValid || !isIndicacionValid) {
+        if (!isDIDValid || !isNombreValid || !isPrescripcionValid || !isIndicacionValid || !isCredencialValid) {
             presentToast({
                 message: 'Por favor, complete los campos correctamente.',
                 duration: 2000,
@@ -218,6 +276,7 @@ const RecetaNew: React.FC = () => {
 
         RecetaGenerator(
             currentProfile!, DIDPaciente, nombrePaciente, [prescripcion], indicacion,
+            financiador, credencial,
             presentToast, dismissToast
         ).then((receta: Receta) => {
             console.log("TODO GENERADO!")
@@ -253,6 +312,7 @@ const RecetaNew: React.FC = () => {
                 ]
             })
         })
+
     }
     
 
@@ -333,6 +393,34 @@ const RecetaNew: React.FC = () => {
                         ></IonInput>
                         <IonIcon icon={isNombreValid ? checkmark : close} color={isNombreValid ? "success" : "danger"} slot="end" />
                     </IonItem>
+
+                    <IonItem>
+                        <IonSelect label="Cobertura"
+                            labelPlacement="stacked"
+                            onIonChange={(event) => {setFinanciador(event.detail.value!)}}
+                            value={financiador}
+                        >
+                            <IonSelectOption key="" value="">Sin Cobertura</IonSelectOption>
+                            {financiadores.map((f) => {
+                                return (
+                                    <IonSelectOption key={f.did} value={f.did}>{f.nombre}</IonSelectOption>
+                                )
+                            })}
+                        </IonSelect>
+                    </IonItem>
+
+                    {financiador ? (
+                    <IonItem>
+                        <IonInput
+                            onIonChange={(event) => setCredencial(event.detail.value!)}
+                            onIonBlur={() => setCredencialTouched(true)}
+                            label="Credencial"
+                            labelPlacement="stacked"
+                            className={`${isCredencialValid && 'ion-valid'} ${isCredencialValid === false && 'ion-invalid'} ${isCredencialTouched && 'ion-touched'}`}
+                            errorText={credencialErrorText}
+                            value={credencial}
+                        ></IonInput>
+                    </IonItem> ) : null}
 
                     <IonItem>
                         <IonInput
