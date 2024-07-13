@@ -1,4 +1,4 @@
-import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp, wifiOutline } from 'ionicons/icons';
+import { archiveOutline, archiveSharp, bookmarkOutline, cloudDownloadOutline, cloudDownloadSharp, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, peopleOutline, peopleSharp, trashOutline, trashSharp, warningOutline, warningSharp, wifiOutline } from 'ionicons/icons';
 import { RECETA_FOLDER_ARCHIVED, RECETA_FOLDER_FAVORITOS, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX, RECETA_FOLDER_PAPELERA, RecetaFolder} from '../service/RecetaBcData';
 
 
@@ -41,6 +41,15 @@ export const appPagesInit: AppPage[] = [
         mdIcon: paperPlaneSharp,
         folder: RECETA_FOLDER_OUTBOX,
         roles: ['med']
+    },
+    {
+        id: 'pacientes',
+        title: 'Pacientes',
+        url: '/pacientes',
+        iosIcon: peopleOutline,
+        mdIcon: peopleSharp,
+        roles: ['med'],
+        'folder': RECETA_FOLDER_INBOX
     },
     {
         id: 'outbox',

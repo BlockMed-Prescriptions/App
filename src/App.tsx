@@ -41,6 +41,7 @@ import { useEffect } from 'react';
 import RecetaSuscriberElement from './components/RecetaSuscriberElement';
 import RecetaView from './pages/RecetaView';
 import RecetaDispensa from './pages/RecetaDispensa';
+import PacienteList from './pages/PacienteList';
 
 setupIonicReact();
 
@@ -75,6 +76,12 @@ const App: React.FC = () => {
             </Route>
             <Route path="/receta/new" exact={true}>
               <RecetaNew />
+            </Route>
+            <Route path="/receta/new/:paciente" exact={true}>
+              <RecetaNew />
+            </Route>
+            <Route path="/pacientes" exact={true}>
+              <PacienteList />
             </Route>
             <Route path="/dispensa/:id" exact={true}>
               <RecetaDispensa />

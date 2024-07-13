@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonMenuButton, IonPage, IonSelect, IonSelectOption, IonTitle, IonToggle, IonToolbar, LocationHistory, useIonAlert, useIonLoading, useIonToast } from '@ionic/react';
 import RecetaBcData, { RECETA_FOLDER_OUTBOX } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
@@ -16,6 +16,7 @@ import FinanciadorProvider from '../service/FinanciadorProvider';
 
 const RecetaNew: React.FC = () => {
 
+    const { paciente } = useParams<{ paciente: string|undefined }>();
     const history = useHistory<LocationHistory>();
     const [presentToast, dismissToast] = useIonToast();
     const [presentAlert] = useIonAlert();
@@ -98,7 +99,6 @@ const RecetaNew: React.FC = () => {
             })
         }
     }, [isDIDValid])
-
 
     // Validación del nombre de paciente
     const [isNombreTouched, setNombreIsTouched] = useState(false);
@@ -244,6 +244,13 @@ const RecetaNew: React.FC = () => {
             listen()
         }
     }, [history])
+
+    if (paciente) {
+        setTimeout(() => {
+            setDIDPaciente(paciente)
+            validateDid(paciente)
+        })
+    }
 
     const scanData = (data: string) => {
         let profileTarget = ProfileHandler.fromQrCode(data);

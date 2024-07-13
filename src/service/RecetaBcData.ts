@@ -64,7 +64,7 @@ export default class RecetaBcData {
         }
 
         this.currentProfile = profile;
-        this.currentProfileSubject.next(profile);
+        this.currentProfileSubject.next(profile)
         if (profile) {
             await this.storeProfiles.setItem(RecetaBcData.CURRENT_PROFILE_DID, profile.didId);
         }

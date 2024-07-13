@@ -1,12 +1,14 @@
 import Receta from "../model/Receta";
+import FinanciadorProvider from "../service/FinanciadorProvider";
 import RecetaBcData from "../service/RecetaBcData";
 
-type Paciente = {
+export type Paciente = {
     did: string;
     nombre: string;
     lastReceta?: Date
     cantidadRecetas: number,
     financiador: string|null,
+    financiadorNombre?: string,
     credencial: string|null,
     recetas: string[]
 }
@@ -15,26 +17,33 @@ class PacienteProvider {
     static instance: PacienteProvider;
     static getInstance(): PacienteProvider {
         if (!PacienteProvider.instance) {
-            PacienteProvider.instance = new PacienteProvider(RecetaBcData.getInstance());
+            PacienteProvider.instance = new PacienteProvider(RecetaBcData.getInstance(), FinanciadorProvider.getInstance());
         }
         return PacienteProvider.instance;
     }
 
     private readonly data: RecetaBcData;
+    private readonly financiadorProvider: FinanciadorProvider;
     private readed: boolean = false;
 
     // pacientes es un hash de pacientes por DID, que es un string
     private pacientes: { [did: string]: Paciente } = {}
 
 
-    private constructor(data: RecetaBcData) {
-        this.data = data;
+    private constructor(data: RecetaBcData, financiadorProvider: FinanciadorProvider) {
+        this.data = data
+        this.financiadorProvider = financiadorProvider
 
         this.read().then(() => {
             this.data.observeRecetas().subscribe((receta) => {
                 if (this.readed) {
                     this.add(receta)
                 }
+            })
+
+            this.data.observeProfile().subscribe((profile) => {
+                console.log("PacienteProvider: Profile changed", profile)
+                this.readed = false
             })
         })
     }
@@ -60,6 +69,13 @@ class PacienteProvider {
                 paciente.lastReceta = receta.fechaEmision
                 paciente.nombre = receta.nombrePaciente
                 paciente.financiador = receta.didFinanciador
+                if (receta.didFinanciador) {
+                    this.financiadorProvider.getFinanciador(receta.didFinanciador).then((financiador) => {
+                        if (financiador) {
+                            paciente.financiadorNombre = financiador.nombre
+                        }
+                    })
+                }
                 paciente.credencial = receta.credencial
             }
             if (paciente.recetas.indexOf(receta.id!) === -1) {
@@ -80,11 +96,11 @@ class PacienteProvider {
     }
 
     private async read() {
-        this.data.getAllRecetas().then((recetas) => {
-            this.readed = true
-            recetas.forEach((receta) => {
-                this.add(receta)
-            })
+        this.pacientes = {}
+        const recetas = await this.data.getAllRecetas()
+        this.readed = true
+        recetas.forEach((receta) => {
+            this.add(receta)
         })
     }
 }
