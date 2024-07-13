@@ -33,6 +33,11 @@ class FinanciadorProvider
         return this.cache;
     }
 
+    public async getFinanciador(did: string): Promise<Financiador|undefined>
+    {
+        await this.loadFinanciadores()
+        return this.cache.find((f) => f.did === did);
+    }
 
     private async loadFinanciadores() : Promise<void>
     {
