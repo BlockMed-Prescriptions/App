@@ -1,19 +1,10 @@
 import Receta from "../model/Receta";
 import { config } from "../quarkid/config";
 
-/*
-# curl localhost:3000/api/v1.0/receta/emitir -H "Content-Type: application/json" \
-#     -d '{"medicamentos": [{"codigo":  "Medicamento", "cantidad": 4}], "hash": "'$RECETA'"}'
-
-curl localhost:3000/api/v1.0/receta/${RECETA}
-
-# curl localhost:3000/api/v1.0/receta/dispensar -H "Content-Type: application/json" \
-#     -d '{"didFarmacia": "did.recetasbc.farmacia", "hash": "'$RECETA'"}'
-*/
-
 type Medicamento = {
     codigo: string,
-    cantidad: number
+    cantidad: number,
+    lote: string,
 }
 
 type RecetaResponse = {
@@ -41,10 +32,8 @@ class BlockchainPublisher {
     }
 
     public async emitir(receta: Receta) : Promise<string> {
-        const url = `${this.endpoint}/v1.0/receta/emitir`;
-        const medicamentos:Medicamento[] = receta.medicamentos.map(medicamento => {return {"codigo": medicamento, "cantidad": 1}})
+        const url = `${this.endpoint}/v2.0/receta/emitir`;
         const body = {
-            medicamentos: medicamentos,
             hash: receta.id
         };
 
@@ -65,11 +54,18 @@ class BlockchainPublisher {
         }
     }
 
-    public async dispensar(receta: Receta, didFarmacia: string) : Promise<string> {
-        const url = `${this.endpoint}/v1.0/receta/dispensar`;
+    public async dispensar(receta: Receta) : Promise<string> {
+        const url = `${this.endpoint}/v2.0/receta/dispensar`;
+        const medicamentos:Medicamento[] = receta.dispensa!.medicamentos.map((medicamento, index) => {
+            return {
+                "codigo": medicamento,
+                "cantidad": 1,
+                "lote": receta.dispensa!.lotes[index]
+        }})
         const body = {
-            didFarmacia: didFarmacia,
-            hash: receta.id
+            didFarmacia: receta.dispensa!.didFarmacia,
+            hash: receta.id,
+            medicamentos: medicamentos
         };
 
         let response = await fetch(url, {
@@ -90,7 +86,7 @@ class BlockchainPublisher {
     }
 
     public async getReceta(recetaId: string) : Promise<RecetaResponse> {
-        const url = `${this.endpoint}/v1.0/receta/${recetaId}`;
+        const url = `${this.endpoint}/v2.0/receta/${recetaId}`;
 
         let response = await fetch(url, {
             method: 'GET'
@@ -104,7 +100,9 @@ class BlockchainPublisher {
         }
 
         // los medicamentos son un array que están en la posición 3.
-        let medicamentos:Medicamento[] = data[3].map((medicamento: any) => {return {"codigo": medicamento[0], "cantidad": medicamento[1]}})
+        let medicamentos:Medicamento[] = data[3].map((medicamento: any) => {
+            return {"codigo": medicamento[0], "cantidad": medicamento[1], "lote": medicamento[2]}
+        })
 
         return {
             "hash": data[0],

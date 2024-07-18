@@ -66,7 +66,7 @@ export const RecepcionGenerator = async (
     onProgress && onProgress("Registrando recepción en blockchain.", 'info')
     let hashTransaccion: string
     try {
-        hashTransaccion = await publisher.dispensar(receta, receta.dispensa!.didFarmacia)
+        hashTransaccion = await publisher.dispensar(receta)
     } catch (e) {
         onProgress && onProgress("Error registrando recepción en blockchain.", 'error')
         throw e
