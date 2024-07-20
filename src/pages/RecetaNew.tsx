@@ -16,7 +16,7 @@ import FinanciadorProvider from '../service/FinanciadorProvider';
 
 const RecetaNew: React.FC = () => {
 
-    const { paciente } = useParams<{ paciente: string|undefined }>();
+    const { paciente } = useParams<{ paciente: string | undefined }>();
     const history = useHistory<LocationHistory>();
     const [presentToast, dismissToast] = useIonToast();
     const [presentAlert] = useIonAlert();
@@ -34,7 +34,7 @@ const RecetaNew: React.FC = () => {
         })
     }, [financiadorProvider])
 
-    const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
+    // const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
     let didDocument: DIDDocument | null = null;
     const modalScanner = useRef<HTMLModalScanner>(null);
 
@@ -44,16 +44,16 @@ const RecetaNew: React.FC = () => {
     const [DIDErrorText, setDIDErrorText] = useState<string>('');
     const [DIDPaciente, setDIDPaciente] = useState<string>('');
 
-    useEffect(() => {
-        setCurrentProfile(data.getCurrentProfile());
-        const s = data.observeProfile().subscribe((p) => {
-            setCurrentProfile(p);
-        })
+    // useEffect(() => {
+    //     setCurrentProfile(data.getCurrentProfile());
+    //     const s = data.observeProfile().subscribe((p) => {
+    //         setCurrentProfile(p);
+    //     })
 
-        return () => {
-            s.unsubscribe();
-        }
-    }, [])
+    //     return () => {
+    //         s.unsubscribe();
+    //     }
+    // }, [])
 
     const validateDid = (didId: string) => {
         setDIDPaciente(didId);
@@ -68,7 +68,7 @@ const RecetaNew: React.FC = () => {
             setDIDErrorText('El DID debe tener la forma did:method:id.')
             return;
         }
-        
+
         DIDResolver(didId).then((doc) => {
             console.log("DID Document", doc);
             didDocument = doc
@@ -277,12 +277,12 @@ const RecetaNew: React.FC = () => {
                         role: 'cancel'
                     }
                 ]
-                });
+            });
             return;
         }
 
         RecetaGenerator(
-            currentProfile!, DIDPaciente, nombrePaciente, [prescripcion], indicacion,
+            data.currentProfile!, DIDPaciente, nombrePaciente, [prescripcion], indicacion,
             financiador, credencial,
             presentToast, dismissToast
         ).then((receta: Receta) => {
@@ -301,7 +301,7 @@ const RecetaNew: React.FC = () => {
                     }
                 ]
             })
-        
+
             // me muevo a la carpeta de salida
             history.push('/folder/Outbox');
         }).catch((e) => {
@@ -321,7 +321,7 @@ const RecetaNew: React.FC = () => {
         })
 
     }
-    
+
 
     // cancelación, voy a la página Outbox
     const cancel = () => {
@@ -351,72 +351,62 @@ const RecetaNew: React.FC = () => {
 
 
     return (
-        <IonPage>
-            <IonHeader>
-                <IonToolbar>
-                    <IonTitle>Crear una receta</IonTitle>
-                    <IonButtons slot="end">
-                        <IonButton color="primary" onClick={() => confirm()}>Confirmar</IonButton>
-                        <IonButton color="" onClick={() => cancel()}>Cancelar</IonButton>
-                    </IonButtons>
-                </IonToolbar>
-            </IonHeader>
-            <IonContent>
-                <IonList>
-                    <IonItem lines="inset">
-                        <IonLabel position="stacked">DID Médico</IonLabel>
-                        <p>{currentProfile?.didId}</p>
-                    </IonItem>
-                    <IonItem lines="none">
-                        <IonInput
-                            onIonChange={(event) => setDIDPaciente(event.detail.value!)}
-                            onIonBlur={() => setDIDIsTouched(true)}
-                            label="DID Paciente"
-                            labelPlacement="stacked"
-                            className={`${isDIDValid && 'ion-valid'} ${isDIDValid === false && 'ion-invalid'} ${isDIDTouched && 'ion-touched'}`}
-                            errorText={DIDErrorText}
-                            value={DIDPaciente}
-                        ></IonInput>
-                        {isDIDTouched ?(
+        <IonContent>
+            <IonList>
+                <IonItem lines="inset">
+                    <IonLabel position="stacked">DID Médico</IonLabel>
+                    <p>{data.currentProfile?.didId}</p>
+                </IonItem>
+                <IonItem lines="none">
+                    <IonInput
+                        onIonChange={(event) => setDIDPaciente(event.detail.value!)}
+                        onIonBlur={() => setDIDIsTouched(true)}
+                        label="DID Paciente"
+                        labelPlacement="stacked"
+                        className={`${isDIDValid && 'ion-valid'} ${isDIDValid === false && 'ion-invalid'} ${isDIDTouched && 'ion-touched'}`}
+                        errorText={DIDErrorText}
+                        value={DIDPaciente}
+                    ></IonInput>
+                    {isDIDTouched ? (
                         <IonIcon icon={isDIDValid ? checkmark : close} color={isDIDValid ? "success" : "danger"} slot="end" />
-                        ) : null}
-                        <IonButtons slot="end">
-                            <IonButton onClick={() => {modalScanner?.current?.open()}}>
-                                <IonIcon icon={cameraOutline} slot="icon-only" />
-                            </IonButton>
-                        </IonButtons>
-                        <ModalScanner ref={modalScanner} onScan={(data) => {scanData(data)}} />
-                    </IonItem>
+                    ) : null}
+                    <IonButtons slot="end">
+                        <IonButton onClick={() => { modalScanner?.current?.open() }}>
+                            <IonIcon icon={cameraOutline} slot="icon-only" />
+                        </IonButton>
+                    </IonButtons>
+                    {/* <ModalScanner ref={modalScanner} onScan={(data) => { scanData(data) }} /> */}
+                </IonItem>
 
-                    <IonItem>
-                        <IonInput
-                            onIonChange={(event) => setNombrePaciente(event.detail.value!)}
-                            onIonBlur={() => setNombreIsTouched(true)}
-                            label="Nombre Paciente"
-                            labelPlacement="stacked"
-                            className={`${isNombreValid && 'ion-valid'} ${isNombreValid === false && 'ion-invalid'} ${isNombreTouched && 'ion-touched'}`}
-                            errorText={nombreErrorText}
-                            value={nombrePaciente}
-                        ></IonInput>
-                        <IonIcon icon={isNombreValid ? checkmark : close} color={isNombreValid ? "success" : "danger"} slot="end" />
-                    </IonItem>
+                <IonItem>
+                    <IonInput
+                        onIonChange={(event) => setNombrePaciente(event.detail.value!)}
+                        onIonBlur={() => setNombreIsTouched(true)}
+                        label="Nombre Paciente"
+                        labelPlacement="stacked"
+                        className={`${isNombreValid && 'ion-valid'} ${isNombreValid === false && 'ion-invalid'} ${isNombreTouched && 'ion-touched'}`}
+                        errorText={nombreErrorText}
+                        value={nombrePaciente}
+                    ></IonInput>
+                    <IonIcon icon={isNombreValid ? checkmark : close} color={isNombreValid ? "success" : "danger"} slot="end" />
+                </IonItem>
 
-                    <IonItem>
-                        <IonSelect label="Cobertura"
-                            labelPlacement="stacked"
-                            onIonChange={(event) => {setFinanciador(event.detail.value!)}}
-                            value={financiador}
-                        >
-                            <IonSelectOption key="" value="">Sin Cobertura</IonSelectOption>
-                            {financiadores.map((f) => {
-                                return (
-                                    <IonSelectOption key={f.did} value={f.did}>{f.nombre}</IonSelectOption>
-                                )
-                            })}
-                        </IonSelect>
-                    </IonItem>
+                <IonItem>
+                    <IonSelect label="Cobertura"
+                        labelPlacement="stacked"
+                        onIonChange={(event) => { setFinanciador(event.detail.value!) }}
+                        value={financiador}
+                    >
+                        <IonSelectOption key="" value="">Sin Cobertura</IonSelectOption>
+                        {financiadores.map((f) => {
+                            return (
+                                <IonSelectOption key={f.did} value={f.did}>{f.nombre}</IonSelectOption>
+                            )
+                        })}
+                    </IonSelect>
+                </IonItem>
 
-                    {financiador ? (
+                {financiador ? (
                     <IonItem>
                         <IonInput
                             onIonChange={(event) => setCredencial(event.detail.value!)}
@@ -427,36 +417,35 @@ const RecetaNew: React.FC = () => {
                             errorText={credencialErrorText}
                             value={credencial}
                         ></IonInput>
-                    </IonItem> ) : null}
+                    </IonItem>) : null}
 
-                    <IonItem>
-                        <IonInput
-                            onIonChange={(event) => setPrescripcion(event.detail.value!)}
-                            onIonBlur={() => setPrescripcionIsTouched(true)}
-                            label="Prescripción"
-                            labelPlacement="stacked"
-                            className={`${isPrescripcionValid && 'ion-valid'} ${isPrescripcionValid === false && 'ion-invalid'} ${isPrescripcionTouched && 'ion-touched'}`}
-                            errorText={prescripcionErrorText}
-                            value={prescripcion}
-                        ></IonInput>
-                        <IonIcon icon={isPrescripcionValid ? checkmark : close} color={isPrescripcionValid ? "success" : "danger"} slot="end" />
-                    </IonItem>
+                <IonItem>
+                    <IonInput
+                        onIonChange={(event) => setPrescripcion(event.detail.value!)}
+                        onIonBlur={() => setPrescripcionIsTouched(true)}
+                        label="Prescripción"
+                        labelPlacement="stacked"
+                        className={`${isPrescripcionValid && 'ion-valid'} ${isPrescripcionValid === false && 'ion-invalid'} ${isPrescripcionTouched && 'ion-touched'}`}
+                        errorText={prescripcionErrorText}
+                        value={prescripcion}
+                    ></IonInput>
+                    <IonIcon icon={isPrescripcionValid ? checkmark : close} color={isPrescripcionValid ? "success" : "danger"} slot="end" />
+                </IonItem>
 
-                    <IonItem>
-                        <IonInput
-                            onIonChange={(event) => setIndicacion(event.detail.value!)}
-                            onIonBlur={() => setIndicacionIsTouched(true)}
-                            label="Diagnóstico"
-                            labelPlacement="stacked"
-                            className={`${isIndicacionValid && 'ion-valid'} ${isIndicacionValid === false && 'ion-invalid'} ${isIndicacionTouched && 'ion-touched'}`}
-                            errorText={indicacionErrorText}
-                            value={indicacion}
-                        ></IonInput>
-                        <IonIcon icon={isIndicacionValid ? checkmark : close} color={isIndicacionValid ? "success" : "danger"} slot="end" />
-                    </IonItem>
-                </IonList>
-            </IonContent>
-        </IonPage>
+                <IonItem>
+                    <IonInput
+                        onIonChange={(event) => setIndicacion(event.detail.value!)}
+                        onIonBlur={() => setIndicacionIsTouched(true)}
+                        label="Diagnóstico"
+                        labelPlacement="stacked"
+                        className={`${isIndicacionValid && 'ion-valid'} ${isIndicacionValid === false && 'ion-invalid'} ${isIndicacionTouched && 'ion-touched'}`}
+                        errorText={indicacionErrorText}
+                        value={indicacion}
+                    ></IonInput>
+                    <IonIcon icon={isIndicacionValid ? checkmark : close} color={isIndicacionValid ? "success" : "danger"} slot="end" />
+                </IonItem>
+            </IonList>
+        </IonContent>
     );
 
 }

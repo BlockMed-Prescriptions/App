@@ -103,7 +103,7 @@ const ProfilePage: React.FC = () => {
                             data.setCurrentProfile(null);
 
                             // me voy al Inbox
-                            history.push('/folder/Inbox');
+                            history.push('/');
                         }).catch((e) => {
                             presentAlert({
                                 header: 'Error',
@@ -124,7 +124,7 @@ const ProfilePage: React.FC = () => {
         }
     }
 
-    const reprocesarMensajes = (e:MouseEvent) => {
+    const reprocesarMensajes = (e: MouseEvent) => {
         if (e.ctrlKey) {
             presentAlert({
                 message: '¿Está seguro de que desea reprocesar todos los mensajes, borrando lo anterior?',
@@ -156,7 +156,7 @@ const ProfilePage: React.FC = () => {
         }
         const hoy = new Date();
         const ayer: Date = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - 1);
-        data.saveLastMessageDate(ayer).then(() => {});
+        data.saveLastMessageDate(ayer).then(() => { });
     }
 
     useEffect(() => {
@@ -170,7 +170,7 @@ const ProfilePage: React.FC = () => {
         const subscription = data.observeProfile().subscribe((p) => {
             setCurrentProfile(p);
         });
-    
+
         // Limpiar la suscripción cuando el componente se desmonte
         return () => subscription.unsubscribe();
     }, []);
@@ -190,96 +190,77 @@ const ProfilePage: React.FC = () => {
      * Dibujo la pantalla con los datos en "Profile"
      */
     return (
-        <IonPage>
-            <IonHeader>
-                <IonToolbar>
-                    <IonButtons slot="start">
-                    <IonMenuButton />
-                    </IonButtons>
-                    <IonTitle>Perfil de {currentProfile?.name}</IonTitle>
-                </IonToolbar>
-            </IonHeader>
-  
-            <IonContent fullscreen>
-                <IonList>
-                    <IonItem>
-                        <IonLabel>
-                            <h2>Nombre</h2>
-                            <p>{currentProfile?.name}</p>
-                        </IonLabel>
-                    </IonItem>
-                    <IonItem>
-                        <IonLabel>
-                            <h2>Correo</h2>
-                            <p>{currentProfile?.email}</p>
-                        </IonLabel>
-                    </IonItem>
-                    <IonItem>
-                        <IonLabel>
-                            <h2>DID</h2>
-                            <p>{currentProfile?.didId}</p>
-                        </IonLabel>
-                        {currentProfile?.didId ? (
-                            <IonButtons slot="end">
-                                <IonButton size="small" onClick={() => {
-                                    navigator.clipboard.writeText(currentProfile?.didId);
-                                    // acá abro un toast
-                                    presentToast({
-                                        message: 'DID copiado al portapapeles.',
-                                        duration: 1000,
-                                        position: 'bottom'
-                                    });
-                                }}>
-                                    <IonIcon icon={copyOutline} slot="icon-only" />
-                                </IonButton>
-                                {didDocument ? (
+
+        <IonContent fullscreen>
+            <IonList>
+                <IonItem>
+                    <IonLabel>
+                        <h2>Nombre</h2>
+                        <p>{currentProfile?.name}</p>
+                    </IonLabel>
+                </IonItem>
+                <IonItem>
+                    <IonLabel>
+                        <h2>Correo</h2>
+                        <p>{currentProfile?.email}</p>
+                    </IonLabel>
+                </IonItem>
+                <IonItem>
+                    <IonLabel>
+                        <h2>DID</h2>
+                        <p>{currentProfile?.didId}</p>
+                    </IonLabel>
+                    {currentProfile?.didId ? (
+                        <IonButtons slot="end">
+                            <IonButton size="small" onClick={() => {
+                                navigator.clipboard.writeText(currentProfile?.didId);
+                                // acá abro un toast
+                                presentToast({
+                                    message: 'DID copiado al portapapeles.',
+                                    duration: 1000,
+                                    position: 'bottom'
+                                });
+                            }}>
+                                <IonIcon icon={copyOutline} slot="icon-only" />
+                            </IonButton>
+                            {didDocument ? (
                                 <IonButton size="small" onClick={() => modalCertificado.current?.open()}>
                                     <IonIcon icon={medalOutline} slot="icon-only" />
                                 </IonButton>
-                                ) : ''}
-                                <ModalCertificado ref={modalCertificado} certificado={didDocument} />
-                            </IonButtons>
-                        ) : ''}
-                    </IonItem>
-                </IonList>
-                {/*
-                    Ahora voy a poner una botonera para importar y exportar perfiles.
-                */}
-                <IonButton onClick={() => {
-                    exportPerfil(currentProfile!);
-                }}>Exportar Perfil</IonButton>
-                <IonButton onClick={() => {
-                    importPerfiles();
-                }}>Importar Perfil</IonButton>
-                <IonButton color="danger" onClick={() => {
-                    deletePerfil(currentProfile!);
-                }}>Eliminar Perfil</IonButton>
-                <IonButton color="primary" fill='outline' onClick={(e) => {
-                    reprocesarMensajes(e)
-                }}>
-                    Reprocesar Mensajes
-                </IonButton>
-                <IonButton color="light" onClick={() => {
-                    modal.current?.present();
-                }}>
-                    QR
-                    <IonIcon icon={qrCodeOutline} slot='start' />
-                </IonButton>
+                            ) : ''}
+                            <ModalCertificado ref={modalCertificado} certificado={didDocument} />
+                        </IonButtons>
+                    ) : ''}
+                </IonItem>
+            </IonList>
 
-                <IonModal ref={modal}>
-                    <IonHeader>
-                        <IonToolbar>
-                            <IonButtons slot="end">
-                                <IonButton onClick={() => dismiss()}>Cerrar</IonButton>
-                            </IonButtons>
-                        </IonToolbar>
-                    </IonHeader>
-                    <IonContent fullscreen={true} className="ion-padding ion-text-center">
-                        <QRCode value={qrValue} size={320} />
-                    </IonContent>
-                </IonModal>
-            </IonContent>
-        </IonPage>
+            <IonButton onClick={() => {
+                exportPerfil(currentProfile!);
+            }}>Exportar Perfil</IonButton>
+            <IonButton onClick={() => {
+                importPerfiles();
+            }}>Importar Perfil</IonButton>
+            <IonButton color="danger" onClick={() => {
+                deletePerfil(currentProfile!);
+            }}>Eliminar Perfil</IonButton>
+            <IonButton color="primary" fill='outline' onClick={(e) => {
+                reprocesarMensajes(e)
+            }}>
+                Reprocesar Mensajes
+            </IonButton>
+            <IonButton color="light" onClick={() => {
+                modal.current?.present();
+            }}>
+                QR
+                <IonIcon icon={qrCodeOutline} slot='start' />
+            </IonButton>
+
+            <IonModal ref={modal}>
+                <IonContent fullscreen={true} className="ion-padding ion-text-center">
+                    <QRCode value={qrValue} size={320} />
+                </IonContent>
+            </IonModal>
+        </IonContent>
     )
 }
 

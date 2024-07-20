@@ -38,7 +38,9 @@
     "react-qr-code": "^2.0.14",
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
-    "use-sound": "^4.0.1"
+    "styled-components": "^6.1.11",
+    "use-sound": "^4.0.1",
+    "zustand": "^4.5.4"
   },
   "resolutions": {
     "@transmute/did-key-secp256k1": "0.3.0-unstable.10"

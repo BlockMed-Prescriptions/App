@@ -1,7 +1,19 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
 
+.toast{
+	color: #fff;
+	font-size: 1.2em;
+}
+
+.scrollbarNone::-webkit-scrollbar {
+	display: none;
+  }
+
 :root {
+	--ion-background-color: #fff;
+	--ion-item-background: transparent;
+
 	--ion-color-primary: #4181F5;
 	--ion-color-primary-rgb: 65,129,245;
 	--ion-color-primary-contrast: #FFFFFF;
@@ -23,7 +35,7 @@ http://ionicframework.com/docs/theming/ */
 	--ion-color-tertiary-shade: #542ae0;
 	--ion-color-tertiary-tint: #7045ff;
 
-	--ion-color-success: #2dd55b;
+	--ion-color-success: #28A745;
 	--ion-color-success-rgb: 45,213,91;
 	--ion-color-success-contrast: #000000;
 	--ion-color-success-contrast-rgb: 0,0,0;
