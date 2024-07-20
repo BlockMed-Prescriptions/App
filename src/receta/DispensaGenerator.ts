@@ -1,18 +1,17 @@
-import { VerifiableCredentialService } from "@quarkid/vc-core";
 import Dispensa from "../model/Dispensa";
 import Profile from "../model/Profile";
 import { CredentialSigner } from "../quarkid/CredentialSigner";
 import MessageSender from "../message/MessageSender";
 import Receta from "../model/Receta";
 import RecetaBcData, { RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX } from "../service/RecetaBcData";
+import CredencialBuilder from "../quarkid/CredentialBuilder";
 
-const vcService = new VerifiableCredentialService ()
 const data = RecetaBcData.getInstance()
 
 const generateCertificate = async (dispensa: Dispensa) => {
     const medicamentos = dispensa.medicamentos.map((m) => { return {"schema:name": m} })
     const lotes = dispensa.lotes.map((l) => { return {"schema:batchNumber": l} })
-    const credential = await vcService.createCredential({
+    const credential = await CredencialBuilder({
         context: [
         "https://w3id.org/security/v2",
         "https://w3id.org/security/bbs/v1",
@@ -31,8 +30,7 @@ const generateCertificate = async (dispensa: Dispensa) => {
             "schema:DrugBatch": lotes,
             "schema:Date": dispensa.confirmacionDispensa ? dispensa.confirmacionDispensa.toISOString() : null,
             "schema:identifier": dispensa.recetaId,
-        },
-        mappingRules: null,
+        }
     })
 
     return credential;
