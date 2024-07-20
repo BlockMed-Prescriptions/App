@@ -1,15 +1,14 @@
-import { VerifiableCredentialService } from "@quarkid/vc-core";
 import Profile from "../model/Profile";
 import Transaccion from "../model/Transaccion";
 import { CredentialSigner } from "../quarkid/CredentialSigner";
 import RecetaBcData from "../service/RecetaBcData";
+import CredencialBuilder from "../quarkid/CredentialBuilder";
 
-const vcService = new VerifiableCredentialService ()
 const data = RecetaBcData.getInstance()
 
 const generateCertificate = async (didProfile: string, transaccion: Transaccion) => {
     const fecha = new Date
-    const credential = await vcService.createCredential({
+    const credential = CredencialBuilder({
         context: [
         "https://w3id.org/security/v2",
         "https://w3id.org/security/bbs/v1",
@@ -26,8 +25,7 @@ const generateCertificate = async (didProfile: string, transaccion: Transaccion)
             // indicaciones: receta.indicaciones,
             "schema:identifier": transaccion.hashTransaccion,
             "schema:type": transaccion.tipo,
-        },
-        mappingRules: null,
+        }
     })
 
     return credential;

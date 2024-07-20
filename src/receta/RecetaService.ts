@@ -2,11 +2,9 @@ import MessageSender from '../message/MessageSender';
 import { MessageType } from '../model/Message';
 import Profile from '../model/Profile';
 import Receta from '../model/Receta';
-import DIDMessageSend from '../quarkid/DidMessageSender';
-import ProfileHandler from '../service/ProfileHandler';
-import ProfileService from '../service/ProfileService';
 
-import { VerifiableCredential, VerifiableCredentialService } from "@quarkid/vc-core";
+import { VerifiableCredential } from "@quarkid/vc-core";
+import CredencialBuilder from '../quarkid/CredentialBuilder';
 
 /**
  * Esta clase se encarga de construir una receta.
@@ -14,20 +12,15 @@ import { VerifiableCredential, VerifiableCredentialService } from "@quarkid/vc-c
 
 class RecetaService {
     private static instance: RecetaService;
-    private vcService: VerifiableCredentialService
 
     public static getInstance(): RecetaService {
         if (!RecetaService.instance) {
             RecetaService.instance = new RecetaService(
-                new VerifiableCredentialService()
             );
         }
         return RecetaService.instance;
     }
 
-    private constructor(vcService: VerifiableCredentialService) {
-        this.vcService = vcService
-    }
     
     public buildReceta(
         didMedico: string,
@@ -61,7 +54,7 @@ class RecetaService {
     }
 
     public async generateCertificate(receta: Receta, profile: Profile) : Promise<VerifiableCredential> {
-        const credential = await this.vcService.createCredential({
+        const credential = await CredencialBuilder({
             context: [
                 "https://w3id.org/security/v2",
                 "https://w3id.org/security/bbs/v1",
@@ -105,11 +98,10 @@ class RecetaService {
                 },
 
                 "schema:identifier": receta.id!,
-            },
-            mappingRules: null,
+            }
         })
 
-        return credential;
+        return credential
     }
 
     public buildRecetaFromCredential(credential: VerifiableCredential) : Receta {

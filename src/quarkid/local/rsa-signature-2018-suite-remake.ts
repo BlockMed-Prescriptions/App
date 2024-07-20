@@ -82,8 +82,9 @@ export class RSASignature2018SuiteRemake  implements IVCSuite{
 
   // esto no va más.
   contextDictionary = [
-          { key: "https://www.w3.org/2018/credentials/v1", value: "https://storage.googleapis.com/contexts/credentials-v1.json" },
-          { key: "https://w3id.org/security/bbs/v1", value: "https://storage.googleapis.com/contexts/vc-di-bbs.json" },
+          // { key: "https://www.w3.org/2018/credentials/v1", value: "https://storage.googleapis.com/contexts/credentials-v1.json" },
+          // { key: "https://w3id.org/security/bbs/v1", value: "https://storage.googleapis.com/contexts/vc-di-bbs.json" },
+          { key: "https://www.w3.org/2018/credentials/v1", value: '/contexts/credentials-v1.jsonld' }
       ];
 
   // TODO: Optimizar el cache, de tal forma de hacerlo estático.
@@ -114,7 +115,7 @@ export class RSASignature2018SuiteRemake  implements IVCSuite{
           };
       } else {
           const response = await this.cacheGetter(url, async () => {
-                let contextURL = url // this.contextDictionary.find(x => url.includes(x.key))?.value || url;
+                let contextURL = this.contextDictionary.find(x => url.includes(x.key))?.value || url;
                 const response = await fetch(contextURL);
                 const data = await response.json();
                 return data;

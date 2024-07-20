@@ -1,4 +1,3 @@
-import { VerifiableCredentialService } from "@quarkid/vc-core";
 import Profile from "../model/Profile";
 import Recepcion from "../model/Recepcion";
 import Receta from "../model/Receta";
@@ -7,8 +6,8 @@ import MessageSender from "../message/MessageSender";
 import RecetaBcData from "../service/RecetaBcData";
 import BlockchainPublisher from "./BlockchainPublisher";
 import TransaccionGenerator from "./TransaccionGenerator";
+import CredencialBuilder from "../quarkid/CredentialBuilder";
 
-const vcService = new VerifiableCredentialService
 const data = RecetaBcData.getInstance()
 const publisher = BlockchainPublisher.getInstance()
 
@@ -21,7 +20,7 @@ export const RecepcionGenerator = async (
     const fechaRecepcion = new Date
 
     onProgress && onProgress("Generando certificado de recepción", 'success')
-    const credential = await vcService.createCredential({
+    const credential = await CredencialBuilder({
         context: [
         "https://w3id.org/security/v2",
         "https://w3id.org/security/bbs/v1",
@@ -37,13 +36,12 @@ export const RecepcionGenerator = async (
             type: "Recepcion",
             "schema:Date": fechaRecepcion.toISOString(),
             "schema:identifier": receta.id!,
-        },
-        mappingRules: null,
+        }
     })
 
     const recepcion:Recepcion = {
         recetaId: receta.id!,
-        fechaRecepcion,
+        fechaRecepcion: fechaRecepcion,
         certificado: credential
     }
 
