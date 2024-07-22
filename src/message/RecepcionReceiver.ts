@@ -17,7 +17,7 @@ const RecepcionReceiver = () => {
             case 'confirmacion-dispensa':
                 break
             default:
-                throw new Error("Mensaje desconocido. Error ent ipo de mensaje")
+                throw new Error("Mensaje desconocido. Error en tipo de mensaje")
         }
 
         const recepcion: Recepcion = {
