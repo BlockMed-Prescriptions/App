@@ -158,7 +158,7 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
     }));
 
     return (<>
-        <ModalScanner onScan={scanCallback} ref={modalScanner} />
+        <ModalScanner onScan={scanCallback} ref={modalScanner} close={() => {}} isOpen={false} />
         <IonAlert ref={promptDid}
             header="Por favor, proporcione el ID de la farmacia."
             buttons={['OK']}
