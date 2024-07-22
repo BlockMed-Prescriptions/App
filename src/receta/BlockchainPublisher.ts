@@ -76,7 +76,7 @@ class BlockchainPublisher {
             body: JSON.stringify(body)
         });
 
-        let data = await response.json();
+        let data = await response.json()
         if ('string' === typeof data) {
             return data;
         } else {
