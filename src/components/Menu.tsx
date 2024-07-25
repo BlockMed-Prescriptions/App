@@ -1,7 +1,6 @@
 import {
   IonBadge,
   IonContent,
-  IonFooter,
   IonIcon,
   IonItem,
   IonLabel,
@@ -9,9 +8,9 @@ import {
   IonListHeader,
   IonMenu,
   IonMenuToggle,
+  IonModal,
   IonNote,
-  IonText,
-  IonTitle,
+  IonPage,
 } from '@ionic/react';
 
 import React, { useRef } from 'react';
@@ -21,48 +20,31 @@ import './Menu.css';
 import RecetaBcData, { RecetaFolder } from '../service/RecetaBcData';
 import Profile from '../model/Profile';
 import { useState, useEffect } from 'react';
-import NewProfileButton from './NewProfileButton';
-import {version as recetasBcVersion} from '../version';
-import { MessageStatus } from '../message/MessageReceiver';
 
 import { AppPage, appPagesInit } from '../service/MenuProvider';
-import { warningOutline, wifiOutline } from 'ionicons/icons';
+import Logout from './Logout';
+import { useCurrentProfile } from '../hooks';
+import styled from 'styled-components';
+import Logo from './Logo';
+import Divider from './Divider';
+import Button from './Button';
+import { qrCodeOutline } from 'ionicons/icons';
+import QRCode from 'react-qr-code';
 import ProfileHandler from '../service/ProfileHandler';
+import usePlatforms from '../hooks/usePlatforms';
+
+const hiddePathnames: string[] = ["/", "/init"]
 
 
 const Menu: React.FC = () => {
   const location = useLocation()
   const data = RecetaBcData.getInstance()
-  const [connectionStatus, setConnectionStatus] = useState<number>(200)
-  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const { currentProfile } = useCurrentProfile();
   const [appPages, setAppPages] = useState<AppPage[]>(appPagesInit);
   const menuElement = useRef<HTMLIonMenuElement>(null);
+  const { isMobile } = usePlatforms();
 
-  useEffect(() => {
-    const subscription = data.observeProfile().subscribe((p) => {
-      //if (!currentProfile || currentProfile?.didId !== p?.didId) {
-        setCurrentProfile(p);
-        // cambiando el perfil, entonces
-        console.log("Cambiando el perfil", p)
-      //}
-    })
-    setCurrentProfile(data.getCurrentProfile())
-
-    // Limpiar la suscripción cuando el componente se desmonte
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const subscription = MessageStatus().subscribe((status) => {
-      console.log("Cambiando el estado de la conexión", status)
-      setConnectionStatus(status);
-    })
-
-    return () => subscription.unsubscribe();
-  }, [])
-
-  const refreshRecetas = async (folder: RecetaFolder|null) => {
+  const refreshRecetas = async (folder: RecetaFolder | null) => {
     for (let page of appPagesInit) {
       if (folder && page.folder !== folder) {
         continue;
@@ -79,7 +61,7 @@ const Menu: React.FC = () => {
 
   useEffect(() => {
     const suscription = data.observeFolders().subscribe((f) => {
-      refreshRecetas(f).then(() => {}); 
+      refreshRecetas(f).then(() => { });
     });
 
     return () => {
@@ -87,62 +69,147 @@ const Menu: React.FC = () => {
     }
   }, [currentProfile])
 
+  const [qrValue, setQrValue] = useState<string>('');
+  const modal = useRef<HTMLIonModalElement>(null);
+
   useEffect(() => {
-    refreshRecetas(null).then(() => {});
+    refreshRecetas(null).then(() => { });
+    if (currentProfile) {
+      setQrValue(ProfileHandler.toQrCode(currentProfile));
+    }
   }, [currentProfile])
 
-  const footer = (
-    <IonFooter>
-        <IonText style={{"fontSize": "80%"}} className='ion-padding' color="medium">
-          <IonIcon icon={connectionStatus === 200 ? wifiOutline : warningOutline} color={connectionStatus === 200 ? "success" : "danger"} />
-          Versión {recetasBcVersion}
-        </IonText>
-    </IonFooter>
-  )
+
+  if (hiddePathnames.includes(location.pathname) && !isMobile) {
+    return <></>
+  }
 
   if (!currentProfile) {
     return (<IonMenu contentId="main" type="overlay">
       <IonContent>
         <IonList id="inbox-list">
           <IonListHeader>Recetas</IonListHeader>
-          <IonNote style={{"marginRight": "20px"}}>
+          <IonNote style={{ "marginRight": "20px" }}>
             No hay un perfil actualmente definido, puede crear uno nuevo.
-            <NewProfileButton />
           </IonNote>
         </IonList>
       </IonContent>
-      {footer}
+      <Logout />
     </IonMenu>)
   }
 
+
   return (
-    <IonMenu contentId="main" type="overlay" ref={menuElement}>
-      <IonContent>
-        <IonList id="inbox-list">
-          <IonListHeader>Recetas</IonListHeader>
-          <IonNote>{currentProfile?.name}</IonNote>
-          <NewProfileButton onSelect={(profile) => menuElement.current?.close()}/>
+    <IonMenu type="overlay" ref={menuElement}>
+      <MenuStyled className="ion-page">
+        <Logo name size="5em" titleSize='1.5em' gap="0.5em" />
+        <div className='menu-pages'>
           {appPages.map((appPage, index) => {
             let title: string = appPage.title;
+            let isSelected = ""
+            if (!location.search && location.pathname === appPage.pathname) {
+              isSelected = 'selected'
+            }
+            if (location.search && `${location.pathname}${location.search}` === appPage.url) {
+              isSelected = 'selected'
+            }
             if (!appPage.roles.includes(currentProfile?.roles[0] ?? '')) {
               return null;
             }
-            
+
             return (
               <IonMenuToggle key={index} autoHide={false}>
-                <IonItem className={location.pathname === appPage.url ? 'selected' : ''} routerLink={appPage.url} routerDirection="none" lines="none" detail={false}>
-                  <IonIcon aria-hidden="true" slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
+                <IonItem className={isSelected} routerLink={appPage.url} routerDirection="none" lines="none" detail={false}>
+                  <IonIcon aria-hidden="true" color="dark" slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
                   <IonLabel>{title}</IonLabel>
                   {appPage.count && appPage.count > 0 ? (<IonBadge slot="end">{appPage.count}</IonBadge>) : null}
                 </IonItem>
               </IonMenuToggle>
             );
           })}
-        </IonList>
-      </IonContent>
-      {footer}
+        </div>
+        <div className='divider-about'>
+          {!isMobile &&
+            <>
+              <Divider px="0" />
+              <p>{"Acerca de BlockMed"}</p>
+            </>
+          }
+        </div>
+        <Button onClick={() => modal.current?.present()} type="primary-outline" fullWidth padding="0.8em 0em 0.8em 0em" >
+          <div className='button-qr'>
+            <IonIcon icon={qrCodeOutline} />
+            <span>{"Mi código QR"}</span>
+          </div>
+        </Button>
+        <IonModal ref={modal} initialBreakpoint={0.70} breakpoints={[0, 0.25, 0.5, 0.75]}>
+          <QRCodeStyled>
+            <QRCode value={qrValue} size={320} />
+          </QRCodeStyled>
+        </IonModal>
+        {isMobile ?
+          <IonMenuToggle>
+            <Logout />
+          </IonMenuToggle> :
+          <Logout />
+        }
+      </MenuStyled>
     </IonMenu>
   );
 };
 
 export default Menu;
+
+const IonMenuStyled = styled(IonMenu) <{ showMenu?: boolean }>`
+  ${p => !p.showMenu ? "display: false;" : ""}
+`
+
+const QRCodeStyled = styled.div`
+display: flex;
+justify-content: center;
+padding: 5em 0 0 0;
+align-items: center;
+`
+
+const MenuStyled = styled(IonPage)`
+        @media (max-width:500px){
+          padding: 1em;
+        }
+        @media (min-width:500px){
+            padding: 3em 2em 3em 2em;
+        }
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+
+  ion-modal{
+    width: 40em;
+  }
+  .divider-about{
+    width: 100%;
+    color: #000;
+    font-weight: 500;
+  }
+  .button-qr{
+    width: 100%;
+    gap: 1em;
+    height: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    ion-icon{
+      font-size: 1.5em;
+    }
+  }
+  .menu-pages{
+    width: 100%;
+    display: flex;
+    gap: 1em;
+    flex-direction: column;
+    ion-menu-toggle{
+      width: 100%;
+    }
+  }
+`

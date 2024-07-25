@@ -7,7 +7,7 @@ import Receta from "../model/Receta";
 import Profile from "../model/Profile";
 
 
-const RecetaSuscriberElement: React.FC = () => { 
+const RecetaSuscriberElement: React.FC = () => {
     const [presentToast, dismissToast] = useIonToast()
     const history = useHistory();
     const data = RecetaBcData.getInstance();
@@ -15,19 +15,20 @@ const RecetaSuscriberElement: React.FC = () => {
     /**
      * Control de farmacia.
      */
-    const casoEnviadaFarmacia = (receta: Receta, profile: Profile) : boolean => {
+    const casoEnviadaFarmacia = (receta: Receta, profile: Profile): boolean => {
         //console.log("casoEnviadaFarmacia", receta.estado, profile.roles)
         if (ProfileHandler.isFarmacia(profile) && 'enviada-farmacia' === receta.estado) {
             presentToast({
                 message: '¡Receta recibida de ' + receta.nombrePaciente + '!',
                 color: 'success',
                 duration: 2000,
+                cssClass: "toast",
                 buttons: [
                     {
                         text: 'Inbox',
                         handler: () => {
                             dismissToast();
-                            history.push('/folder/Inbox');
+                            history.push('/receipts?type=pending');
                         }
                     }
                 ]
@@ -38,7 +39,7 @@ const RecetaSuscriberElement: React.FC = () => {
         return false;
     }
 
-    const casoDeboConfirmarDispensa = (receta: Receta, profile: Profile) : boolean => {
+    const casoDeboConfirmarDispensa = (receta: Receta, profile: Profile): boolean => {
         //console.log("casoDeboConfirmarDispensa", receta.estado, receta.didPaciente, profile.didId)
         if (receta.didPaciente !== profile.didId) {
             console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
@@ -53,18 +54,19 @@ const RecetaSuscriberElement: React.FC = () => {
         presentToast({
             message: '¡Debes confirmar la recepción de medicamentos!',
             color: 'success',
+            cssClass: "toast",
             buttons: [
                 {
                     text: 'Ver',
                     handler: () => {
                         dismissToast();
-                        history.push('/receta/' + receta.id);
+                        history.push(`/receipt?id=${receta.id}`);
                     }
                 }, {
                     text: 'Inbox',
                     handler: () => {
                         dismissToast();
-                        history.push('/folder/Inbox');
+                        history.push('/receipts?type=sent');
                     }
                 }
             ]
@@ -76,7 +78,7 @@ const RecetaSuscriberElement: React.FC = () => {
     /**
      * Paciente recibe del médico una nueva receta
      */
-    const casoPacienteRecibeReceta = (receta: Receta, profile: Profile) : boolean => {
+    const casoPacienteRecibeReceta = (receta: Receta, profile: Profile): boolean => {
         //console.log("casoPacienteRecibeReceta", receta.estado, receta.didPaciente, profile.didId)
         if (receta.didPaciente !== profile.didId) {
             //console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
@@ -89,19 +91,20 @@ const RecetaSuscriberElement: React.FC = () => {
         presentToast({
             message: '¡Receta recibida!',
             color: 'success',
+            cssClass: "toast",
             duration: 2000,
             buttons: [
                 {
                     text: 'Ver',
                     handler: () => {
                         dismissToast();
-                        history.push('/receta/' + receta.id);
+                        history.push(`/receipt?id=${receta.id}`);
                     }
                 }, {
                     text: 'Inbox',
                     handler: () => {
                         dismissToast();
-                        history.push('/folder/Inbox');
+                        history.push('/receipts?type=my');
                     }
                 }
             ]

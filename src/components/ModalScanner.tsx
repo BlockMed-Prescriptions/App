@@ -6,8 +6,9 @@ import QrScanner from "qr-scanner";
 import QrFrame from "../assets/qr-frame.svg";
 
 import './ModalScanner.css';
-import useSound from "use-sound";
+// import useSound from "use-sound";
 import popSoundEffect from '../assets/pop-94319.mp3';
+import styled from "styled-components";
 
 
 export type HTMLModalScanner = {
@@ -16,25 +17,28 @@ export type HTMLModalScanner = {
 }
 
 interface ContainerProps {
-    onScan: (data: string) => void
+    onScan: (data: string) => void,
+    close: () => void,
+    isOpen: boolean
 }
 
 const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerProps> = (props, forwardedRef) => {
 
     const modal = useRef<HTMLIonModalElement>(null);
 
-    let scanner: QrScanner|null = null
+    let scanner: QrScanner | null = null
     const videoEl = useRef<HTMLVideoElement>(null);
     const qrBoxEl = useRef<HTMLDivElement>(null);
-    const [pop] = useSound(popSoundEffect, { volume: 0.5 })
+    // const [pop] = useSound(popSoundEffect, { volume: 0.5 })
 
     const [data, setData] = useState<string>("")
     const [qrOn, setQrOn] = useState<boolean>(true);
 
     const dismiss = () => {
+        props.close()
         stopAll()
         return modal.current!.dismiss();
-    }   
+    }
 
     useImperativeHandle(forwardedRef, () => ({
         open() {
@@ -53,8 +57,9 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
         // ✅ Handle success.
         // 😎 You can do whatever you want with the scanned result.
         setData(result?.data)
-        pop()
+        // pop()
         props.onScan(result?.data)
+        stopAll();
     };
 
     // Fail
@@ -102,7 +107,7 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
         console.log("Starteando", scanner)
     }
 
-    
+
     // ❌ If "camera" is not allowed in browser permissions, show an alert.
     useEffect(() => {
         if (!qrOn)
@@ -112,30 +117,62 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
     }, [qrOn]);
 
     return (
-        <IonModal ref={modal} onIonModalDidPresent={() => startAll()} onIonModalDidDismiss={() => stopAll()}>
+        <IonModal ref={modal} onDidDismiss={() => { stopAll(); props.close(); }} isOpen={props.isOpen} onIonModalDidPresent={() => startAll()} onIonModalDidDismiss={() => stopAll()}>
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>Scan</IonTitle>
                     <IonButtons slot="end">
-                        <IonButton onClick={() => dismiss().then(() => {})}>Cerrar</IonButton>
+                        <IonButton onClick={() => dismiss()}>Cerrar</IonButton>
                     </IonButtons>
                 </IonToolbar>
             </IonHeader>
-            <IonContent className="ion-padding">
-                <div className="qr-reader">
-                    <video ref={videoEl}></video>
-                    <div ref={qrBoxEl} className="qr-box">
-                        <img src={QrFrame}
-                            width={256}
-                            height={256}
-                            className="qr-frame"
-                        />
-                    </div>
+            <IonContentStyled>
+                <video ref={videoEl}>
+                </video>
+                <div ref={qrBoxEl} className="qr-box">
+                    <img src={QrFrame}
+                        width={256}
+                        height={256}
+                        className="qr-frame"
+                    />
                 </div>
-            </IonContent>
+            </IonContentStyled>
         </IonModal>
     );
 };
 
 export default React.forwardRef(ModalScanner);
+
+const IonContentStyled = styled.div`
+width: 100%;
+height: 90%;
+position: relative;
+    video{
+        border: none;
+        width: 100%;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) !important;
+    }
+    .qr-box {
+        border: none !important;
+        width: 100% !important;
+        height: 50% !important;
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+}
+
+.qr-frame {
+    position: absolute;
+    width: 50%;
+    height: auto;
+    fill: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) !important;
+  }
+`
 

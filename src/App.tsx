@@ -1,4 +1,4 @@
-import { IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact, useIonToast } from '@ionic/react';
+import { IonApp, IonPage, IonRouterOutlet, IonSplitPane, setupIonicReact, useIonToast } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route, useHistory } from 'react-router-dom';
 import Menu from './components/Menu';
@@ -37,11 +37,17 @@ import '@ionic/react/css/display.css';
 import './theme/variables.css';
 import RecetaBcData from './service/RecetaBcData';
 import RecetaNew from './pages/RecetaNew';
-import { useEffect } from 'react';
 import RecetaSuscriberElement from './components/RecetaSuscriberElement';
 import RecetaView from './pages/RecetaView';
 import RecetaDispensa from './pages/RecetaDispensa';
 import PacienteList from './pages/PacienteList';
+import CreateUser from './pages/CreateUser';
+import ChooseRole from './pages/ChooseRole';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import NewReceipt from './pages/NewReceipt';
+import Receipts from './pages/Receipts';
+import ReceiptDetails from './pages/ReceiptDetails';
 
 setupIonicReact();
 
@@ -59,33 +65,49 @@ const App: React.FC = () => {
           <Menu />
           <RecetaSuscriberElement />
           <IonRouterOutlet id="main">
-            <Route path="/" exact={true}>
-              <Redirect to="/folder/default" />
-            </Route>
-            <Route path="/folder/:name" exact={true}>
-              <Page />
-            </Route>
-            <Route path="/profile/new" exact={true}>
-              <ProfileForm />
-            </Route>
-            <Route path="/profile" exact={true}>
-              <ProfilePage />
-            </Route>
-            <Route path="/receta/:id" exact={true}>
-              <RecetaView />
-            </Route>
-            <Route path="/receta/new" exact={true}>
-              <RecetaNew />
-            </Route>
-            <Route path="/receta/new/:paciente" exact={true}>
-              <RecetaNew />
-            </Route>
-            <Route path="/pacientes" exact={true}>
-              <PacienteList />
-            </Route>
-            <Route path="/dispensa/:id" exact={true}>
-              <RecetaDispensa />
-            </Route>
+            <IonPage>
+              <Header />
+              <Route path="/" exact={true}>
+                <ChooseRole />
+              </Route>
+              <Route path="/init" exact={true}>
+                <CreateUser />
+              </Route>
+              <Route path="/new_receipt" exact={true}>
+                <NewReceipt />
+              </Route>
+              <Route path="/receipt" exact={true}>
+                <ReceiptDetails />
+              </Route>
+              <Route path="/receipts" >
+                <Receipts />
+              </Route>
+              <Route path="/folder/:name" exact={true}>
+                <Page />
+              </Route>
+              <Route path="/profile/new" exact={true}>
+                <ProfileForm />
+              </Route>
+              <Route path="/profile" exact={true}>
+                <ProfilePage />
+              </Route>
+              <Route path="/receta/:id" exact={true}>
+                <RecetaView />
+              </Route>
+              <Route path="/receta/new" exact={true}>
+                <RecetaNew />
+              </Route>
+              <Route path="/receta/new/:paciente" exact={true}>
+                <RecetaNew />
+              </Route>
+              <Route path="/pacientes" exact={true}>
+                <PacienteList />
+              </Route>
+              <Route path="/dispensa/:id" exact={true}>
+                <RecetaDispensa />
+              </Route>
+              <Footer />
+            </IonPage>
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>
