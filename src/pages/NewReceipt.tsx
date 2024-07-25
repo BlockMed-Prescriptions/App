@@ -134,6 +134,17 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
     const [isScanOpen, setIsScanOpen] = useState<boolean>(false);
     const scanData = (data: string) => {
         let profileTarget = ProfileHandler.fromQrCode(data);
+        if (!profileTarget?.roles.includes("pac")) {
+            presentToast({
+                message: "El código QR no corresponde a un Paciente.",
+                color: "danger",
+                cssClass: "toast",
+                duration: 5000,
+                position: "top"
+            })
+            setIsScanOpen(false);
+            return
+        };
         if (profileTarget) {
             setValues((prev) => ({
                 ...prev,
