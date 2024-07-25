@@ -1,4 +1,4 @@
-import { IonHeader, IonIcon } from '@ionic/react'
+import { IonHeader, IonIcon, IonMenuButton } from '@ionic/react'
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { MessageStatus } from '../message/MessageReceiver';
@@ -40,23 +40,28 @@ const Header: React.FC<HeaderTypes> = ({ }) => {
 
     return (
         <HeaderStyled>
-            <ProfileButton name={currentProfile?.name || ""} to="/profile" />
-            <div className='button-navbar' onClick={() => window.location.reload()}>
-                <IonIcon icon={refreshOutline} color="dark" />
-            </div>
-            <div className='button-navbar'>
-                <IonIcon icon={connectionStatus === 200 ? wifiOutline : warningOutline} color={connectionStatus === 200 ? "success" : "danger"} />
-            </div>
-            {isMed &&
-                <Button onClick={() => history.push("/new_receipt")} padding="0.8em 2.5em 0.8em 2.5em" >
-                    <div className='button-new-receipt'>
-                        <IonIcon icon={addOutline} />
-                        {!isMobile &&
-                            <p>{"Nueva Receta"}</p>
-                        }
-                    </div>
-                </Button>
+            {isMobile ?
+                <IonMenuButton color="dark" /> : <div></div>
             }
+            <div className='header-actions'>
+                <ProfileButton name={currentProfile?.name || ""} to="/profile" />
+                <div className='button-navbar' onClick={() => window.location.reload()}>
+                    <IonIcon icon={refreshOutline} color="dark" />
+                </div>
+                <div className='button-navbar'>
+                    <IonIcon icon={connectionStatus === 200 ? wifiOutline : warningOutline} color={connectionStatus === 200 ? "success" : "danger"} />
+                </div>
+                {isMed &&
+                    <Button onClick={() => history.push("/new_receipt")} padding="0.8em 2.5em 0.8em 2.5em" >
+                        <div className='button-new-receipt'>
+                            <IonIcon icon={addOutline} />
+                            {!isMobile &&
+                                <p>{"Nueva Receta"}</p>
+                            }
+                        </div>
+                    </Button>
+                }
+            </div>
         </HeaderStyled>
     )
 }
@@ -65,11 +70,24 @@ const Header: React.FC<HeaderTypes> = ({ }) => {
 export default Header
 
 const HeaderStyled = styled(IonHeader)`
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45em 2em 0.45em 2em;
+    background: #fff;
+    @media (max-width:500px){
+        padding: 0.45em 1em 0.45em 1em;
+    }
+    @media (min-width:500px){
+            padding: 0.45em 2em 0.45em 2em;
+        }
+    
+.header-actions{
+
     display: flex;
     align-items: center;
     justify-content: end;
-    padding: 0.45em 2em 0.45em 2em;
-    background: #fff;
     gap: 1em;
     .button-new-receipt{
         display: flex;
@@ -105,4 +123,5 @@ const HeaderStyled = styled(IonHeader)`
         align-items: center;
         font-size: 1.3em;
     }
-`
+}
+    `

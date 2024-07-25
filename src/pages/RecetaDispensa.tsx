@@ -5,7 +5,7 @@ import Profile from "../model/Profile";
 import Receta from "../model/Receta";
 import RecetaPermisos from "../receta/RecetaPermisos";
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonList, IonItem, IonLabel, IonButton, IonIcon, IonMenuButton, IonInput, IonItemDivider, useIonToast } from "@ionic/react";
-import { checkmark, copyOutline, close, backspace, arrowBack, bagAdd } from "ionicons/icons";
+import { checkmark, close, arrowBack, bagAdd } from "ionicons/icons";
 import { DispensaGenerator } from "../receta/DispensaGenerator";
 
 
@@ -24,7 +24,7 @@ const RecetaDispensa: React.FC = () => {
         const s = data.observeProfile().subscribe((p) => {
             setCurrentProfile(p);
         })
-    
+
         return () => {
             s.unsubscribe()
         }
@@ -46,7 +46,7 @@ const RecetaDispensa: React.FC = () => {
     const [isMedicamentoValid, setMedicamentoIsValid] = useState<boolean>(false);
     const [medicamentoErrorText, setMedicamentoErrorText] = useState<string>('');
     const [medicamento, setMedicamento] = useState<string>('');
-    
+
     const medicamentoChangeHandler = (event: CustomEvent) => {
         setMedicamentoIsTouched(true);
         validateMedicamento(event.detail.value);
@@ -88,7 +88,7 @@ const RecetaDispensa: React.FC = () => {
     // accion de dispensar
     const dispensar = () => {
         if (isMedicamentoValid && isLoteValid) {
-            DispensaGenerator(currentProfile!, receta!, [medicamento], [lote], presentToast, dismissToast).then( dispensa => {
+            DispensaGenerator(currentProfile!, receta!, [medicamento], [lote], presentToast, dismissToast).then(dispensa => {
                 history.push('/folder/Inbox')
             })
         }

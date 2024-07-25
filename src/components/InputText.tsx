@@ -3,11 +3,12 @@ import React from 'react'
 import styled from 'styled-components'
 
 interface InputTextTypes {
-    value: string,
+    value: string | undefined,
     onChange?: (v: string) => void,
     label?: string,
     error?: string | undefined,
     disabled?: boolean,
+    readonly?: boolean,
     prompt?: {
         icon: string,
         onClick: () => void
@@ -15,15 +16,16 @@ interface InputTextTypes {
     labelPlacement?: "end" | "fixed" | "floating" | "stacked" | "start"
 }
 
-const InputText: React.FC<InputTextTypes> = ({ value, onChange = () => { }, label, error, disabled, prompt, labelPlacement = "floating" }) => {
+const InputText: React.FC<InputTextTypes> = ({ value, onChange = () => { }, label, error, disabled, prompt, labelPlacement = "floating", ...props }) => {
 
     return (
         <div style={{ width: "100%" }}>
             <InputTextStyled
                 value={value}
                 disabled={disabled}
-                onIonChange={(event) => onChange(event.detail.value!)}
+                onIonInput={(event) => onChange(event.detail.value || "")}
                 labelPlacement={labelPlacement}
+                {...props}
             >
                 {label &&
                     <div slot="label">
@@ -76,6 +78,7 @@ const ErrorStyled = styled.div`
     justify-content: flex-start;
     font-size: 0.7em;
     color: var(--ion-color-danger-tint);
+    padding: 0 0.5em 0 0.5em;
     p{
         margin: 0;
     }

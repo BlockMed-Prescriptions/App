@@ -36,7 +36,11 @@ const LogOutStyled = styled.div`
         cursor: pointer;
         color: var(--ion-color-primary);
         p{
-            font-size: 0.9em !important;
+            font-size: 0.9em;
+            margin: 0;
+            @media (max-width:500px){
+                font-size: 0.7em !important;
+        }
         }
     }
 `

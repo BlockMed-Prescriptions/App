@@ -10,6 +10,7 @@ import {
   IonMenuToggle,
   IonModal,
   IonNote,
+  IonPage,
 } from '@ionic/react';
 
 import React, { useRef } from 'react';
@@ -30,6 +31,7 @@ import Button from './Button';
 import { qrCodeOutline } from 'ionicons/icons';
 import QRCode from 'react-qr-code';
 import ProfileHandler from '../service/ProfileHandler';
+import usePlatforms from '../hooks/usePlatforms';
 
 const hiddePathnames: string[] = ["/", "/init"]
 
@@ -40,6 +42,7 @@ const Menu: React.FC = () => {
   const { currentProfile } = useCurrentProfile();
   const [appPages, setAppPages] = useState<AppPage[]>(appPagesInit);
   const menuElement = useRef<HTMLIonMenuElement>(null);
+  const { isMobile } = usePlatforms();
 
   const refreshRecetas = async (folder: RecetaFolder | null) => {
     for (let page of appPagesInit) {
@@ -77,7 +80,7 @@ const Menu: React.FC = () => {
   }, [currentProfile])
 
 
-  if (hiddePathnames.includes(location.pathname)) {
+  if (hiddePathnames.includes(location.pathname) && !isMobile) {
     return <></>
   }
 
@@ -97,8 +100,8 @@ const Menu: React.FC = () => {
 
 
   return (
-    <IonMenu contentId="main" type="overlay" ref={menuElement}>
-      <MenuStyled>
+    <IonMenu type="overlay" ref={menuElement}>
+      <MenuStyled className="ion-page">
         <Logo name size="5em" titleSize='1.5em' gap="0.5em" />
         <div className='menu-pages'>
           {appPages.map((appPage, index) => {
@@ -126,8 +129,12 @@ const Menu: React.FC = () => {
           })}
         </div>
         <div className='divider-about'>
-          <Divider px="0" />
-          <p>{"Acerca de BlockMed"}</p>
+          {!isMobile &&
+            <>
+              <Divider px="0" />
+              <p>{"Acerca de BlockMed"}</p>
+            </>
+          }
         </div>
         <Button onClick={() => modal.current?.present()} type="primary-outline" fullWidth padding="0.8em 0em 0.8em 0em" >
           <div className='button-qr'>
@@ -135,18 +142,27 @@ const Menu: React.FC = () => {
             <span>{"Mi código QR"}</span>
           </div>
         </Button>
-        <IonModal ref={modal} initialBreakpoint={0.50} breakpoints={[0, 0.25, 0.5, 0.75]}>
+        <IonModal ref={modal} initialBreakpoint={0.70} breakpoints={[0, 0.25, 0.5, 0.75]}>
           <QRCodeStyled>
             <QRCode value={qrValue} size={320} />
           </QRCodeStyled>
         </IonModal>
-        <Logout />
+        {isMobile ?
+          <IonMenuToggle>
+            <Logout />
+          </IonMenuToggle> :
+          <Logout />
+        }
       </MenuStyled>
     </IonMenu>
   );
 };
 
 export default Menu;
+
+const IonMenuStyled = styled(IonMenu) <{ showMenu?: boolean }>`
+  ${p => !p.showMenu ? "display: false;" : ""}
+`
 
 const QRCodeStyled = styled.div`
 display: flex;
@@ -155,9 +171,14 @@ padding: 5em 0 0 0;
 align-items: center;
 `
 
-const MenuStyled = styled.div`
+const MenuStyled = styled(IonPage)`
+        @media (max-width:500px){
+          padding: 1em;
+        }
+        @media (min-width:500px){
+            padding: 3em 2em 3em 2em;
+        }
   height: 100%;
-  padding: 3em 2em 3em 2em;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

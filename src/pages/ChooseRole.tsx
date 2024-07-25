@@ -6,7 +6,7 @@ import RecetaBcData from "../service/RecetaBcData";
 import { useHistory } from "react-router";
 import Profile from "../model/Profile";
 import Radio from "../components/Radio";
-import { ROLES } from "./CreateUser";
+import { ROLES_TILE } from "./CreateUser";
 
 const initRolesWithProfiles = {
     pac: null,
@@ -50,7 +50,7 @@ const ChooseRole: React.FC = () => {
                     value={user || ""}
                     options={Object.keys(rolesWithProfiles).map((item) => ({
                         id: item,
-                        label: `${ROLES[item]}${rolesWithProfiles[item]?.name
+                        label: `${ROLES_TILE[item]}${rolesWithProfiles[item]?.name
                             ? `: ${rolesWithProfiles[item]?.name}`
                             : ""
                             } `,

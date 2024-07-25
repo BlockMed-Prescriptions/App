@@ -47,6 +47,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import NewReceipt from './pages/NewReceipt';
 import Receipts from './pages/Receipts';
+import ReceiptDetails from './pages/ReceiptDetails';
 
 setupIonicReact();
 
@@ -75,7 +76,10 @@ const App: React.FC = () => {
               <Route path="/new_receipt" exact={true}>
                 <NewReceipt />
               </Route>
-              <Route path="/receipts" exact={true}>
+              <Route path="/receipt" exact={true}>
+                <ReceiptDetails />
+              </Route>
+              <Route path="/receipts" >
                 <Receipts />
               </Route>
               <Route path="/folder/:name" exact={true}>

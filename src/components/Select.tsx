@@ -9,12 +9,13 @@ import styled from "styled-components";
 
 interface SelectTypes {
     options: SelectOption[];
-    value: SelectOption;
+    value?: SelectOption;
     onChange: (v: SelectOption) => void;
     inputBackground?: string;
     alertHeader?: string;
     fontSize?: string;
     error?: string | undefined;
+    readonly?: boolean
 }
 
 export interface SelectOption {
@@ -28,14 +29,16 @@ const Select: React.FC<SelectTypes> = ({
     onChange,
     alertHeader,
     error,
+    readonly,
     ...props
 }) => {
-    const [dialogValue, setDialogValue] = useState<SelectOption>(value);
+    const [dialogValue, setDialogValue] = useState<SelectOption | undefined>(value);
 
     return (
         <div>
             <SelectStyled
                 id="present-alert"
+                disabled={readonly}
                 onClick={() => setDialogValue(value)}
                 {...props}
             >
@@ -61,7 +64,9 @@ const Select: React.FC<SelectTypes> = ({
                         role: "confirm",
                         cssClass: "--color: #fff",
                         handler: () => {
-                            onChange(dialogValue);
+                            if (dialogValue) {
+                                onChange(dialogValue);
+                            }
                         },
                     },
                 ]}
@@ -75,7 +80,7 @@ const Select: React.FC<SelectTypes> = ({
                             label: data.label || "none",
                         });
                     },
-                    checked: op.value === dialogValue.value,
+                    checked: op.value === dialogValue?.value,
                 }))}
             />
         </div>

@@ -17,7 +17,7 @@ export type Validate = {
 
 type Error = { [key: string]: string }
 
-type KeyValue = "required-custome" | "did" | "did-resolver" | "text-max" | "text-min" | "string-not-only-number" | "required-number" | "equals" | "blacklist" | "email" | "special-character" | "required" | "string-not-spaces" | "string-not-only-letters" | "string-not-only-number"
+type KeyValue = "required-custome" | "required-string-array" | "did" | "did-resolver" | "text-max" | "text-min" | "string-not-only-number" | "required-number" | "equals" | "blacklist" | "email" | "special-character" | "required" | "string-not-spaces" | "string-not-only-letters" | "string-not-only-number"
 
 const useValidation = ({ values, validate }: useValidationTypes): { errors: Error, hasErrors: boolean } => {
     const VALIDATIONS = {
@@ -90,6 +90,13 @@ const useValidation = ({ values, validate }: useValidationTypes): { errors: Erro
                 return {
                     error: /\s/.test(values[keyValue]),
                     message: "No puede tener espacios",
+                };
+            case "required-string-array":
+                return {
+                    error: !!values[keyValue] ? !values[keyValue][0] : true,
+                    message: custome
+                        ? `${custome} es requerido`
+                        : "Este campo es requrido",
                 };
             case "required":
                 return {

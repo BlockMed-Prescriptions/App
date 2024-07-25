@@ -9,10 +9,16 @@ import { medkitOutline, personOutline, pulseOutline } from 'ionicons/icons';
 import Button from '../components/Button';
 import { Validate } from '../hooks/useValidation';
 
-export const ROLES: { [k: string]: string } = {
+export const ROLES_TILE: { [k: string]: string } = {
     pac: "Paciente",
     med: "Medico",
     far: "Farmacia"
+}
+
+export const ROLES: { [k in "PACIENTE" | "MEDICO" | "FARMACIA"]: string } = {
+    PACIENTE: "pac",
+    MEDICO: "med",
+    FARMACIA: "far"
 }
 
 const ROLES_ICONS: { [k: string]: string } = {
@@ -69,7 +75,7 @@ const CreateUser: React.FC = () => {
             <div className='create-user-container'>
                 <div className='form-container'>
                     <IonIcon className='title-icon' icon={ROLES_ICONS[role || ""]} />
-                    <p className='title'>{`Crear Usuario ${ROLES[role || ""]}`}</p>
+                    <p className='title'>{`Crear Usuario ${ROLES_TILE[role || ""]}`}</p>
                     <InputText
                         value={values?.name}
                         onChange={(v) => setValues(prev => ({ ...prev, name: v }))}

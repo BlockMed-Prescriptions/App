@@ -18,6 +18,8 @@ import { RecetaGenerator } from "../receta/RecetaGenerator";
 import Receta from "../model/Receta";
 import { useHistory } from "react-router";
 import { useCurrentProfile } from "../hooks";
+import PacienteProvider from "../receta/PacienteProvider";
+import useCheckUserRole from "../hooks/useCheckUserRole";
 
 interface NewReceiptTypes { }
 
@@ -86,10 +88,31 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
     const [financiers, setFinanciers] = useState<SelectOption[]>([]);
     const [showErrors, setShowErrors] = useState<boolean>(false);
     const financiadorProvider = FinanciadorProvider.getInstance();
+    const pacienteProvider = PacienteProvider.getInstance()
     const [DIDErrorText, setDIDErrorText] = useState<string>("");
     const history = useHistory();
 
+    useCheckUserRole("med", "/")
+
     const onChange = (k: keyof NewReceipt, v: string | SelectOption) => {
+        if (k === "didPaciente" && !!v) {
+            pacienteProvider.getPaciente(v as string).then((paciente) => {
+                if (paciente) {
+                    setValues(prev => ({
+                        ...prev,
+                        name: paciente.nombre,
+                        credential: paciente.credencial || "",
+                    }))
+                    if (paciente.financiador) {
+                        financiadorProvider.getFinanciador(paciente.financiador).then((f) => {
+                            if (f) {
+                                setValues(prev => ({ ...prev, financier: { value: f.did, label: f.nombre } }))
+                            }
+                        })
+                    }
+                }
+            })
+        }
         setValues((prev) => ({ ...prev, [k]: v }));
         setShowErrors(false);
         setDIDErrorText("");
@@ -124,7 +147,7 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
     const [presentToast, dismissToast] = useIonToast();
 
     return (
-        <NewReceiptStyled>
+        <NewReceiptStyled className="scrollbarNone">
             <p className="title">{"Nueva Receta"}</p>
             <div className="form-container">
                 <InputText
@@ -190,7 +213,7 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
                     labelPlacement="stacked"
                 />
                 <div className="form-actions">
-                    <Button label="CANCELAR" type="clear-cancel" onClick={() => { }} />
+                    <Button label="CANCELAR" type="clear-cancel" onClick={() => history.goBack()} />
                     <Button
                         label="CONFIRMAR"
                         onClick={async () => {
@@ -239,7 +262,7 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
                                     });
 
                                     // me muevo a la carpeta de salida
-                                    history.push("/folder/Emitidas");
+                                    history.push("/receipts?type=emit");
                                 })
                                 .catch((e) => {
                                     console.error(e);
@@ -269,7 +292,8 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
 export default NewReceipt;
 
 const NewReceiptStyled = styled.div`
-  padding: 3em 2em 3em 2em;
+  padding: 3em 2em 6em 2em;
+  overflow-y: scroll;
   height: 100%;
   background: var(--ion-color-light);
   .prompt-icon {

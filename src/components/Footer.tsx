@@ -39,11 +39,23 @@ const FootesStyled = styled(IonFooter)`
     .date{
         background: transparent;
         color: #000;
+        @media (max-width:500px){
+            font-size: 0.7em;
+        }
+        @media (min-width:500px){
+            font-size: 1em;
+        }
     }
     .version{
         background: transparent;
         color: #000;
         opacity: 60%;
         font-size: 0.8em;
+        @media (max-width:500px){
+            font-size: 0.7em;
+        }
+        @media (min-width:500px){
+            font-size: 1em;
+        }
     }
-`
+    `

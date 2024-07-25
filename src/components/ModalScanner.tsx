@@ -59,6 +59,7 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
         setData(result?.data)
         // pop()
         props.onScan(result?.data)
+        stopAll();
     };
 
     // Fail
@@ -116,7 +117,7 @@ const ModalScanner: React.ForwardRefRenderFunction<HTMLModalScanner, ContainerPr
     }, [qrOn]);
 
     return (
-        <IonModal ref={modal} onDidDismiss={() => { props.close(); stopAll(); }} isOpen={props.isOpen} onIonModalDidPresent={() => startAll()} onIonModalDidDismiss={() => stopAll()}>
+        <IonModal ref={modal} onDidDismiss={() => { stopAll(); props.close(); }} isOpen={props.isOpen} onIonModalDidPresent={() => startAll()} onIonModalDidDismiss={() => stopAll()}>
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>Scan</IonTitle>
