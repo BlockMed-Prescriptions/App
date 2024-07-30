@@ -8,6 +8,7 @@ import RecetaBcData, {
   RECETA_FOLDER_OUTBOX,
 } from "../service/RecetaBcData";
 import CredencialBuilder from "../quarkid/CredentialBuilder";
+import { checkmarkCircleOutline } from "ionicons/icons";
 
 const data = RecetaBcData.getInstance();
 
@@ -81,6 +82,7 @@ export const DispensaGenerator = async (
     dispensa.certificado = vc;
     dismissToast();
   } catch (e) {
+    console.log("Error credential signer", e);
     await dismissToast();
     throw e;
   }
@@ -115,6 +117,22 @@ export const DispensaGenerator = async (
     RECETA_FOLDER_INBOX,
     RECETA_FOLDER_OUTBOX
   );
+
+  await presentToast({
+    message: "La receta se ha dispensado correctamente",
+    position: "top",
+    color: "success",
+    cssClass: "toast",
+    icon: checkmarkCircleOutline,
+    buttons: [
+      {
+        text: "Aceptar",
+        handler: () => {
+          dismissToast();
+        },
+      },
+    ],
+  });
 
   return dispensa;
 };

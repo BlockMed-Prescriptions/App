@@ -12,6 +12,7 @@ import Button from "../components/Button";
 import { IonIcon, useIonToast } from "@ionic/react";
 import { checkmarkDoneCircleOutline, medkitOutline, sendOutline } from "ionicons/icons";
 import { DispensaGenerator } from "../receta/DispensaGenerator";
+import ShowCertificate from "../components/ShowCertificate";
 
 const RECEIPT_WITH_ACTIONS: RecetaEstado[] = [
     "enviada-farmacia",
@@ -42,6 +43,8 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
     const [financiers, setFinanciers] = useState<SelectOption[]>([]);
     const [showErrors, setShowErrors] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+
+    console.log("RECIPT", receipt)
 
     const { Component, sendReceta, confirmReceta } = useReceipts(currentProfile, () => history.push("/receipts?type=sent"));
 
@@ -175,6 +178,9 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
         <ReceiptDetailsStyled className="scrollbarNone">
             <div className="receipt-details-header">
                 <p className="receipt-details-title">{"Detalle receta"}</p>
+                <div style={{ width: "fit-content" }}>
+                    <ShowCertificate certificate={receipt?.certificado} isText isMobileHideText />
+                </div>
             </div>
             <div className="receipt-details-half-inputs">
                 <InputText
@@ -306,6 +312,17 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
                     </Button>
                 </div>
             )}
+            <div className="receipt-details-info">
+                {receipt?.transactionHashEmision &&
+                    <p>{`hash emision: ${receipt?.transactionHashEmision}`}</p>
+                }
+                {receipt?.transactionHashDispensa &&
+                    <p>{`hash dispensa: ${receipt?.transactionHashDispensa}`}</p>
+                }
+                {receipt?.estado &&
+                    <p>{`estado: ${receipt?.estado}`}</p>
+                }
+            </div>
         </ReceiptDetailsStyled>
     );
 };
@@ -331,11 +348,26 @@ const ReceiptDetailsStyled = styled.div`
   @media (min-width: 500px) {
     padding: 4em 4em 6em 4em;
   }
+  .receipt-details-info{
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.5em;
+      padding: 0 0 1em 0;
+      p{
+        color: #000;
+        opacity: .5;
+        font-size: 0.8em;
+        margin: 0;
+        width: 100%;
+      }
+  }
   .receipt-details-header {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: 0 0 1em 0;
+    gap: 1em;
     .receipt-details-title {
       color: #000;
       font-size: 1.5em;

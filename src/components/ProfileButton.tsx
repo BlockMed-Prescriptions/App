@@ -38,7 +38,16 @@ const ProfileButtonStyled = styled.div<{ to?: string }>`
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 0.8em;
+
+        ${p => !p.to ? "font-size: 0.8em;" : ""}
+        ${p => p.to ? `
+        @media (max-width:500px){
+            font-size: 0.7em ;
+        }
+        @media (min-width:500px){
+            font-size: 0.9em;
+        }
+        ` : ""}
         p{
             color: var(--ion-color-primary);
             margin: 0;

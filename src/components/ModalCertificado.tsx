@@ -2,6 +2,7 @@ import { IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonCo
 import React from "react";
 //import React from "react";
 import { useImperativeHandle, useRef } from "react";
+import usePlatforms from "../hooks/usePlatforms";
 
 export type HTMLModalCertificado = {
     open: () => void,
@@ -16,6 +17,7 @@ interface ContainerProps {
 const ModalCertificado: React.ForwardRefRenderFunction<HTMLModalCertificado, ContainerProps> = (props, forwardedRef) => {
 
     const modal = useRef<HTMLIonModalElement>(null);
+    const { isMobile } = usePlatforms();
 
     const dismiss = () => {
         modal.current!.dismiss();
@@ -41,7 +43,7 @@ const ModalCertificado: React.ForwardRefRenderFunction<HTMLModalCertificado, Con
                 </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding">
-                <pre style={{"fontSize": "80%"}}>{JSON.stringify(props.certificado, null, 2)}</pre>
+                <pre style={{ "fontSize": isMobile ? "60%" : "80%" }}>{JSON.stringify(props.certificado, null, 2)}</pre>
             </IonContent>
         </IonModal>
     );

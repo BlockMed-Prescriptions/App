@@ -56,7 +56,6 @@ const Receipts: React.FC = () => {
 
     useCheckUserRole(checkRole[query?.type], "/")
 
-
     const refreshReceipts = (folder: RecetaFolder) => {
         if (!currentProfile) {
             setReceipts([]);
@@ -81,8 +80,21 @@ const Receipts: React.FC = () => {
     }, [currentProfile, query?.type]);
 
     // Refresh de recetas cuando se recibe una receta nueva
-    RecetaReceiver(() =>
-        refreshReceipts(RECEIPT_FOLDER_TYPE[query?.type as ParamType])
+    RecetaReceiver((r, isReplace) => {
+        if (!!r) {
+            setReceipts(prev => {
+                if (isReplace && !!prev) {
+                    const filterPrev = prev.filter((re) => re.id !== r.id)
+                    return [...filterPrev, r]
+                }
+                const findReceipt = prev.find((re) => re.id === r.id)
+                if (!prev && !findReceipt) return [r]
+                if (!!prev && !findReceipt) return [...prev, r]
+                return prev
+            });
+            return;
+        }
+    }
     );
 
     const debounceSearch = useDebounce(search, 800);
@@ -201,7 +213,7 @@ const ReceiptsStyled = styled.div`
   }
 
   .receipt-header {
-    padding: 0 0 4em 0;
+    padding: 0 0 2em 0;
     .title-hola {
       font-size: 1.3em;
       font-weight: 500;
