@@ -80,7 +80,18 @@ const Receipts: React.FC = () => {
     }, [currentProfile, query?.type]);
 
     // Refresh de recetas cuando se recibe una receta nueva
-    RecetaReceiver((r, isReplace) => {
+    useEffect(() => {
+        data.observeRecetas().subscribe((r) => {
+            setReceipts((prev) => {
+                const findReceipt = prev.find((re) => re.id === r.id);
+                if (!prev && !findReceipt) return [r];
+                if (!!prev && !findReceipt) return [...prev, r];
+                return prev;
+            });
+        });
+    }, [currentProfile, query?.type]);
+
+    /*RecetaReceiver((r, isReplace) => {
         if (!!r) {
             setReceipts(prev => {
                 if (isReplace && !!prev) {
@@ -95,7 +106,7 @@ const Receipts: React.FC = () => {
             return;
         }
     }
-    );
+    );*/
 
     const debounceSearch = useDebounce(search, 800);
     const receiptsResult = useFilterReceipts(receipts, debounceSearch)

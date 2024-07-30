@@ -40,7 +40,8 @@ const RecetaReceiver = (
       });
   };
 
-  useEffect(() => {
+  //useEffect(() => {
+    console.log("Subscribing to receta messages");
     const suscriptorMessageReceiver = observable.subscribe((message) => {
       if ("receta" !== message.class) return;
       const receta: Receta = recetaService.buildRecetaFromCredential(
@@ -73,7 +74,7 @@ const RecetaReceiver = (
       suscriptorMessageReceiver.unsubscribe();
       suscriptorObserveReceta.unsubscribe();
     };
-  }, []);
+  //}, []);
 };
 
 export default RecetaReceiver;
