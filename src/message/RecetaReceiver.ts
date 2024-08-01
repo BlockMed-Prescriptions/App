@@ -41,39 +41,39 @@ const RecetaReceiver = (
   };
 
   //useEffect(() => {
-    console.log("Subscribing to receta messages");
-    const suscriptorMessageReceiver = observable.subscribe((message) => {
-      if ("receta" !== message.class) return;
-      const receta: Receta = recetaService.buildRecetaFromCredential(
-        message.credential
-      );
+  console.log("Subscribing to receta messages");
+  const suscriptorMessageReceiver = observable.subscribe((message) => {
+    if ("receta" !== message.class) return;
+    const receta: Receta = recetaService.buildRecetaFromCredential(
+      message.credential
+    );
 
-      if (message.type === "envio-farmacia") {
-        receta.estado = "enviada-farmacia";
-        saveReceta(receta);
-        if (callback && receta) callback(receta);
-        return;
-      }
-      if (message.type === "emision-receta") {
-        if (receta.estado === undefined) receta.estado = "emitida";
-        saveReceta(receta);
-        return;
-      }
-      console.error("Mensaje desconocido", message);
-      throw new Error("Mensaje desconocido");
-    });
+    if (message.type === "envio-farmacia") {
+      receta.estado = "enviada-farmacia";
+      saveReceta(receta);
+      if (callback && receta) callback(receta);
+      return;
+    }
+    if (message.type === "emision-receta") {
+      if (receta.estado === undefined) receta.estado = "emitida";
+      saveReceta(receta);
+      return;
+    }
+    console.error("Mensaje desconocido", message);
+    throw new Error("Mensaje desconocido");
+  });
 
-    const suscriptorObserveReceta = recetaBcData
-      .observeRecetas()
-      .subscribe((receta) => {
-        const isReplace = receta.estado === "pendiente-confirmacion-dispensa";
-        if (callback && receta) callback(receta, isReplace);
-      });
+  // const suscriptorObserveReceta = recetaBcData
+  //   .observeRecetas()
+  //   .subscribe((receta) => {
+  //     const isReplace = receta.estado === "pendiente-confirmacion-dispensa";
+  //     if (callback && receta) callback(receta, isReplace);
+  //   });
 
-    return () => {
-      suscriptorMessageReceiver.unsubscribe();
-      suscriptorObserveReceta.unsubscribe();
-    };
+  // return () => {
+  //   suscriptorMessageReceiver.unsubscribe();
+  //   suscriptorObserveReceta.unsubscribe();
+  // };
   //}, []);
 };
 

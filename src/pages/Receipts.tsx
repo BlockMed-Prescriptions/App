@@ -19,8 +19,11 @@ import RecetaReceiver from "../message/RecetaReceiver";
 import NoReceipts from "../components/NoReceipts";
 import useNoReceiptValues from "../hooks/useNoReceiptValues";
 import useCheckUserRole from "../hooks/useCheckUserRole";
+import { Subscription } from 'rxjs';
 
 export type ParamType = "emit" | "sent" | "dispens_made" | "pending" | "my";
+
+interface Sub extends Subscription { query?: string };
 
 export const RECEIPT_FOLDER_TYPE: { [k in ParamType]: RecetaFolder } = {
     emit: "salida",
@@ -79,34 +82,35 @@ const Receipts: React.FC = () => {
         refreshReceipts(RECEIPT_FOLDER_TYPE[query?.type as ParamType]);
     }, [currentProfile, query?.type]);
 
-    // Refresh de recetas cuando se recibe una receta nueva
+    const [subs, setSubs] = useState<Sub[]>()
+
     useEffect(() => {
-        data.observeRecetas().subscribe((r) => {
+        const sub: Sub = data.observeRecetas().subscribe((r) => {
+            if (r.estado === "pendiente-confirmacion-dispensa" && query?.type === "my") return
             setReceipts((prev) => {
+                if (r.estado === "pendiente-confirmacion-dispensa" && query?.type === "sent" && !!prev) {
+                    const filterPrev = prev.filter((re) => re.id !== r.id)
+                    return [r, ...filterPrev]
+                }
                 const findReceipt = prev.find((re) => re.id === r.id);
                 if (!prev && !findReceipt) return [r];
                 if (!!prev && !findReceipt) return [...prev, r];
                 return prev;
             });
         });
-    }, [currentProfile, query?.type]);
 
-    /*RecetaReceiver((r, isReplace) => {
-        if (!!r) {
-            setReceipts(prev => {
-                if (isReplace && !!prev) {
-                    const filterPrev = prev.filter((re) => re.id !== r.id)
-                    return [...filterPrev, r]
-                }
-                const findReceipt = prev.find((re) => re.id === r.id)
-                if (!prev && !findReceipt) return [r]
-                if (!!prev && !findReceipt) return [...prev, r]
-                return prev
-            });
-            return;
+        if (!!subs) {
+            const filterSubs = subs?.filter((s) => s.query !== query?.type)
+            for (let s of filterSubs) {
+                s.unsubscribe()
+                setSubs(subs?.filter((s) => s.query === query?.type))
+            }
         }
-    }
-    );*/
+
+        sub.query = query?.type
+        setSubs(prev => !!prev ? [...prev, sub] : [sub])
+
+    }, [query?.type]);
 
     const debounceSearch = useDebounce(search, 800);
     const receiptsResult = useFilterReceipts(receipts, debounceSearch)

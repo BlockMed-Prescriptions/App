@@ -9,7 +9,7 @@ const useFilterReceipts = (
     const { query } = useQuery(["type"]);
 
     const sortByDate = (array: Receta[], key: keyof Receta) =>
-        array.sort((a, b) => b[key].valueOf() - a[key].valueOf());
+        array.sort((a, b) => new Date(b[key]).valueOf() - new Date(a[key]).valueOf());
 
     const generateResult = (): Receta[] => {
         let receiptsFiltered = receipts;

@@ -12,14 +12,10 @@ import {
 } from "ionicons/icons";
 import { IonIcon, IonModal, useIonToast } from "@ionic/react";
 import Button from "../components/Button";
-import { default as ProfileModel } from "../model/Profile";
-import { DIDResolver } from "../quarkid/DIDResolver";
-import ModalCertificado, {
-    HTMLModalCertificado,
-} from "../components/ModalCertificado";
 import QRCode from "react-qr-code";
 import ProfileHandler from "../service/ProfileHandler";
 import ShowCertificate from "../components/ShowCertificate";
+import ShowHash from "../components/ShowHash";
 
 interface ProfileTypes { }
 
@@ -37,32 +33,27 @@ const Profile: React.FC<ProfileTypes> = () => {
         });
     };
     const { importPerfiles, exportPerfil, deletePerfil } = useProfile();
-
-    const [didDocument, setDidDocument] = useState<any | null>(null);
-
-    const getDidDocument = (p: ProfileModel) => {
-        DIDResolver(p.didId)
-            .then((doc) => {
-                setDidDocument(doc);
-            })
-            .catch((e) => {
-                setDidDocument(null);
-            });
-    };
+    const [hash, setHash] = useState<string>("");
 
     useEffect(() => {
-        if (!!currentProfile) {
-            getDidDocument(currentProfile);
+        if (!!currentProfile?.didId) {
+            fetch(`https://proxy.recetasbc.com.ar/explorer/api/1.0/did/${currentProfile?.didId}`)
+                .then(async (d) => {
+                    const data = await d.json();
+                    setHash(data.transaction.transactionHash)
+                })
         }
-    }, [currentProfile]);
-
-    const modalCertificado = useRef<HTMLModalCertificado>(null);
+    }, [currentProfile])
     const modal = useRef<HTMLIonModalElement>(null);
+
     return (
         <ProfileStyled className="scrollbarNone">
             <div className="profile-header">
                 <p className="profile-title">{"Tu Perfil"}</p>
                 <ShowCertificate profile={currentProfile} isText isMobileHideText showWaitingOnVerification />
+            </div>
+            <div className="profile-hash">
+                <ShowHash hash={hash} label={`hash certificado: `} />
             </div>
             <InputText
                 value={currentProfile?.name}
@@ -154,6 +145,11 @@ const ProfileStyled = styled.div`
   align-items: center;
   p {
     margin: 0;
+  }
+  .profile-hash{
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
   }
   .prompt-icon {
     @media (max-width: 500px) {

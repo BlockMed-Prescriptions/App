@@ -13,6 +13,7 @@ import { IonIcon, useIonToast } from "@ionic/react";
 import { checkmarkDoneCircleOutline, medkitOutline, sendOutline } from "ionicons/icons";
 import { DispensaGenerator } from "../receta/DispensaGenerator";
 import ShowCertificate from "../components/ShowCertificate";
+import ShowHash from "../components/ShowHash";
 
 const RECEIPT_WITH_ACTIONS: RecetaEstado[] = [
     "enviada-farmacia",
@@ -314,13 +315,13 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
             )}
             <div className="receipt-details-info">
                 {receipt?.transactionHashEmision &&
-                    <p>{`hash emision: ${receipt?.transactionHashEmision}`}</p>
+                    <ShowHash hash={receipt?.transactionHashEmision} noAction label="hash emision: " />
                 }
                 {receipt?.transactionHashDispensa &&
-                    <p>{`hash dispensa: ${receipt?.transactionHashDispensa}`}</p>
+                    <ShowHash hash={receipt?.transactionHashDispensa} noAction label="hash dispensa: " />
                 }
                 {receipt?.estado &&
-                    <p>{`estado: ${receipt?.estado}`}</p>
+                    <p className="receipt-status">{`estado: ${receipt?.estado}`}</p>
                 }
             </div>
         </ReceiptDetailsStyled>
@@ -355,12 +356,11 @@ const ReceiptDetailsStyled = styled.div`
       flex-direction: column;
       gap: 0.5em;
       padding: 0 0 1em 0;
-      p{
-        color: #000;
-        opacity: .5;
-        font-size: 0.8em;
-        margin: 0;
-        width: 100%;
+      .receipt-status{
+          color: #000;
+          opacity: 0.5;
+          font-size: 0.8em;
+          margin: 0;
       }
   }
   .receipt-details-header {

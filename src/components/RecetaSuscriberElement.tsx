@@ -18,7 +18,6 @@ const RecetaSuscriberElement: React.FC = () => {
             let toastObj: ToastOptions = {
                 color: "success",
                 cssClass: "toast",
-                duration: 2000,
             };
 
             // ES PACIENTE ?
