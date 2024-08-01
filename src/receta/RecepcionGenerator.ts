@@ -94,6 +94,16 @@ export const RecepcionGenerator = async (
     "confirmacion-dispensa",
     recepcion.certificado
   );
+
+  if (receta.didFinanciador && recepcion.certificado) {
+    await MessageSender(
+      profile,
+      receta.didFinanciador,
+      "confirmacion-dispensa",
+      recepcion.certificado
+    );
+  }
+
   receta.recepcion = recepcion;
   receta.estado = "consumida";
   receta.consumida = true;

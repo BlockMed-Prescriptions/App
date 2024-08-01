@@ -101,6 +101,16 @@ export const DispensaGenerator = async (
       "solicitud-confirmacion-dispensa",
       dispensa.certificado
     );
+
+    if (receta.didFinanciador && dispensa) {
+      await MessageSender(
+        profile,
+        receta.didFinanciador,
+        "solicitud-confirmacion-dispensa",
+        dispensa.certificado
+      );
+    }
+  
   } catch (e) {
     console.error("Error enviando la dispensa al paciente", e);
     await dismissToast();
