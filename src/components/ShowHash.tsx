@@ -5,9 +5,22 @@ interface ShowHashTypes {
     hash: string;
     label?: string;
     noAction?: boolean;
+    url?: keyof URLSTypes
 }
 
-const ShowHash: React.FC<ShowHashTypes> = ({ hash, label, noAction }) => {
+interface URLSTypes {
+    sepolia: string;
+    explorer: string
+}
+
+const URLS: URLSTypes = {
+    sepolia: "https://sepolia.explorer.zksync.io/tx/",
+    explorer: "https://explorer.zksync.io/tx/"
+}
+
+const ShowHash: React.FC<ShowHashTypes> = ({ hash, label, noAction, url }) => {
+
+    if (!hash) return <></>
     return (
         <ShowHashStyled noaction={noAction}>
             <p>
@@ -15,7 +28,7 @@ const ShowHash: React.FC<ShowHashTypes> = ({ hash, label, noAction }) => {
                 <span
                     onClick={() => {
                         if (!!noAction) return
-                        window.open(`https://explorer.zksync.io/tx/${hash}`, "_blank");
+                        window.open(`${URLS[url || "explorer"]}${hash}`, "_blank");
                     }}
                 >
                     {hash}
@@ -28,6 +41,7 @@ const ShowHash: React.FC<ShowHashTypes> = ({ hash, label, noAction }) => {
 export default ShowHash;
 
 const ShowHashStyled = styled.div<{ noaction?: boolean }>`
+width: 100%;
   p {
     color: #000;
     opacity: 0.5;

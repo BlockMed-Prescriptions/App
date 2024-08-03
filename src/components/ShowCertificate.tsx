@@ -10,13 +10,14 @@ import usePlatforms from "../hooks/usePlatforms";
 
 interface ShowCertificateTypes {
     profile?: ProfileModel | null;
-    isText?: boolean;
+    text?: string;
     isMobileHideText?: boolean
     showWaitingOnVerification?: boolean
-    certificate?: any
+    certificate?: any,
+    modalTitle?: string;
 }
 
-const ShowCertificate: React.FC<ShowCertificateTypes> = ({ profile, certificate, isText = false, isMobileHideText, showWaitingOnVerification }) => {
+const ShowCertificate: React.FC<ShowCertificateTypes> = ({ profile, certificate, text, modalTitle, isMobileHideText, showWaitingOnVerification }) => {
     const modalCertificado = useRef<HTMLModalCertificado>(null);
     const [didDocument, setDidDocument] = useState<any | null>(null);
     const { isMobile } = usePlatforms();
@@ -44,6 +45,7 @@ const ShowCertificate: React.FC<ShowCertificateTypes> = ({ profile, certificate,
         if (!!isMobileHideText) {
             return false
         }
+        return true
     }, [isMobileHideText, isMobile])
 
     if (!didDocument && !certificate && !!showWaitingOnVerification) return <div style={{ color: "#000", opacity: ".5", fontSize: "0.8em" }}>
@@ -51,7 +53,7 @@ const ShowCertificate: React.FC<ShowCertificateTypes> = ({ profile, certificate,
     </div>
     if (!didDocument && !certificate) return <></>
 
-    if (isText) {
+    if (text) {
         return (
             <ShowCertificateStyled>
                 <Button
@@ -65,11 +67,11 @@ const ShowCertificate: React.FC<ShowCertificateTypes> = ({ profile, certificate,
                             color={"primary"}
                         />
                         {showText &&
-                            <span>{"VER CERTIFICADO"}</span>
+                            <span>{text}</span>
                         }
                     </div>
                 </Button>
-                <ModalCertificado ref={modalCertificado} certificado={certificate || didDocument} />
+                <ModalCertificado ref={modalCertificado} title={modalTitle} certificado={certificate || didDocument} />
             </ShowCertificateStyled>
         )
     }

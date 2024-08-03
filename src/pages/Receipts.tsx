@@ -206,20 +206,31 @@ const ReceiptsStyled = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 2em;
+  @media (max-width:500px){
+      padding: 1em;
+    }
+    @media (min-width:500px){
+        padding: 2em;
+            }
   p {
     margin: 0;
   }
 
   .receipts-wrapper {
-    padding: 1em 0 6em 0;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1em;
-    overflow-y: scroll;
-    height: 100%;
-    width: 100%;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1em;
+      overflow-y: scroll;
+      height: 100%;
+      width: 100%;
+      
+      @media (max-width:500px){
+        padding: 0 0 7em 0;
+    }
+    @media (min-width:500px){
+        padding: 1em 0 6em 0;
+            }
 
     .no-results {
       color: #000;
@@ -247,7 +258,12 @@ const ReceiptsStyled = styled.div`
     align-items: flex-start;
     justify-content: flex-start;
     gap: 1em;
-    padding: 0 0 2em 0;
+    @media (max-width:500px){
+        padding: 0 0 1em 0;
+    }
+    @media (min-width:500px){
+        padding: 0 0 2em 0;
+            }
     .title-search {
       font-size: 1.3em;
       font-weight: 500;
@@ -262,10 +278,14 @@ const ReceiptsStyled = styled.div`
       width: 100%;
       gap: 1em;
       .input-search {
+          @media (max-width:500px){
+        }
+            @media (min-width:500px){
+                padding: 0.5em;
+            }
         :focus {
           border: none;
         }
-        padding: 0.5em;
         width: 100%;
         color: #000;
         background: transparent;

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { useCurrentProfile, useProfile } from "../hooks";
 import InputText from "../components/InputText";
@@ -46,11 +46,13 @@ const Profile: React.FC<ProfileTypes> = () => {
     }, [currentProfile])
     const modal = useRef<HTMLIonModalElement>(null);
 
+    const role = useMemo(() => currentProfile?.roles && currentProfile?.roles?.length > 0 ? currentProfile?.roles[0] : null, [currentProfile])
+
     return (
         <ProfileStyled className="scrollbarNone">
             <div className="profile-header">
                 <p className="profile-title">{"Tu Perfil"}</p>
-                <ShowCertificate profile={currentProfile} isText isMobileHideText showWaitingOnVerification />
+                <ShowCertificate profile={currentProfile} text="VER CERTIFICADO" isMobileHideText showWaitingOnVerification />
             </div>
             <div className="profile-hash">
                 <ShowHash hash={hash} label={`hash certificado: `} />
@@ -58,7 +60,7 @@ const Profile: React.FC<ProfileTypes> = () => {
             <InputText
                 value={currentProfile?.name}
                 readonly
-                label="Nombre y Apelllido"
+                label={role === "far" ? "Nombre de farmacia" : "Nombre y Apelllido"}
             />
             <InputText value={currentProfile?.email} readonly label="Email" />
             <InputText

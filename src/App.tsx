@@ -49,6 +49,7 @@ import NewReceipt from './pages/NewReceipt';
 import Receipts from './pages/Receipts';
 import ReceiptDetails from './pages/ReceiptDetails';
 import Profile from './pages/Profile';
+import Pacients from './pages/Pacients';
 
 setupIonicReact();
 
@@ -101,11 +102,11 @@ const App: React.FC = () => {
               {/* <Route path="/receta/new" exact={true}>
                 <RecetaNew />
               </Route> */}
-              <Route path="/receta/new/:paciente" exact={true}>
+              {/* <Route path="/receta/new/:paciente" exact={true}>
                 <RecetaNew />
-              </Route>
+              </Route> */}
               <Route path="/pacientes" exact={true}>
-                <PacienteList />
+                <Pacients />
               </Route>
               {/* <Route path="/dispensa/:id" exact={true}>
                 <RecetaDispensa />

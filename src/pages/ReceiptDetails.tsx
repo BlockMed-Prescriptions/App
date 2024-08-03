@@ -10,10 +10,15 @@ import FinanciadorProvider from "../service/FinanciadorProvider";
 import useValidation, { Validate } from "../hooks/useValidation";
 import Button from "../components/Button";
 import { IonIcon, useIonToast } from "@ionic/react";
-import { checkmarkDoneCircleOutline, medkitOutline, sendOutline } from "ionicons/icons";
+import {
+    checkmarkDoneCircleOutline,
+    medkitOutline,
+    sendOutline,
+} from "ionicons/icons";
 import { DispensaGenerator } from "../receta/DispensaGenerator";
 import ShowCertificate from "../components/ShowCertificate";
 import ShowHash from "../components/ShowHash";
+import ReceiptCertificates from "../components/ReceiptCertificates";
 
 const RECEIPT_WITH_ACTIONS: RecetaEstado[] = [
     "enviada-farmacia",
@@ -45,9 +50,10 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
     const [showErrors, setShowErrors] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
 
-    console.log("RECIPT", receipt)
-
-    const { Component, sendReceta, confirmReceta } = useReceipts(currentProfile, () => history.push("/receipts?type=sent"));
+    const { Component, sendReceta, confirmReceta } = useReceipts(
+        currentProfile,
+        () => history.push("/receipts?type=sent")
+    );
 
     useEffect(() => {
         if (currentProfile) {
@@ -55,11 +61,14 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
                 history.push(showActions?.redirect || "/"); // Change to work with all roles
                 return;
             }
-            data.getReceta(query?.id).then((receipt: Receta) => {
-                setReceipt(receipt);
-            }).catch((er) => {
-                history.push("/")
-            });
+            data
+                .getReceta(query?.id)
+                .then((receipt: Receta) => {
+                    setReceipt(receipt);
+                })
+                .catch((er) => {
+                    history.push("/");
+                });
         }
     }, [currentProfile, query?.id, data]);
 
@@ -104,8 +113,8 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
         onClick?: () => Promise<void>;
         redirect?: string;
         showInputs?: "dispens" | "send";
-        icon?: any,
-        readonly?: boolean
+        icon?: any;
+        readonly?: boolean;
     } | null>(() => {
         if (!receipt?.estado) return null;
         if (!RECEIPT_WITH_ACTIONS.includes(receipt?.estado)) return null;
@@ -122,22 +131,19 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
                 onClick: async () => {
                     confirmReceta(receipt);
                 },
-                icon: checkmarkDoneCircleOutline
+                icon: checkmarkDoneCircleOutline,
             };
         }
-        if (
-            receipt?.estado === "emitida" &&
-            role === "pac"
-        ) {
+        if (receipt?.estado === "emitida" && role === "pac") {
             return {
                 show: true,
                 label: "ENVIAR",
                 redirect: "/receipts?type=my",
                 showInputs: "send",
                 onClick: async () => {
-                    sendReceta(receipt)
+                    sendReceta(receipt);
                 },
-                icon: sendOutline
+                icon: sendOutline,
             };
         }
         if (receipt?.estado === "enviada-farmacia" && role === "far") {
@@ -159,29 +165,19 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
                         history.push("/receipts?type=pending");
                     });
                 },
-                icon: medkitOutline
+                icon: medkitOutline,
             };
         }
-        // if (receipt?.estado === "pendiente-confirmacion-dispensa" && role === "far") {
-        //     return {
-        //         show: false,
-        //         showInputs: "dispens",
-        //         readonly: true
-        //     };
-        // }
         return null;
     }, [receipt, currentProfile, values]);
-
 
     const [presentToast, dismissToast] = useIonToast();
 
     return (
         <ReceiptDetailsStyled className="scrollbarNone">
-            <div className="receipt-details-header">
+            <div className="receipt-details-header fullWidth">
                 <p className="receipt-details-title">{"Detalle receta"}</p>
-                <div style={{ width: "fit-content" }}>
-                    <ShowCertificate certificate={receipt?.certificado} isText isMobileHideText />
-                </div>
+                <ReceiptCertificates receipt={receipt} />
             </div>
             <div className="receipt-details-half-inputs">
                 <InputText
@@ -224,8 +220,14 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
                 label="Identificador Médico"
             />
             <InputText
-                value={receipt?.nombreMedico}
-                disabled={!receipt?.nombreMedico}
+                value={
+                    receipt?.certificado?.credentialSubject
+                        ? receipt?.certificado?.credentialSubject["schema:author"][
+                        "schema:name"
+                        ]
+                        : null
+                }
+                disabled={!receipt?.certificado?.credentialSubject}
                 readonly
                 label="Nombre y Apelllido Médico"
             />
@@ -244,6 +246,7 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
 
             <Select
                 options={financiers}
+                className="fullWidth"
                 onChange={(v) => { }}
                 readonly
                 value={financiers?.find((f) => f.value === receipt?.didFinanciador)}
@@ -313,16 +316,24 @@ const ReceiptDetails: React.FC<ReceiptDetailsTypes> = ({ }) => {
                     </Button>
                 </div>
             )}
-            <div className="receipt-details-info">
-                {receipt?.transactionHashEmision &&
-                    <ShowHash hash={receipt?.transactionHashEmision} noAction label="hash emision: " />
-                }
-                {receipt?.transactionHashDispensa &&
-                    <ShowHash hash={receipt?.transactionHashDispensa} noAction label="hash dispensa: " />
-                }
-                {receipt?.estado &&
+            <div className="receipt-details-info fullWidth">
+                {receipt?.transactionHashEmision && (
+                    <ShowHash
+                        hash={receipt?.transactionHashEmision}
+                        url="sepolia"
+                        label="hash emision: "
+                    />
+                )}
+                {receipt?.transactionHashDispensa && (
+                    <ShowHash
+                        hash={receipt?.transactionHashDispensa}
+                        url="sepolia"
+                        label="hash dispensa: "
+                    />
+                )}
+                {receipt?.estado && (
                     <p className="receipt-status">{`estado: ${receipt?.estado}`}</p>
-                }
+                )}
             </div>
         </ReceiptDetailsStyled>
     );
@@ -338,7 +349,7 @@ const ReceiptDetailsStyled = styled.div`
   align-items: center;
   background: var(--ion-color-light);
   overflow-y: scroll;
-  div {
+  .fullWidth {
     width: 100%;
   }
   gap: 1em;
@@ -349,42 +360,48 @@ const ReceiptDetailsStyled = styled.div`
   @media (min-width: 500px) {
     padding: 4em 4em 6em 4em;
   }
-  .receipt-details-info{
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      flex-direction: column;
-      gap: 0.5em;
-      padding: 0 0 1em 0;
-      .receipt-status{
-          color: #000;
-          opacity: 0.5;
-          font-size: 0.8em;
-          margin: 0;
-      }
+  .receipt-details-info {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 0 0 1em 0;
+    .receipt-status {
+      color: #000;
+      opacity: 0.5;
+      font-size: 0.8em;
+      margin: 0;
+    }
   }
   .receipt-details-header {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: 1em;
-    .receipt-details-title {
-      color: #000;
-      font-size: 1.5em;
-      margin: 0;
+    @media (max-width: 990px) {
+      flex-direction: column;
     }
+    @media (min-width: 990px) {
+    }
+      .receipt-details-title {
+        color: #000;
+        font-size: 1.5em;
+        margin: 0;
+      }
   }
   .receipt-details-action-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     .button-action-ok {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 1em;
       position: relative;
-      ion-icon{
+      ion-icon {
         font-size: 1.2em;
       }
       p {

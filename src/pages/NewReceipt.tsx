@@ -17,7 +17,7 @@ import { DIDResolver } from "../quarkid/DIDResolver";
 import { RecetaGenerator } from "../receta/RecetaGenerator";
 import Receta from "../model/Receta";
 import { useHistory } from "react-router";
-import { useCurrentProfile } from "../hooks";
+import { useCurrentProfile, useQuery } from "../hooks";
 import PacienteProvider from "../receta/PacienteProvider";
 import useCheckUserRole from "../hooks/useCheckUserRole";
 
@@ -90,6 +90,23 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
     const financiadorProvider = FinanciadorProvider.getInstance();
     const pacienteProvider = PacienteProvider.getInstance()
     const history = useHistory();
+    const { query } = useQuery(["didPaciente", "name", "financier", "credential"])
+
+    useEffect(() => {
+        if (!!query?.didPaciente && !values?.didPaciente) {
+            setValues(prev => ({ ...prev, didPaciente: query?.didPaciente }))
+        }
+        if (!!query?.credential && !values?.credential) {
+            setValues(prev => ({ ...prev, credential: query?.credential }))
+        }
+        if (!!query?.name && !values?.name) {
+            setValues(prev => ({ ...prev, name: query?.name }))
+        }
+        if (!!query?.financier && !values?.financier?.value && !!financiers) {
+            const findFinancier = financiers.find((f) => f.value === query?.financier)
+            if (findFinancier) setValues(prev => ({ ...prev, financier: findFinancier }))
+        }
+    }, [query, financiers])
 
     useCheckUserRole("med", "/")
 
