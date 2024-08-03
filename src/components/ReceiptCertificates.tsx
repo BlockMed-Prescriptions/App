@@ -13,8 +13,8 @@ const ReceiptCertificates: React.FC<ReceiptCertificatesTypes> = ({ receipt }) =>
       {!!receipt?.certificado &&
         <ShowCertificate
           certificate={receipt?.certificado}
-          text="CERTIFICADO EMICION"
-          modalTitle="Emicion"
+          text="CERTIFICADO EMISIÓN"
+          modalTitle="Emisión"
         />
       }
       {!!receipt?.dispensa?.certificado && (
@@ -27,8 +27,8 @@ const ReceiptCertificates: React.FC<ReceiptCertificatesTypes> = ({ receipt }) =>
       {!!receipt?.recepcion?.certificado && (
         <ShowCertificate
           certificate={receipt?.recepcion?.certificado}
-          text="CERTIFICADO RECEPCION"
-          modalTitle="Recepcion"
+          text="CERTIFICADO RECEPCIÓN"
+          modalTitle="Recepción"
         />
       )}
     </ReceiptCertificateStyled>
