@@ -167,7 +167,7 @@ const IonMenuStyled = styled(IonMenu) <{ showMenu?: boolean }>`
 const QRCodeStyled = styled.div`
 display: flex;
 justify-content: center;
-padding: 5em 0 0 0;
+padding: 5em 1em 0 1em;
 align-items: center;
 `
 

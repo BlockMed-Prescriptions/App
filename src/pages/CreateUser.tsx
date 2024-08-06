@@ -79,7 +79,7 @@ const CreateUser: React.FC = () => {
                     <InputText
                         value={values?.name}
                         onChange={(v) => setValues(prev => ({ ...prev, name: v }))}
-                        label={"Nombre y Apellido"}
+                        label={role === "far" ? "Nombre de farmacia" : "Nombre y Apellido"}
                         error={showErrors ? errors?.name : ""}
                     />
                     <InputText

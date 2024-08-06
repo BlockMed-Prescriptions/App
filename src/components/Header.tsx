@@ -44,15 +44,15 @@ const Header: React.FC<HeaderTypes> = ({ }) => {
                 <IonMenuButton color="dark" /> : <div></div>
             }
             <div className='header-actions'>
-                <ProfileButton name={currentProfile?.name || ""} to="/profile" />
-                <div className='button-navbar' onClick={() => window.location.reload()}>
+                <div className='button-navbar hide-on-small' onClick={() => window.location.reload()}>
                     <IonIcon icon={refreshOutline} color="dark" />
                 </div>
                 <div className='button-navbar'>
                     <IonIcon icon={connectionStatus === 200 ? wifiOutline : warningOutline} color={connectionStatus === 200 ? "success" : "danger"} />
                 </div>
+                <ProfileButton name={currentProfile?.name || ""} to="/profile" />
                 {isMed &&
-                    <Button onClick={() => history.push("/new_receipt")} padding="0.8em 2.5em 0.8em 2.5em" >
+                    <Button type="primary" onClick={() => history.push("/new_receipt")} padding="0.8em 1em 0.8em 1em" >
                         <div className='button-new-receipt'>
                             <IonIcon icon={addOutline} />
                             {!isMobile &&
@@ -88,7 +88,18 @@ const HeaderStyled = styled(IonHeader)`
     display: flex;
     align-items: center;
     justify-content: end;
-    gap: 1em;
+    @media (max-width:500px){
+        gap: .5em;
+    }
+    @media (min-width:500px){
+        gap: 1em;
+    }
+    .hide-on-small{
+        @media (max-width:300px){
+            display: none !important;
+        }
+
+    }
     .button-new-receipt{
         display: flex;
         align-items: center;
@@ -114,6 +125,14 @@ const HeaderStyled = styled(IonHeader)`
         }
     }
     .button-navbar{
+        ion-icon{
+            @media (max-width:500px){
+                font-size: 14px;
+            }
+            @media (min-width:500px){
+                font-size: 1.1em;
+            }
+        }
         cursor: pointer;
         background-color: var(--ion-color-light);
         padding: 0.5em;

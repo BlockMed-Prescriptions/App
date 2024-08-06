@@ -19,8 +19,11 @@ import RecetaReceiver from "../message/RecetaReceiver";
 import NoReceipts from "../components/NoReceipts";
 import useNoReceiptValues from "../hooks/useNoReceiptValues";
 import useCheckUserRole from "../hooks/useCheckUserRole";
+import { Subscription } from 'rxjs';
 
 export type ParamType = "emit" | "sent" | "dispens_made" | "pending" | "my";
+
+interface Sub extends Subscription { query?: string };
 
 export const RECEIPT_FOLDER_TYPE: { [k in ParamType]: RecetaFolder } = {
     emit: "salida",
@@ -56,7 +59,6 @@ const Receipts: React.FC = () => {
 
     useCheckUserRole(checkRole[query?.type], "/")
 
-
     const refreshReceipts = (folder: RecetaFolder) => {
         if (!currentProfile) {
             setReceipts([]);
@@ -80,10 +82,35 @@ const Receipts: React.FC = () => {
         refreshReceipts(RECEIPT_FOLDER_TYPE[query?.type as ParamType]);
     }, [currentProfile, query?.type]);
 
-    // Refresh de recetas cuando se recibe una receta nueva
-    RecetaReceiver(() =>
-        refreshReceipts(RECEIPT_FOLDER_TYPE[query?.type as ParamType])
-    );
+    const [subs, setSubs] = useState<Sub[]>()
+
+    useEffect(() => {
+        const sub: Sub = data.observeRecetas().subscribe((r) => {
+            if (r.estado === "pendiente-confirmacion-dispensa" && query?.type === "my") return
+            setReceipts((prev) => {
+                if (r.estado === "pendiente-confirmacion-dispensa" && query?.type === "sent" && !!prev) {
+                    const filterPrev = prev.filter((re) => re.id !== r.id)
+                    return [r, ...filterPrev]
+                }
+                const findReceipt = prev.find((re) => re.id === r.id);
+                if (!prev && !findReceipt) return [r];
+                if (!!prev && !findReceipt) return [...prev, r];
+                return prev;
+            });
+        });
+
+        if (!!subs) {
+            const filterSubs = subs?.filter((s) => s.query !== query?.type)
+            for (let s of filterSubs) {
+                s.unsubscribe()
+                setSubs(subs?.filter((s) => s.query === query?.type))
+            }
+        }
+
+        sub.query = query?.type
+        setSubs(prev => !!prev ? [...prev, sub] : [sub])
+
+    }, [query?.type]);
 
     const debounceSearch = useDebounce(search, 800);
     const receiptsResult = useFilterReceipts(receipts, debounceSearch)
@@ -179,20 +206,31 @@ const ReceiptsStyled = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 2em;
+  @media (max-width:500px){
+      padding: 1em;
+    }
+    @media (min-width:500px){
+        padding: 2em;
+            }
   p {
     margin: 0;
   }
 
   .receipts-wrapper {
-    padding: 1em 0 6em 0;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1em;
-    overflow-y: scroll;
-    height: 100%;
-    width: 100%;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1em;
+      overflow-y: scroll;
+      height: 100%;
+      width: 100%;
+      
+      @media (max-width:500px){
+        padding: 0 0 7em 0;
+    }
+    @media (min-width:500px){
+        padding: 1em 0 6em 0;
+            }
 
     .no-results {
       color: #000;
@@ -201,7 +239,7 @@ const ReceiptsStyled = styled.div`
   }
 
   .receipt-header {
-    padding: 0 0 4em 0;
+    padding: 0 0 2em 0;
     .title-hola {
       font-size: 1.3em;
       font-weight: 500;
@@ -220,7 +258,12 @@ const ReceiptsStyled = styled.div`
     align-items: flex-start;
     justify-content: flex-start;
     gap: 1em;
-    padding: 0 0 2em 0;
+    @media (max-width:500px){
+        padding: 0 0 1em 0;
+    }
+    @media (min-width:500px){
+        padding: 0 0 2em 0;
+            }
     .title-search {
       font-size: 1.3em;
       font-weight: 500;
@@ -235,10 +278,14 @@ const ReceiptsStyled = styled.div`
       width: 100%;
       gap: 1em;
       .input-search {
+          @media (max-width:500px){
+        }
+            @media (min-width:500px){
+                padding: 0.5em;
+            }
         :focus {
           border: none;
         }
-        padding: 0.5em;
         width: 100%;
         color: #000;
         background: transparent;

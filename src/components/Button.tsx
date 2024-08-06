@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 interface ButtonType {
-    type?: "primary" | "clear-cancel" | "primary-outline",
+    type?: "primary" | "clear-cancel" | "primary-outline" | "primary-outline-opac" | "cancel",
     fill?: string,
     onClick?: () => void,
     label?: string,
@@ -19,6 +19,8 @@ const Button: React.FC<ButtonType> = ({ type = "primary", onClick = () => { }, l
         if (type === "primary") return { bg: "#4181F5", text: "#fff" }
         if (type === "clear-cancel") return { bg: "transparent", text: "#000" }
         if (type === "primary-outline") return { bg: "transparent", text: "#4181F5", border: "#4181F5" }
+        if (type === "primary-outline-opac") return { bg: "var(--ion-color-light)", text: "#4181F5", border: "#4181F5" }
+        if (type === "cancel") return { bg: "#cb1a27", text: "#FFFFF", border: "#cb1a27" }
     }, [type])
     return (
         <ButtonStyled onClick={loading ? () => { } : onClick} {...props} {...buttonProps} >
@@ -40,11 +42,13 @@ interface ButtonStyledType {
 }
 
 const ButtonStyled = styled.button <ButtonStyledType>`
-    padding: ${(prop) => prop.padding || "0.8em 2em 0.8em 2em"};
+
     @media (max-width:500px){
+        padding: ${(prop) => prop.padding || "0.8em 1em 0.8em 1em"};
         font-size: ${(prop) => prop.size || "0.8em"};
     }
     @media (min-width:500px){
+        padding: ${(prop) => prop.padding || "0.8em 2em 0.8em 2em"};
         font-size: ${(prop) => prop.size || "1em"};
     }
     border: ${(prop) => prop.border ? `1px solid ${prop.border}` : "none"};

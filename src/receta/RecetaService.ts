@@ -127,6 +127,9 @@ class RecetaService {
         const target = targetDID || receta.didPaciente;
         const type: MessageType = messageType || "emision-receta";
         await MessageSender(profile, target, type, receta.certificado!)
+        if (receta.didFinanciador) {
+            await MessageSender(profile, receta.didFinanciador, type, receta.certificado!)
+        }
         setTimeout(() => {
             this.sendTransacciones(profile, receta)
         }, 1500)

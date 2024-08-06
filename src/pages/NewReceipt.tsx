@@ -17,7 +17,7 @@ import { DIDResolver } from "../quarkid/DIDResolver";
 import { RecetaGenerator } from "../receta/RecetaGenerator";
 import Receta from "../model/Receta";
 import { useHistory } from "react-router";
-import { useCurrentProfile } from "../hooks";
+import { useCurrentProfile, useQuery } from "../hooks";
 import PacienteProvider from "../receta/PacienteProvider";
 import useCheckUserRole from "../hooks/useCheckUserRole";
 
@@ -89,8 +89,24 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
     const [showErrors, setShowErrors] = useState<boolean>(false);
     const financiadorProvider = FinanciadorProvider.getInstance();
     const pacienteProvider = PacienteProvider.getInstance()
-    const [DIDErrorText, setDIDErrorText] = useState<string>("");
     const history = useHistory();
+    const { query } = useQuery(["didPaciente", "name", "financier", "credential"])
+
+    useEffect(() => {
+        if (!!query?.didPaciente && !values?.didPaciente) {
+            setValues(prev => ({ ...prev, didPaciente: query?.didPaciente }))
+        }
+        if (!!query?.credential && !values?.credential) {
+            setValues(prev => ({ ...prev, credential: query?.credential }))
+        }
+        if (!!query?.name && !values?.name) {
+            setValues(prev => ({ ...prev, name: query?.name }))
+        }
+        if (!!query?.financier && !values?.financier?.value && !!financiers) {
+            const findFinancier = financiers.find((f) => f.value === query?.financier)
+            if (findFinancier) setValues(prev => ({ ...prev, financier: findFinancier }))
+        }
+    }, [query, financiers])
 
     useCheckUserRole("med", "/")
 
@@ -115,7 +131,6 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
         }
         setValues((prev) => ({ ...prev, [k]: v }));
         setShowErrors(false);
-        setDIDErrorText("");
     };
 
     useEffect(() => {
@@ -172,10 +187,36 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
                     label="Nombre y Apellido Médico"
                 />
                 <InputText
-                    value={values.didPaciente}
+                    value={values.didPaciente || "Click para pegar el identificador del paciente"}
                     onChange={(v) => onChange("didPaciente", v)}
-                    label="Identificador Paciente"
-                    error={showErrors ? errors?.didPaciente || DIDErrorText : ""}
+                    onClick={async () => {
+                        const didPasted = await navigator.clipboard.readText();
+                        const splitPaste = didPasted.split(":")
+                        console.log("SPLIT DID PASTE", splitPaste)
+                        if (!!splitPaste && splitPaste[0] !== "did") return;
+                        if (didPasted === values.didPaciente) return;
+                        console.log("IS SCAN OPEN", isScanOpen)
+                        if (!!isScanOpen) return;
+                        if (!!didPasted) {
+                            try {
+                                console.log("RUN DID RESOLVER")
+                                await DIDResolver(didPasted);
+                                onChange("didPaciente", didPasted);
+                            } catch (e) {
+                                presentToast({
+                                    message: "El Identificador Paciente no pudo ser resuelto.",
+                                    color: "danger",
+                                    cssClass: "toast",
+                                    duration: 5000,
+                                    position: "top"
+                                })
+                            }
+
+                        }
+
+                    }}
+                    readonly
+                    error={showErrors ? errors?.didPaciente : ""}
                     prompt={{ icon: cameraOutline, onClick: () => setIsScanOpen(true) }}
                 />
                 <ModalScanner
@@ -237,9 +278,6 @@ const NewReceipt: React.FC<NewReceiptTypes> = () => {
                                 await DIDResolver(values.didPaciente);
                             } catch (err) {
                                 setShowErrors(true);
-                                setDIDErrorText(
-                                    "El Identificador Paciente no pudo ser resuelto."
-                                );
                                 isDidResolved = false;
                             }
                             if (!isDidResolved) return;

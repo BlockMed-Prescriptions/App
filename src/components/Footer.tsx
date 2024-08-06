@@ -36,6 +36,14 @@ const FootesStyled = styled(IonFooter)`
     align-items: center;
     background: #fff;
     padding: 0.45em 2em 0.45em 2em;
+    @media (max-width:300px){
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        p{
+            margin: 0.5em 0 0 0;
+        }
+    }
     .date{
         background: transparent;
         color: #000;

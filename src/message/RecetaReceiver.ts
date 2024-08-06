@@ -13,8 +13,11 @@ import RecetaBcData, {
   RECETA_FOLDER_PAPELERA,
 } from "../service/RecetaBcData";
 import RecetaService from "../receta/RecetaService";
+import { useEffect } from "react";
 
-const RecetaReceiver = (callback?: () => void) => {
+const RecetaReceiver = (
+  callback?: (r?: Receta, isReplace?: boolean) => void
+) => {
   const recetaService = RecetaService.getInstance();
   console.log("Starting worker RecetaReceiver");
   const recetaBcData = RecetaBcData.getInstance();
@@ -32,29 +35,46 @@ const RecetaReceiver = (callback?: () => void) => {
       .catch((e) => {
         recetaBcData.saveReceta(receta).then(() => {
           console.log("Receta guardada", receta);
-          if (callback) callback();
           recetaBcData.addRecetaToFolder(receta, RECETA_FOLDER_INBOX);
         });
       });
   };
 
-  observable.subscribe((message) => {
+  //useEffect(() => {
+  console.log("Subscribing to receta messages");
+  const suscriptorMessageReceiver = observable.subscribe((message) => {
     if ("receta" !== message.class) return;
     const receta: Receta = recetaService.buildRecetaFromCredential(
       message.credential
     );
-    switch (message.type) {
-      case "envio-farmacia":
-        receta.estado = "enviada-farmacia";
-      case "emision-receta":
-        if (receta.estado === undefined) receta.estado = "emitida";
-        saveReceta(receta);
-        break;
-      default:
-        console.error("Mensaje desconocido", message);
-        throw new Error("Mensaje desconocido");
+
+    if (message.type === "envio-farmacia") {
+      receta.estado = "enviada-farmacia";
+      saveReceta(receta);
+      if (callback && receta) callback(receta);
+      return;
     }
+    if (message.type === "emision-receta") {
+      if (receta.estado === undefined) receta.estado = "emitida";
+      saveReceta(receta);
+      return;
+    }
+    console.error("Mensaje desconocido", message);
+    throw new Error("Mensaje desconocido");
   });
+
+  // const suscriptorObserveReceta = recetaBcData
+  //   .observeRecetas()
+  //   .subscribe((receta) => {
+  //     const isReplace = receta.estado === "pendiente-confirmacion-dispensa";
+  //     if (callback && receta) callback(receta, isReplace);
+  //   });
+
+  // return () => {
+  //   suscriptorMessageReceiver.unsubscribe();
+  //   suscriptorObserveReceta.unsubscribe();
+  // };
+  //}, []);
 };
 
 export default RecetaReceiver;

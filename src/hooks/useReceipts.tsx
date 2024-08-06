@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import RecetaSender, { HTMLRecetaSender } from "../components/RecetaSender";
 import Receta from "../model/Receta";
 import Profile from "../model/Profile";
-import { useIonAlert, useIonToast } from "@ionic/react";
+import { ToastOptions, useIonAlert, useIonToast } from "@ionic/react";
 import RecepcionGenerator from "../receta/RecepcionGenerator";
 
 interface useReceiptsPropTypes { }
@@ -16,7 +16,7 @@ const useReceipts = (
     currentProfile: Profile | null,
     callback: () => void
 ): useReceiptsReturnTypes => {
-    const [presentAlert] = useIonAlert()
+    const [presentAlert, dismissAlert] = useIonAlert()
     const [presentToast, dismissToast] = useIonToast();
     const recetaSender = useRef<HTMLRecetaSender>(null);
     const sendReceta = (receta: Receta) => {
@@ -46,16 +46,28 @@ const useReceipts = (
                 role: 'confirm',
                 handler: async () => {
                     try {
-                        await RecepcionGenerator(currentProfile!, receta, (msg, type) => {
+                        dismissAlert();
+                        await RecepcionGenerator(currentProfile!, receta, (msg, type, button, icon, duration) => {
                             dismissToast().then(() => {
-                                let color = (type === 'info' ? 'primary' : type);
-                                presentToast({
+                                let objToast: ToastOptions = {
                                     message: msg,
-                                    duration: 1000,
                                     cssClass: "toast",
                                     position: 'top',
-                                    color: color
-                                });
+                                    color: type === 'info' ? 'primary' : type,
+                                }
+                                if (!!icon) objToast.icon = icon
+                                if (!!duration) objToast.duration = duration
+                                if (!!button) {
+                                    objToast.buttons = [
+                                        {
+                                            text: "Aceptar",
+                                            handler: () => {
+                                                dismissToast();
+                                            },
+                                        },
+                                    ]
+                                }
+                                presentToast(objToast)
                                 callback()
                             })
                         })

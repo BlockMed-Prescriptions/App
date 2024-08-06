@@ -48,6 +48,8 @@ import Footer from './components/Footer';
 import NewReceipt from './pages/NewReceipt';
 import Receipts from './pages/Receipts';
 import ReceiptDetails from './pages/ReceiptDetails';
+import Profile from './pages/Profile';
+import Pacients from './pages/Pacients';
 
 setupIonicReact();
 
@@ -79,33 +81,36 @@ const App: React.FC = () => {
               <Route path="/receipt" exact={true}>
                 <ReceiptDetails />
               </Route>
-              <Route path="/receipts" >
+              <Route path="/receipts">
                 <Receipts />
               </Route>
-              <Route path="/folder/:name" exact={true}>
+              <Route path="/profile">
+                <Profile />
+              </Route>
+              {/* <Route path="/folder/:name" exact={true}>
                 <Page />
-              </Route>
-              <Route path="/profile/new" exact={true}>
+              </Route> */}
+              {/* <Route path="/profile/new" exact={true}>
                 <ProfileForm />
-              </Route>
-              <Route path="/profile" exact={true}>
+              </Route> */}
+              <Route path="/profileold" exact={true}>
                 <ProfilePage />
               </Route>
-              <Route path="/receta/:id" exact={true}>
+              {/* <Route path="/receta/:id" exact={true}>
                 <RecetaView />
-              </Route>
-              <Route path="/receta/new" exact={true}>
+              </Route> */}
+              {/* <Route path="/receta/new" exact={true}>
                 <RecetaNew />
-              </Route>
-              <Route path="/receta/new/:paciente" exact={true}>
+              </Route> */}
+              {/* <Route path="/receta/new/:paciente" exact={true}>
                 <RecetaNew />
-              </Route>
+              </Route> */}
               <Route path="/pacientes" exact={true}>
-                <PacienteList />
+                <Pacients />
               </Route>
-              <Route path="/dispensa/:id" exact={true}>
+              {/* <Route path="/dispensa/:id" exact={true}>
                 <RecetaDispensa />
-              </Route>
+              </Route> */}
               <Footer />
             </IonPage>
           </IonRouterOutlet>
