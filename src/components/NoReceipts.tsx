@@ -41,12 +41,17 @@ const NoReceiptsStyled = styled.div<{ type: string }>`
     img{
         object-fit: cover;
         height: auto;
-        width: 15em;
+        @media (max-width:500px){
+            width: 10em;
+        }
+        @media (min-width:500px){
+            width: 15em;
+        }
     }
     .no-values-text{
         color: var(--ion-color-success-contrast);
         @media (max-width:500px){
-            font-size: 1em;
+            font-size: .8em;
         }
         @media (min-width:500px){
             font-size: 1.2em;

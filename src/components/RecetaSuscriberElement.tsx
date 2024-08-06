@@ -1,117 +1,13 @@
-import { useIonToast } from "@ionic/react";
+import { ToastOptions, useIonToast } from "@ionic/react";
 import { useEffect } from "react";
 import { useHistory } from "react-router";
 import RecetaBcData from "../service/RecetaBcData";
 import ProfileHandler from "../service/ProfileHandler";
-import Receta from "../model/Receta";
-import Profile from "../model/Profile";
-
 
 const RecetaSuscriberElement: React.FC = () => {
-    const [presentToast, dismissToast] = useIonToast()
+    const [presentToast, dismissToast] = useIonToast();
     const history = useHistory();
     const data = RecetaBcData.getInstance();
-
-    /**
-     * Control de farmacia.
-     */
-    const casoEnviadaFarmacia = (receta: Receta, profile: Profile): boolean => {
-        //console.log("casoEnviadaFarmacia", receta.estado, profile.roles)
-        if (ProfileHandler.isFarmacia(profile) && 'enviada-farmacia' === receta.estado) {
-            presentToast({
-                message: '¡Receta recibida de ' + receta.nombrePaciente + '!',
-                color: 'success',
-                duration: 2000,
-                cssClass: "toast",
-                buttons: [
-                    {
-                        text: 'Inbox',
-                        handler: () => {
-                            dismissToast();
-                            history.push('/receipts?type=pending');
-                        }
-                    }
-                ]
-            })
-            return true;
-        }
-
-        return false;
-    }
-
-    const casoDeboConfirmarDispensa = (receta: Receta, profile: Profile): boolean => {
-        //console.log("casoDeboConfirmarDispensa", receta.estado, receta.didPaciente, profile.didId)
-        if (receta.didPaciente !== profile.didId) {
-            console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
-            return false;
-        }
-
-        if (receta.estado !== 'pendiente-confirmacion-dispensa') {
-            //console.log("Receta no está pendiente de confirmación de dispensa, por ahora, no hacemos nada.", receta.estado)
-            return false;
-        }
-
-        presentToast({
-            message: '¡Debes confirmar la recepción de medicamentos!',
-            color: 'success',
-            cssClass: "toast",
-            buttons: [
-                {
-                    text: 'Ver',
-                    handler: () => {
-                        dismissToast();
-                        history.push(`/receipt?id=${receta.id}`);
-                    }
-                }, {
-                    text: 'Inbox',
-                    handler: () => {
-                        dismissToast();
-                        history.push('/receipts?type=sent');
-                    }
-                }
-            ]
-        })
-
-        return true
-    }
-
-    /**
-     * Paciente recibe del médico una nueva receta
-     */
-    const casoPacienteRecibeReceta = (receta: Receta, profile: Profile): boolean => {
-        //console.log("casoPacienteRecibeReceta", receta.estado, receta.didPaciente, profile.didId)
-        if (receta.didPaciente !== profile.didId) {
-            //console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
-            return false;
-        }
-        if (receta.estado !== 'emitida') {
-            //console.log("Receta no está activa, por ahora, no hacemos nada.", receta.estado)
-            return false;
-        }
-        presentToast({
-            message: '¡Receta recibida!',
-            color: 'success',
-            cssClass: "toast",
-            duration: 2000,
-            buttons: [
-                {
-                    text: 'Ver',
-                    handler: () => {
-                        dismissToast();
-                        history.push(`/receipt?id=${receta.id}`);
-                    }
-                }, {
-                    text: 'Inbox',
-                    handler: () => {
-                        dismissToast();
-                        history.push('/receipts?type=my');
-                    }
-                }
-            ]
-        })
-
-        return true;
-    }
 
     useEffect(() => {
         const suscriptor = data.observeRecetas().subscribe((receta) => {
@@ -119,23 +15,91 @@ const RecetaSuscriberElement: React.FC = () => {
             if (!profile) {
                 return;
             }
+            let toastObj: ToastOptions = {
+                color: "success",
+                cssClass: "toast",
+            };
 
-            if (casoEnviadaFarmacia(receta, profile)) {
-                return;
-            } else if (casoPacienteRecibeReceta(receta, profile)) {
-                return;
-            } else if (casoDeboConfirmarDispensa(receta, profile)) {
-                return;
+            // ES PACIENTE ?
+            if (receta.didPaciente === data.currentProfile?.didId) {
+                // PACIENTE CONFIRMA DISPENSA
+                if (
+                    receta.estado === "pendiente-confirmacion-dispensa"
+                ) {
+                    // console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
+                    toastObj.message = "¡Debes confirmar la recepción de medicamentos!";
+                    toastObj.buttons = [
+                        {
+                            text: "Ver",
+                            handler: () => {
+                                dismissToast();
+                                history.push(`/receipt?id=${receta.id}`);
+                            },
+                        },
+                        {
+                            text: "Inbox",
+                            handler: () => {
+                                dismissToast();
+                                history.push("/receipts?type=sent");
+                            },
+                        },
+                    ];
+                }
+
+                // PACIENTE RECIBE RECETA
+                if (
+                    receta.didPaciente === profile.didId &&
+                    receta.estado === "emitida"
+                ) {
+                    //console.log("Receta no es para mi, por ahora, no hacemos nada.", receta.didPaciente, profile.didId)
+                    toastObj.message = "¡Receta recibida!";
+                    toastObj.buttons = [
+                        {
+                            text: "Ver",
+                            handler: () => {
+                                dismissToast();
+                                history.push(`/receipt?id=${receta.id}`);
+                            },
+                        },
+                        {
+                            text: "Inbox",
+                            handler: () => {
+                                dismissToast();
+                                history.push("/receipts?type=my");
+                            },
+                        },
+                    ];
+                }
             }
 
-        })
+            // ES FARMACIA ?
+            if (
+                ProfileHandler.isFarmacia(profile) &&
+                receta.estado === "enviada-farmacia"
+            ) {
+                // FARMACIA RECIBE RECETA
+                toastObj.message = "¡Receta recibida de " + receta.nombrePaciente + "!";
+                toastObj.buttons = [
+                    {
+                        text: "Inbox",
+                        handler: () => {
+                            dismissToast();
+                            history.push("/receipts?type=pending");
+                        },
+                    },
+                ];
+            }
+            if (!!toastObj.message) {
+                presentToast(toastObj);
+            }
+        });
 
         return () => {
             suscriptor.unsubscribe();
-        }
+        };
     }, [data]);
 
-    return (<></>)
-}
+    return <></>;
+};
 
 export default RecetaSuscriberElement;

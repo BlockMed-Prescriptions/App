@@ -118,37 +118,40 @@ const Worker = () => {
                         console.log("no hay llamado alternativo")
                         emitStatus(500)
                         useAlternative = false
+                        let quinceMinutosAtras = new Date()
+                        quinceMinutosAtras.setMinutes(quinceMinutosAtras.getMinutes() - 15)
+                        storage.updateLastPullDate(quinceMinutosAtras)
                     }
                 })
+            } else {
+                dwnClient!.pullNewMessageWait().then(() => {
+                    if (200 !== lastStatus) {
+                        emitStatus(200)
+                    }
+                }).catch((e) => {
+                    let captureError = /reply.entries is undefined/
+                    let captureError2 = /.map is not a function/
+                    if (e.message.match(captureError)) {
+                        emitStatus(501)
+                    } else if (e.message.match(captureError2)) {
+                        alternativeProcessEntry().then((x) => {
+                            if (x) {
+                                emitStatus(200)
+                                useAlternative = true
+                            } else {
+                                console.log("no hay llamado alternativo", e)
+                                emitStatus(500)
+                            }
+                        })
+                    } else {
+                        console.error("Error pulling message", e)
+                        emitStatus(500)
+                    }
+                    let quinceMinutosAtras = new Date()
+                    quinceMinutosAtras.setMinutes(quinceMinutosAtras.getMinutes() - 15)
+                    storage.updateLastPullDate(quinceMinutosAtras)
+                })
             }
-
-            dwnClient.pullNewMessageWait().then(() => {
-                if (200 !== lastStatus) {
-                    emitStatus(200)
-                }
-            }).catch((e) => {
-                let captureError = /reply.entries is undefined/
-                let captureError2 = /.map is not a function/
-                if (e.message.match(captureError)) {
-                    emitStatus(501)
-                } else if (e.message.match(captureError2)) {
-                    alternativeProcessEntry().then((x) => {
-                        if (x) {
-                            emitStatus(200)
-                            useAlternative = true
-                        } else {
-                            console.log("no hay llamado alternativo", e)
-                            emitStatus(500)
-                        }
-                    })
-                } else {
-                    console.error("Error pulling message", e)
-                    emitStatus(500)
-                }
-                let quinceMinutosAtras = new Date()
-                quinceMinutosAtras.setMinutes(quinceMinutosAtras.getMinutes() - 15)
-                storage.updateLastPullDate(quinceMinutosAtras)
-            })
             // tomo el primer mensaje y lo proceso
             storage.getMessages().then((messages) => {
                 const entry = messages[0]

@@ -1,13 +1,13 @@
 
 
-import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { useImperativeHandle, useRef, useState } from 'react';
 import Receta from '../model/Receta';
 import RecetaService from '../receta/RecetaService';
 import RecetaBcData, { RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX } from '../service/RecetaBcData';
 import ProfileHandler from '../service/ProfileHandler';
 import { IonAlert, useIonActionSheet, useIonToast } from '@ionic/react';
 import ModalScanner, { HTMLModalScanner } from './ModalScanner';
-import { qrCode, close, keypad } from 'ionicons/icons';
+import { qrCode, close, keypad, checkmarkCircleOutline } from 'ionicons/icons';
 import { DIDResolver } from '../quarkid/DIDResolver';
 import { useCurrentProfile } from '../hooks';
 
@@ -23,7 +23,7 @@ export type HTMLRecetaSender = {
 const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerProps> = (props, forwardedRef) => {
     const [receipt, setReceipt] = useState<Receta | null>(null);
     const { currentProfile } = useCurrentProfile();
-    const [presentToast] = useIonToast();
+    const [presentToast, dismissToast] = useIonToast();
     const [presentActionSheet] = useIonActionSheet();
 
     const recetaService = RecetaService.getInstance()
@@ -32,11 +32,34 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
     const promptDid = useRef<HTMLIonAlertElement>(null);
 
     const sendReceta = async (targetDid: string, receta: Receta) => {
-        recetaService.sendReceta(currentProfile!, receipt!, targetDid, 'envio-farmacia')
-        receipt!.estado = 'enviada-farmacia'
-        await data.saveReceta(receipt!)
-        await data.moveRecetaToFolder(receta, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX)
-        if (props.callback) props.callback()
+        try {
+            recetaService.sendReceta(currentProfile!, receipt!, targetDid, 'envio-farmacia')
+            receipt!.estado = 'enviada-farmacia'
+            await data.saveReceta(receipt!)
+            await data.moveRecetaToFolder(receta, RECETA_FOLDER_INBOX, RECETA_FOLDER_OUTBOX)
+            if (props.callback) props.callback()
+            await dismissToast();
+        } catch (e) {
+            await dismissToast();
+            throw e;
+        }
+
+        await presentToast({
+            message:
+                "La receta se ha enviado correctamente a la farmacia",
+            position: "top",
+            color: "success",
+            cssClass: "toast",
+            icon: checkmarkCircleOutline,
+            buttons: [
+                {
+                    text: "Aceptar",
+                    handler: () => {
+                        dismissToast();
+                    },
+                },
+            ],
+        });
     }
 
     const [isScanOpen, setIsScanOpen] = useState<boolean>(false);
@@ -48,7 +71,7 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
             console.error("No hay receipt")
             return
         }
-        modalScanner.current?.dismiss().then(() => {
+        modalScanner.current?.dismiss().then(async () => {
             const profileTarget = ProfileHandler.fromQrCode(scanned)
             if (profileTarget) {
                 if (!ProfileHandler.isFarmacia(profileTarget)) {
@@ -60,14 +83,15 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
                         position: "top"
                     })
                 } else {
-                    presentToast({
+                    await presentToast({
                         message: "Enviando receta a la farmacia.",
                         cssClass: "toast",
                         color: "success",
                         duration: 2000,
                         position: "top"
                     })
-                    sendReceta(profileTarget.didId!, receipt!)
+                    await sendReceta(profileTarget.didId!, receipt!)
+                    // sendReceta(profileTarget.didId!, receipt!)
                 }
                 setIsScanOpen(false);
             }
@@ -77,15 +101,15 @@ const RecetaSender: React.ForwardRefRenderFunction<HTMLRecetaSender, ContainerPr
     const promptDidCallback = (did: string) => {
         if (did) {
             console.log("Prompt DID", did, receipt)
-            DIDResolver(did).then((doc) => {
-                presentToast({
+            DIDResolver(did).then(async (doc) => {
+                await presentToast({
                     message: "Enviando receta a la farmacia.",
                     color: "success",
                     cssClass: "toast",
                     duration: 2000,
                     position: "top"
                 })
-                sendReceta(did, receipt!)
+                await sendReceta(did, receipt!)
             }).catch((e) => {
                 presentToast({
                     message: "Revise el ID de farmacia ... No se pudo enviar la receta.",

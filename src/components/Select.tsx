@@ -16,6 +16,7 @@ interface SelectTypes {
     fontSize?: string;
     error?: string | undefined;
     readonly?: boolean
+    className?: string
 }
 
 export interface SelectOption {
@@ -35,7 +36,7 @@ const Select: React.FC<SelectTypes> = ({
     const [dialogValue, setDialogValue] = useState<SelectOption | undefined>(value);
 
     return (
-        <div>
+        <div className={props.className}>
             <SelectStyled
                 id="present-alert"
                 disabled={readonly}

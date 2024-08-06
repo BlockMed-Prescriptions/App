@@ -132,10 +132,10 @@ const ReceiptCardStyled = styled.div`
     background: #fafafa;
     padding: 1em;
     @media (max-width:500px){
-        height: 11em;
+        height: 7em;
     }
     @media (min-width:500px){
-        height: 15em;
+        height: 10em;
     }
     overflow-y: scroll;
     .receipt-card-content-med {
