@@ -219,6 +219,7 @@ const ProfileStyled = styled.div`
         gap: 0.5em;
         ion-icon {
           font-size: 1.3em;
+          color: #fff;
         }
       }
     }
