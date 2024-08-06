@@ -145,6 +145,12 @@ const ProfileStyled = styled.div`
   gap: 1em;
   justify-content: start;
   align-items: center;
+  @media (max-width: 500px) {
+    padding: 1em 1em 5em 1em;
+  }
+  @media (min-width: 500px) {
+    padding: 5em;
+  }
   p {
     margin: 0;
   }
@@ -160,12 +166,6 @@ const ProfileStyled = styled.div`
     @media (min-width: 500px) {
       font-size: 1.5em;
     }
-  }
-  @media (max-width: 500px) {
-    padding: 1em;
-  }
-  @media (min-width: 500px) {
-    padding: 5em;
   }
   .profile-header {
     width: 100%;
